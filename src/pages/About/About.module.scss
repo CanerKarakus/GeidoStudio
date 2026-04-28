@@ -1,0 +1,300 @@
+@import '../../styles/variables';
+@import '../../styles/mixins';
+
+.aboutPage {
+  padding: 8rem 0 8rem;
+}
+
+.container {
+  max-width: map-get($breakpoints, xl);
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 6rem;
+  
+  .subtitle {
+    display: inline-block;
+    padding: 0.25rem 1rem;
+    background: rgba(179, 0, 0, 0.1);
+    border-radius: radius(pill);
+    color: #b30000;
+    font-weight: 700;
+    margin-bottom: 1rem;
+  }
+  
+  .title {
+    font-size: 3.5rem;
+    
+    @include respond-to-max(md) {
+      font-size: 2.5rem;
+    }
+  }
+}
+
+.teamSection {
+  display: flex;
+  flex-direction: column;
+  gap: 6rem;
+}
+
+.memberCard {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 4rem;
+  align-items: center;
+  
+  @include respond-to(lg) {
+    grid-template-columns: 1fr 1fr;
+    
+    &.reverse {
+      .memberVisual {
+        order: 2;
+      }
+      .memberInfo {
+        order: 1;
+      }
+    }
+  }
+}
+
+.memberVisual {
+  position: relative;
+  
+  .avatarPlaceholder {
+    width: 100%;
+    height: 500px;
+    background-color: color(border);
+    border-radius: radius(lg);
+    background-size: cover;
+    background-position: center;
+    border: 2px solid color(dark);
+    box-shadow: 10px 10px 0px color(primary);
+    
+    &.yasarhan {
+      background-color: #f1c40f; // Placeholder color
+    }
+    
+    &.caner {
+      background-color: #3498db; // Placeholder color
+    }
+  }
+  
+  .floatingIcon {
+    position: absolute;
+    bottom: -20px;
+    right: -20px;
+    background: color(white);
+    padding: 1.5rem;
+    border-radius: 50%;
+    border: 2px solid color(dark);
+    box-shadow: 4px 4px 0px color(dark);
+    @include flex-center;
+  }
+}
+
+.memberInfo {
+  h2 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .role {
+    font-family: font(body);
+    font-size: 1.125rem;
+    color: color(white);
+    background: color(dark);
+    display: inline-block;
+    padding: 0.25rem 1rem;
+    border-radius: radius(pill);
+    margin-bottom: 1.5rem;
+    font-weight: 500;
+  }
+  
+  p {
+    font-size: 1.125rem;
+    color: color(text-muted);
+    margin-bottom: 2rem;
+    line-height: 1.6;
+  }
+}
+
+.skills {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  
+  @include respond-to-max(sm) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.skillGroup {
+  h4 {
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid color(primary);
+    padding-bottom: 0.5rem;
+    display: inline-block;
+  }
+  
+  ul {
+    li {
+      margin-bottom: 0.5rem;
+      color: color(text-muted);
+      position: relative;
+      padding-left: 1.5rem;
+      
+      &::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 8px;
+        width: 8px;
+        height: 8px;
+        background: color(primary);
+        border-radius: 50%;
+      }
+    }
+  }
+}
+
+// MODAL STYLES
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(10, 10, 10, 0.8);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  z-index: 1000;
+  @include flex-center;
+  padding: 2rem;
+}
+
+.modalContent {
+  background: color(white);
+  border-radius: radius(lg);
+  padding: 3rem;
+  max-width: 600px;
+  width: 100%;
+  position: relative;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: color(dark);
+
+  @include respond-to-max(sm) {
+    padding: 2rem;
+  }
+}
+
+.closeBtn {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  background: transparent;
+  border: none;
+  color: color(text-muted);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  @include flex-center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  
+  &:hover {
+    color: color(primary);
+    background: rgba(179, 0, 0, 0.1);
+    transform: rotate(90deg);
+  }
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  padding-bottom: 2rem;
+
+  @include respond-to-max(sm) {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .modalIcon {
+    @include flex-center;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: color(dark);
+    color: color(white);
+    flex-shrink: 0;
+    box-shadow: 4px 4px 0px color(primary);
+  }
+
+  h2 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    font-family: font(heading);
+    font-weight: 700;
+  }
+
+  .modalRole {
+    color: color(primary);
+    font-weight: 600;
+    font-size: 1rem;
+    display: inline-block;
+    padding: 0.25rem 1rem;
+    background: rgba(179, 0, 0, 0.1);
+    border-radius: radius(pill);
+  }
+}
+
+.modalBody {
+  p {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    color: color(text-main);
+    margin-bottom: 2.5rem;
+  }
+
+  .focusArea {
+    h4 {
+      font-size: 1.25rem;
+      margin-bottom: 1.5rem;
+      font-family: font(heading);
+      color: color(dark);
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+
+      .tag {
+        background: color(light);
+        color: color(dark);
+        padding: 0.5rem 1.25rem;
+        border-radius: radius(pill);
+        font-size: 0.9rem;
+        font-weight: 500;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+      }
+    }
+  }
+}
+
+// Ensure floatingIcon cursor
+.floatingIcon {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  &:hover {
+    transform: scale(1.1);
+    box-shadow: 6px 6px 0px color(primary);
+  }
+}

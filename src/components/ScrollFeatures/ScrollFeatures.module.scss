@@ -1,0 +1,64 @@
+@import '../../styles/variables';
+@import '../../styles/mixins';
+
+.progressBar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background-color: color(primary);
+  transform-origin: 0%;
+  z-index: 9999;
+  box-shadow: 0 0 10px rgba(179, 0, 0, 0.5);
+}
+
+.scrollTopBtn {
+  position: fixed;
+  bottom: 2.5rem;
+  right: 2.5rem;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(10, 10, 10, 0.6);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: color(white);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  @include flex-center;
+  cursor: pointer;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(20px) scale(0.8);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+
+  &.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+  }
+
+  &:hover {
+    background: color(primary);
+    border-color: color(primary);
+    box-shadow: 0 0 20px rgba(179, 0, 0, 0.6);
+    transform: translateY(-8px);
+    
+    svg {
+      transform: translateY(-2px);
+    }
+  }
+
+  svg {
+    transition: transform 0.3s ease;
+  }
+
+  @include respond-to-max(sm) {
+    bottom: 1.5rem;
+    right: 1.5rem;
+    width: 48px;
+    height: 48px;
+  }
+}

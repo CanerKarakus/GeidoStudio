@@ -1,0 +1,65 @@
+// src/styles/_variables.scss
+$colors: (
+  primary: #b30000, // Lighter Red
+  dark: #0a0a0a,
+  dark-secondary: #1a1a1a,
+  light: #f8f9fa,
+  white: #ffffff,
+  text-main: #111111,
+  text-muted: #555555,
+  border: rgba(17, 17, 17, 0.1),
+  border-dark: #111111
+);
+
+$fonts: (
+  heading: ('Outfit', sans-serif),
+  body: ('Inter', sans-serif),
+);
+
+$radius: (
+  sm: 8px,
+  md: 16px,
+  lg: 24px,
+  pill: 9999px
+);
+
+$breakpoints: (
+  sm: 576px,
+  md: 768px,
+  lg: 992px,
+  xl: 1200px,
+  xxl: 1400px
+);
+
+$transitions: (
+  fast: 0.2s ease,
+  base: 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+  slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1)
+);
+
+$z-index: (
+  base: 1,
+  header: 100,
+  modal: 1000,
+  tooltip: 2000
+);
+
+@function color($key) {
+  @return map-get($colors, $key);
+}
+
+@function font($key) {
+  @return map-get($fonts, $key);
+}
+
+@function radius($key) {
+  @return map-get($radius, $key);
+}
+
+@function transition($key) {
+  @return map-get($transitions, $key);
+}
+
+@function z($key) {
+  @return map-get($z-index, $key);
+}

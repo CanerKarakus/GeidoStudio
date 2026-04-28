@@ -1,0 +1,61 @@
+// src/styles/_mixins.scss
+@import 'variables';
+
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+@mixin flex-column {
+  display: flex;
+  flex-direction: column;
+}
+
+// Media Queries
+
+@mixin respond-to($breakpoint) {
+  @if map-has-key($breakpoints, $breakpoint) {
+    @media (min-width: map-get($breakpoints, $breakpoint)) {
+      @content;
+    }
+  }
+
+  @else {
+    @warn "Unfortunately, no value could be retrieved from `#{$breakpoint}`. Available breakpoints are: #{map-keys($breakpoints)}.";
+  }
+}
+
+@mixin respond-to-max($breakpoint) {
+  @if map-has-key($breakpoints, $breakpoint) {
+    @media (max-width: map-get($breakpoints, $breakpoint) - 0.02px) {
+      @content;
+    }
+  }
+}
+
+// Card Style
+@mixin card-base {
+  background: color(white);
+  border-radius: radius(md);
+  border: 1px solid color(border);
+  padding: 2rem;
+  transition: transition(base);
+
+  &:hover {
+    border-color: color(border-dark);
+  }
+}
+
+// Highlighted Card Style
+@mixin card-highlight {
+  background: color(primary);
+  border: 2px solid color(border-dark);
+  box-shadow: 4px 4px 0px color(border-dark); // Neo-brutalism hint
+}

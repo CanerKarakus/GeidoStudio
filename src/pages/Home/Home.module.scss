@@ -1,0 +1,451 @@
+@import '../../styles/variables';
+@import '../../styles/mixins';
+
+.home {
+  overflow-x: hidden;
+}
+
+.container {
+  max-width: map-get($breakpoints, xxl);
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+// HERO
+.hero {
+  position: relative;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: color(dark); // Ensure no white gaps
+}
+
+.heroBackgroundImg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('../../assets/images/geido_hero.png');
+  background-size: cover;
+  background-position: center;
+  z-index: 0;
+}
+
+.tickerBanner {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: linear-gradient(180deg, rgba(10, 10, 10, 0.3) 0%, rgba(10, 10, 10, 0.7) 100%);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  color: color(white);
+  padding: 0.75rem 0;
+  overflow: hidden;
+  z-index: 3;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.3);
+  transition: all 0.5s ease;
+
+  &:hover {
+    background: rgba(10, 10, 10, 0.8);
+    .tickerTrack {
+      animation-play-state: paused;
+    }
+  }
+}
+
+.tickerTrack {
+  display: flex;
+  width: max-content;
+  animation: ticker 40s linear infinite;
+}
+
+.tickerContent {
+  display: flex;
+  white-space: nowrap;
+  
+  span {
+    font-family: font(heading);
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.25em;
+    display: flex;
+    align-items: center;
+    padding-right: 4rem;
+    color: rgba(255, 255, 255, 0.85);
+    transition: color 0.3s ease;
+
+    &:hover {
+      color: color(primary);
+    }
+
+    &::after {
+      content: '•';
+      margin-left: 4rem;
+      color: color(primary);
+      font-size: 1.2rem;
+      opacity: 0.6;
+    }
+  }
+}
+
+@keyframes ticker {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+// COMMON HEADERS
+.sectionHeader, .sectionHeaderCenter {
+  margin-bottom: 4rem;
+  
+  .subtitle {
+    display: inline-block;
+    padding: 0.25rem 1rem;
+    background: rgba(179, 0, 0, 0.1);
+    border-radius: radius(pill);
+    color: #b30000;
+    font-weight: 700;
+    margin-bottom: 1rem;
+  }
+  
+  .subtitleDark {
+    display: inline-block;
+    padding: 0.25rem 1rem;
+    background: rgba(179, 0, 0, 0.1);
+    border-radius: radius(pill);
+    color: color(white);
+    font-weight: 600;
+    margin-bottom: 1rem;
+  }
+  
+  .title {
+    font-size: 3rem;
+    @include respond-to-max(md) { font-size: 2rem; }
+  }
+  
+  .titleLight {
+    font-size: 3rem;
+    color: color(white);
+    @include respond-to-max(md) { font-size: 2rem; }
+  }
+}
+
+.sectionHeader {
+  @include flex-between;
+  @include respond-to-max(md) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.5rem;
+  }
+}
+
+.sectionHeaderCenter {
+  text-align: center;
+}
+
+// SERVICES
+.services { padding: 8rem 0; }
+
+.servicesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+}
+
+.serviceCard {
+  @include card-base;
+  position: relative;
+  
+  h3 { margin: 1.5rem 0 1rem; font-size: 1.25rem; }
+  p { color: color(text-muted); font-size: 0.875rem; }
+  
+  &.highlight {
+    @include card-highlight;
+    h3 { color: color(white); }
+    p { color: rgba(255, 255, 255, 0.8); }
+    .arrowIcon {
+      position: absolute;
+      top: 2rem;
+      right: 2rem;
+      background: color(white);
+      color: color(primary);
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      @include flex-center;
+    }
+  }
+}
+
+
+// PROJECTS
+.projects { padding: 4rem 0 8rem; }
+
+.projectsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 2rem;
+  margin-bottom: 3rem;
+}
+
+.projectCard {
+  background: color(dark-secondary);
+  border-radius: radius(lg);
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: transition(base);
+  
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    border-color: rgba(179, 0, 0, 0.3); // Subtle primary color glow
+
+    .projectImage {
+      transform: scale(1.05);
+    }
+    
+    .arrowIcon {
+      background: color(primary);
+      color: color(white);
+      border-color: color(primary);
+    }
+  }
+}
+
+.projectImageWrapper {
+  overflow: hidden;
+  width: 100%;
+  height: 300px;
+}
+
+.projectImage {
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.projectInfo {
+  @include flex-between;
+  padding: 1.5rem;
+  
+  h3 { 
+    font-size: 1.25rem; 
+    margin-bottom: 0.25rem; 
+    color: color(white);
+  }
+  
+  span { 
+    color: rgba(255, 255, 255, 0.6); 
+    font-size: 0.875rem; 
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  
+  .arrowIcon {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: color(white);
+    @include flex-center;
+    transition: transition(base);
+  }
+  
+  &.highlightInfo {
+    .arrowIcon {
+      background: color(primary);
+      color: color(white);
+      border-color: color(primary);
+    }
+  }
+}
+
+
+// TESTIMONIALS
+.testimonials {
+  padding: 8rem 0;
+  background-color: color(dark);
+  color: color(white);
+}
+
+.testimonialGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+.testimonialCard {
+  background: color(dark-secondary);
+  padding: 2.5rem;
+  border-radius: radius(md);
+  position: relative;
+  border: 1px solid rgba(255,255,255,0.05);
+  transition: transition(base);
+  
+  &:hover {
+    border-color: rgba(179, 0, 0, 0.3);
+    transform: translateY(-5px);
+  }
+  
+  .quoteIcon {
+    font-family: serif;
+    font-size: 4rem;
+    color: color(primary);
+    line-height: 1;
+    position: absolute;
+    top: 2rem;
+    right: 2rem;
+    opacity: 0.5;
+  }
+  
+  .quoteText {
+    font-size: 1.125rem;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+    color: rgba(255,255,255,0.9);
+  }
+  
+  .rating {
+    color: #f39c12;
+    margin-bottom: 1.5rem;
+    letter-spacing: 2px;
+  }
+  
+  .author {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    
+    .authorAvatar {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background-size: cover;
+      background-position: center;
+      border: 3px solid color(primary); // Çember rengimiz (Neon Yeşil)
+    }
+    
+    h4 {
+      font-size: 1rem;
+      margin-bottom: 0.25rem;
+      color: color(white); // Beyaz isim
+    }
+    
+    span {
+      font-size: 0.875rem;
+      color: rgba(255,255,255,0.5);
+    }
+  }
+}
+
+
+// ARTICLES
+.articles {
+  padding: 8rem 0;
+  background-color: color(white);
+}
+
+.articleGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 2.5rem;
+}
+
+.articleCard {
+  background: color(dark-secondary);
+  border-radius: radius(lg);
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  
+  &:hover {
+    transform: translateY(-10px);
+    border-color: rgba(179, 0, 0, 0.3);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+
+    .articleImg {
+      transform: scale(1.1);
+    }
+    
+    .articleCat {
+      background: color(primary);
+      color: color(white);
+    }
+  }
+}
+
+.articleImgWrapper {
+  width: 100%;
+  height: 240px;
+  overflow: hidden;
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 50%;
+    background: linear-gradient(to top, color(dark-secondary), transparent);
+  }
+}
+
+.articleImg {
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.articleInfo {
+  padding: 2rem;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  
+  .articleCat {
+    display: inline-block;
+    width: fit-content;
+    padding: 0.35rem 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: radius(pill);
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 600;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 1.25rem;
+    transition: all 0.3s ease;
+  }
+  
+  h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    line-height: 1.4;
+    color: color(white);
+    font-weight: 600;
+  }
+  
+  .articleMeta {
+    margin-top: auto;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 0.8rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+}

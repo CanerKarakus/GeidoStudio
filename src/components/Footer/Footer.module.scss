@@ -1,0 +1,259 @@
+@import '../../styles/variables';
+@import '../../styles/mixins';
+
+.footer {
+  background-color: color(dark);
+  color: color(white);
+  padding: 6rem 0 2rem;
+  margin-top: 4rem;
+}
+
+.container {
+  max-width: map-get($breakpoints, xxl);
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.footer {
+  background-color: color(dark);
+  color: color(white);
+  padding: 6rem 0 0;
+  position: relative;
+  overflow: hidden;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.container {
+  max-width: map-get($breakpoints, xxl);
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: flex;
+  flex-direction: column;
+}
+
+// CTA SECTION
+.ctaSection {
+  padding-bottom: 6rem;
+  margin-bottom: 6rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2.5rem;
+
+  @include respond-to(md) {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+
+  .hugeTitle {
+    font-size: 3rem;
+    font-family: font(heading);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: color(white);
+
+    @include respond-to(md) {
+      font-size: 5rem;
+    }
+  }
+
+  .ctaBtn {
+    font-size: 1.125rem;
+    padding: 1rem 2rem;
+  }
+}
+
+// MAIN CONTENT
+.mainContent {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 4rem;
+  margin-bottom: 6rem;
+
+  @include respond-to(lg) {
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 3rem;
+  }
+
+  h3 {
+    font-size: 1.125rem;
+    font-family: font(heading);
+    margin-bottom: 1.5rem;
+    color: color(white);
+    font-weight: 600;
+  }
+}
+
+// BRAND COLUMN
+.brandCol {
+  .logo {
+    @include flex-center;
+    justify-content: flex-start;
+    gap: 0.5rem;
+    font-family: font(heading);
+    font-weight: 800;
+    font-size: 1.5rem;
+    color: color(white);
+    margin-bottom: 1.5rem;
+
+    .logoIcon {
+      position: relative;
+      width: 24px;
+      height: 24px;
+      
+      .greenTriangle {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 0;
+        height: 0;
+        border-left: 12px solid transparent;
+        border-right: 12px solid transparent;
+        border-bottom: 20px solid color(primary);
+        border-radius: 4px;
+      }
+      
+      .whiteTriangle {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 0;
+        height: 0;
+        border-left: 8px solid transparent;
+        border-right: 8px solid transparent;
+        border-top: 14px solid color(white);
+        transform: rotate(45deg);
+      }
+    }
+  }
+
+  .brandDesc {
+    color: rgba(255, 255, 255, 0.6);
+    line-height: 1.6;
+    margin-bottom: 2rem;
+    max-width: 300px;
+    font-size: 0.95rem;
+  }
+
+  .socials {
+    display: flex;
+    gap: 1rem;
+    
+    a {
+      @include flex-center;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: color(white);
+      transition: all 0.3s ease;
+      
+      &:hover {
+        background-color: color(primary);
+        border-color: color(primary);
+        transform: translateY(-3px);
+      }
+    }
+  }
+}
+
+// LINKS COLUMN
+.linksCol {
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+
+    li a {
+      color: rgba(255, 255, 255, 0.6);
+      text-decoration: none;
+      transition: color 0.3s ease;
+      font-size: 0.95rem;
+
+      &:hover {
+        color: color(primary);
+      }
+    }
+  }
+}
+
+// CONTACT COLUMN
+.contactCol {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  .contactLink {
+    color: color(white);
+    font-weight: 500;
+    text-decoration: none;
+    font-size: 1rem;
+    transition: color 0.3s ease;
+
+    &:hover {
+      color: color(primary);
+    }
+  }
+
+  .address {
+    color: rgba(255, 255, 255, 0.6);
+    line-height: 1.6;
+    margin-top: 0.5rem;
+    font-size: 0.95rem;
+  }
+}
+
+// STORE COLUMN
+.storeCol {
+  .storeLogos {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    
+    .storeBtn {
+      img {
+        height: 40px;
+        width: auto;
+      }
+      transition: transform 0.3s ease;
+      &:hover {
+        transform: translateY(-2px);
+      }
+    }
+  }
+}
+
+// BOTTOM SECTION
+.bottomSection {
+  @include flex-between;
+  padding: 2rem 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.4);
+  
+  @include respond-to-max(md) {
+    flex-direction: column;
+    gap: 1.5rem;
+    text-align: center;
+  }
+  
+  .legalLinks {
+    display: flex;
+    gap: 2rem;
+    
+    a {
+      color: rgba(255, 255, 255, 0.4);
+      transition: color 0.3s ease;
+
+      &:hover {
+        color: color(white);
+      }
+    }
+  }
+}

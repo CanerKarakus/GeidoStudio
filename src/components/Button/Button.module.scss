@@ -1,0 +1,72 @@
+@import '../../styles/variables';
+@import '../../styles/mixins';
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-family: font(heading);
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: radius(pill);
+  transition: transition(base);
+  text-decoration: none;
+  border: 2px solid transparent;
+
+  .text {
+    line-height: 1;
+  }
+
+  .iconWrapper {
+    @include flex-center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 1px solid currentColor;
+    transition: transform transition(base);
+  }
+
+  &:hover {
+    .iconWrapper {
+      transform: rotate(45deg);
+    }
+  }
+
+  &.primary {
+    background-color: color(primary);
+    color: color(white);
+    border-color: color(dark);
+    
+    &:hover {
+      background-color: darken(#b30000, 10%);
+      box-shadow: 2px 2px 0px color(border-dark);
+      transform: translate(-2px, -2px);
+    }
+  }
+
+  &.outline {
+    background-color: transparent;
+    color: color(dark);
+    border-color: color(dark);
+
+    &:hover {
+      background-color: color(dark);
+      color: color(white);
+    }
+  }
+
+  &.iconOnly {
+    padding: 0;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    
+    .iconWrapper {
+      border: none;
+      width: 100%;
+      height: 100%;
+    }
+  }
+}
