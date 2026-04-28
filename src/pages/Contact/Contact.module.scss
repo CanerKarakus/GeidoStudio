@@ -2,24 +2,44 @@
 @import '../../styles/mixins';
 
 .contactPage {
-  padding: 8rem 0 8rem;
+  background-color: color(white);
+  color: color(text-main);
+  padding: 10rem 0 8rem;
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+
+  // Subtle background accent
+  &::before {
+    content: '';
+    position: absolute;
+    top: -10%;
+    right: -5%;
+    width: 50vw;
+    height: 50vw;
+    background: radial-gradient(circle, rgba(179, 0, 0, 0.03) 0%, transparent 60%);
+    z-index: 0;
+    pointer-events: none;
+  }
 }
 
 .container {
   max-width: map-get($breakpoints, xxl);
   margin: 0 auto;
   padding: 0 2rem;
+  position: relative;
+  z-index: 1;
 }
 
 .contentGrid {
   display: grid;
   grid-template-columns: 1fr;
   gap: 4rem;
-  align-items: center; // Sol tarafı sağ tarafa göre ortala
+  align-items: flex-start;
   
   @include respond-to(lg) {
-    grid-template-columns: 1fr 1.2fr;
-    gap: 6rem;
+    grid-template-columns: 1fr 1.3fr;
+    gap: 8rem;
   }
 }
 
@@ -27,20 +47,28 @@
 .infoSection {
   .subtitle {
     display: inline-block;
-    padding: 0.25rem 1rem;
-    background: rgba(179, 0, 0, 0.1);
+    padding: 0.35rem 1rem;
+    background: rgba(179, 0, 0, 0.05);
     border-radius: radius(pill);
-    color: #b30000;
+    color: color(primary);
     font-weight: 700;
-    margin-bottom: 1rem;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 1.5rem;
   }
   
   .title {
-    font-size: 3.5rem;
+    font-size: 4rem;
+    font-family: font(heading);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: color(dark);
     margin-bottom: 3rem;
+    line-height: 1.1;
     
     @include respond-to-max(md) {
-      font-size: 2.5rem;
+      font-size: 3rem;
     }
   }
 }
@@ -48,39 +76,54 @@
 .contactDetails {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
-  margin-bottom: 4rem;
+  gap: 2.5rem;
+  margin-bottom: 5rem;
 }
 
 .detailItem {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 1.5rem;
   
   .iconBox {
-    width: 60px;
-    height: 60px;
-    background: color(dark);
+    width: 64px;
+    height: 64px;
+    background: color(white);
+    border: 1px solid rgba(0, 0, 0, 0.05);
     color: color(primary);
-    border-radius: radius(md);
+    border-radius: radius(round);
     @include flex-center;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.03);
+    transition: all 0.3s ease;
   }
   
+  &:hover .iconBox {
+    background: color(primary);
+    color: color(white);
+    transform: translateY(-3px);
+    box-shadow: 0 15px 30px rgba(179, 0, 0, 0.2);
+  }
+
   .label {
     display: block;
     font-size: 0.875rem;
     color: color(text-muted);
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.25rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
   }
   
   a, p {
     font-size: 1.25rem;
     font-weight: 600;
-    color: color(text-main);
+    color: color(dark);
+    text-decoration: none;
+    font-family: font(heading);
   }
   
   a {
-    transition: transition(base);
+    transition: color 0.3s ease;
     &:hover {
       color: color(primary);
     }
@@ -89,9 +132,12 @@
 
 .socialLinks {
   p {
-    font-size: 1.125rem;
+    font-size: 1rem;
     font-weight: 600;
-    margin-bottom: 1rem;
+    color: color(text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 1.5rem;
   }
   
   .socialIcons {
@@ -99,25 +145,29 @@
     gap: 1rem;
     
     a {
-      width: 48px;
-      height: 48px;
+      width: 50px;
+      height: 50px;
       border-radius: 50%;
-      border: 1px solid color(border);
+      background: color(white);
+      border: 1px solid rgba(0, 0, 0, 0.08);
       @include flex-center;
-      color: color(text-main);
-      transition: transition(base);
+      color: color(dark);
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
       
       &:hover {
-        background: color(primary);
-        border-color: color(primary);
+        background: color(dark);
+        border-color: color(dark);
         color: color(white);
         transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
       }
     }
     
     .behanceIcon {
       font-weight: 800;
       font-size: 1.25rem;
+      font-family: font(heading);
     }
   }
 }
@@ -126,42 +176,46 @@
 .formSection {
   .formWrapper {
     background: color(white);
-    padding: 3rem;
-    border-radius: radius(lg);
-    box-shadow: 0 10px 40px rgba(0,0,0,0.05);
-    border: 1px solid color(border);
+    padding: 4rem;
+    border-radius: radius(xl);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.03);
     
     @include respond-to-max(sm) {
-      padding: 2rem 1.5rem;
+      padding: 2.5rem 1.5rem;
     }
     
     h2 {
-      font-size: 2rem;
-      margin-bottom: 2rem;
+      font-size: 2.5rem;
+      font-family: font(heading);
+      color: color(dark);
+      margin-bottom: 2.5rem;
+      font-weight: 700;
     }
   }
 }
 
 .successMessage {
-  background: rgba(179, 0, 0, 0.2);
-  color: #8c0000;
-  padding: 1rem;
+  background: rgba(179, 0, 0, 0.05);
+  color: color(primary);
+  padding: 1.25rem;
   border-radius: radius(md);
   margin-bottom: 2rem;
-  font-weight: 500;
-  border: 1px solid color(primary);
+  font-weight: 600;
+  border-left: 4px solid color(primary);
+  font-size: 1rem;
 }
 
 .form {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 2rem;
 }
 
 .row {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 1.5rem;
+  gap: 2rem;
   
   @include respond-to(md) {
     grid-template-columns: 1fr 1fr;
@@ -171,35 +225,42 @@
 .formGroup {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.75rem;
   position: relative;
   
   label {
-    font-size: 0.875rem;
+    font-size: 0.9rem;
     font-weight: 600;
-    color: color(text-main);
+    color: color(dark);
+    font-family: font(heading);
   }
   
   input, textarea, .customSelect {
     width: 100%;
-    padding: 1rem;
-    border: 1px solid color(border);
+    padding: 1.25rem;
+    border: 1px solid rgba(0, 0, 0, 0.1);
     border-radius: radius(md);
-    background: color(light);
+    background: #fafafa;
     font-family: font(body);
     font-size: 1rem;
-    transition: transition(base);
-    color: color(text-main);
+    transition: all 0.3s ease;
+    color: color(dark);
     
+    &:hover {
+      background: color(white);
+      border-color: rgba(0, 0, 0, 0.2);
+    }
+
     &:focus {
       outline: none;
-      border-color: color(dark);
+      border-color: color(primary);
       background: color(white);
+      box-shadow: 0 0 0 4px rgba(179, 0, 0, 0.05);
     }
     
     &.errorInput {
       border-color: #ef4444;
-      background: rgba(239, 68, 68, 0.05);
+      background: rgba(239, 68, 68, 0.02);
     }
   }
 
@@ -211,9 +272,9 @@
     user-select: none;
     
     &.open {
-      border-color: color(dark);
+      border-color: color(primary);
       background: color(white);
-      .chevron { transform: rotate(180deg); }
+      .chevron { transform: rotate(180deg); color: color(primary); }
     }
     
     .chevron {
@@ -228,9 +289,9 @@
     left: 0;
     width: 100%;
     background: color(white);
-    border: 1px solid color(border);
+    border: 1px solid rgba(0, 0, 0, 0.08);
     border-radius: radius(md);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.08);
     z-index: 10;
     overflow: hidden;
     list-style: none;
@@ -238,38 +299,45 @@
     margin: 0;
     
     li {
-      padding: 0.75rem 1rem;
+      padding: 1rem 1.25rem;
       cursor: pointer;
-      transition: transition(fast);
+      transition: all 0.2s ease;
       font-size: 0.95rem;
-      color: color(text-main);
+      color: color(dark);
+      font-weight: 500;
       
       &:hover {
-        background: color(light);
+        background: #fafafa;
         color: color(primary);
-        font-weight: 500;
       }
       
       &.selected {
-        background: rgba(179, 0, 0, 0.1);
-        color: darken(#b30000, 40%);
-        font-weight: 600;
+        background: rgba(179, 0, 0, 0.05);
+        color: color(primary);
+        font-weight: 700;
       }
     }
   }
   
   textarea {
     resize: vertical;
+    min-height: 150px;
   }
   
   .errorText {
     color: #ef4444;
-    font-size: 0.75rem;
-    font-weight: 500;
+    font-size: 0.8rem;
+    font-weight: 600;
+    position: absolute;
+    bottom: -1.25rem;
+    left: 0;
   }
 }
 
 .submitBtn {
   margin-top: 1rem;
   width: 100%;
+  padding: 1.25rem;
+  font-size: 1.1rem;
+  letter-spacing: 0.02em;
 }
