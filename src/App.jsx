@@ -18,12 +18,8 @@ const Contact = lazy(() => import('./pages/Contact/Contact'));
 function AnimatedRoutes() {
   const location = useLocation();
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [location.pathname]);
-
   return (
-    <AnimatePresence mode="wait">
+    <AnimatePresence mode="wait" onExitComplete={() => window.scrollTo(0, 0)}>
       <Routes location={location} key={location.pathname}>
         <Route path="/" element={<PageTransition><Home /></PageTransition>} />
         <Route path="/projeler" element={<PageTransition><Projects /></PageTransition>} />
