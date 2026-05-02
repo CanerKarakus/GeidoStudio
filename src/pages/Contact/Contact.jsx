@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { m, AnimatePresence } from 'framer-motion';
-import { MapPin, Mail, Instagram, Linkedin, Github, ChevronDown } from 'lucide-react';
+import { MapPin, Mail, Phone, ChevronDown } from 'lucide-react';
 import styles from './Contact.module.scss';
 import Button from '../../components/Button/Button';
+import useCmsStore from '../../store/cmsStore';
 
 const services = [
   { value: 'web', label: 'Web Tasarım & Geliştirme' },
@@ -17,6 +18,9 @@ const Contact = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSelectOpen, setIsSelectOpen] = useState(false);
   const dropdownRef = useRef(null);
+  
+  const cms = useCmsStore(state => state.cms);
+  const addMessage = useCmsStore(state => state.addMessage);
   
   const { 
     register, 
@@ -50,12 +54,20 @@ const Contact = () => {
   }, []);
 
   const onSubmit = async (data) => {
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    console.log(data);
-    setIsSubmitted(true);
-    reset({ service: '' });
-    
-    setTimeout(() => setIsSubmitted(false), 5000);
+    try {
+      await addMessage({
+        name: data.fullName,
+        email: data.email,
+        phone: data.phone,
+        subject: selectedServiceLabel,
+        message: data.message
+      });
+      setIsSubmitted(true);
+      reset({ service: '' });
+      setTimeout(() => setIsSubmitted(false), 5000);
+    } catch (err) {
+      alert("Mesaj gönderilirken bir hata oluştu.");
+    }
   };
 
   return (
@@ -90,25 +102,21 @@ const Contact = () => {
             <div className={styles.iconBox}><Mail /></div>
             <h3>E-posta</h3>
             <p>Bize dilediğiniz zaman yazın.</p>
-            <a href="mailto:iletisim@geidostudio.com">iletisim@geidostudio.com</a>
+            <a href={`mailto:${cms?.contactEmail || 'iletisim@geidostudio.com'}`}>{cms?.contactEmail || 'iletisim@geidostudio.com'}</a>
           </div>
           
           <div className={styles.contactCard}>
             <div className={styles.iconBox}><MapPin /></div>
             <h3>Ofisimiz</h3>
             <p>Ziyaretinizden memnuniyet duyarız.</p>
-            <address>Kolektif House, Levent<br/>İstanbul, Türkiye</address>
+            <address>{cms?.contactAddress || 'Kolektif House, Levent\nİstanbul, Türkiye'}</address>
           </div>
           
           <div className={styles.contactCard}>
-            <div className={styles.iconBox}><Instagram /></div>
-            <h3>Sosyal Medya</h3>
-            <p>Çalışmalarımızı takip edin.</p>
-            <div className={styles.cardSocials}>
-              <a href="#" aria-label="Instagram">Instagram</a>
-              <a href="#" aria-label="LinkedIn">LinkedIn</a>
-              <a href="#" aria-label="Behance">Behance</a>
-            </div>
+            <div className={styles.iconBox}><Phone /></div>
+            <h3>Telefon</h3>
+            <p>Bizi hemen arayın.</p>
+            <a href={`tel:${cms?.contactPhone || '+90 (555) 123 45 67'}`}>{cms?.contactPhone || '+90 (555) 123 45 67'}</a>
           </div>
         </m.div>
 

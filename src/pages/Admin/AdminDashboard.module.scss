@@ -1,0 +1,1173 @@
+// AdminDashboard.module.scss
+@use '../../styles/mixins' as *;
+
+$bg:       #060608;
+$bg2:      #0d0d12;
+$bg3:      #13131a;
+$border:   rgba(255,255,255,0.06);
+$border2:  rgba(255,255,255,0.1);
+$text:     #ffffff;
+$muted:    #6b7280;
+$accent:   #b30000;
+$accentHl: #cc1a1a;
+
+// ─── LAYOUT ───────────────────────────────────────────────────
+.dashboard {
+  display: flex;
+  min-height: 100vh;
+  background: $bg;
+  color: $text;
+  font-family: 'Inter', sans-serif;
+}
+
+// ─── SIDEBAR ──────────────────────────────────────────────────
+.sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  background: $bg2;
+  border-right: 1px solid $border;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  z-index: 10;
+}
+
+.sidebarBrand {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 1.75rem 1.5rem;
+  border-bottom: 1px solid $border;
+}
+
+.brandIcon {
+  width: 40px;
+  height: 40px;
+  background: $accent;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1.1rem;
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(179,0,0,0.35);
+}
+
+.brandName {
+  font-size: 1rem;
+  font-weight: 700;
+  color: $text;
+  letter-spacing: -0.3px;
+}
+
+.brandSub {
+  font-size: 0.72rem;
+  color: $muted;
+  font-weight: 400;
+  margin-top: 1px;
+}
+
+.sidebarNav {
+  flex: 1;
+  padding: 1.25rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow-y: auto;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  background: transparent;
+  border: none;
+  color: $muted;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  text-align: left;
+  width: 100%;
+
+  &:hover {
+    background: rgba(255,255,255,0.04);
+    color: $text;
+  }
+
+  span { flex: 1; }
+}
+
+.navActive {
+  background: rgba(179,0,0,0.12) !important;
+  color: #f87171 !important;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 60%;
+    background: $accent;
+    border-radius: 0 2px 2px 0;
+  }
+}
+
+.navArrow {
+  color: $muted;
+  opacity: 0.5;
+}
+
+.navBadge {
+  background: $accent;
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  min-width: 18px;
+  text-align: center;
+}
+
+.sidebarFooter {
+  padding: 1rem 1.25rem;
+  border-top: 1px solid $border;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.adminInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex: 1;
+  overflow: hidden;
+}
+
+.adminAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, $accent, #7c0000);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.adminName {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: $text;
+}
+
+.adminEmail {
+  font-size: 0.68rem;
+  color: $muted;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.logoutBtn {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid $border2;
+  color: $muted;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+
+  &:hover {
+    background: rgba(179,0,0,0.15);
+    border-color: rgba(179,0,0,0.3);
+    color: #f87171;
+  }
+}
+
+// ─── MAIN WRAPPER ─────────────────────────────────────────────
+.mainWrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow-y: auto;
+}
+
+// ─── TOP BAR ──────────────────────────────────────────────────
+.topBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem 2.5rem;
+  border-bottom: 1px solid $border;
+  background: rgba($bg2, 0.8);
+  backdrop-filter: blur(12px);
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  gap: 1rem;
+}
+
+.pageTitle {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: $text;
+  margin-bottom: 0.1rem;
+}
+
+.pageGreeting {
+  font-size: 0.8rem;
+  color: $muted;
+}
+
+.topBarActions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.previewBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 1rem;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid $border2;
+  border-radius: 8px;
+  color: $muted;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s;
+
+  &:hover {
+    background: rgba(255,255,255,0.1);
+    color: $text;
+  }
+}
+
+.saveBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 1.1rem;
+  background: $accent;
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover:not(:disabled) {
+    background: $accentHl;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(179,0,0,0.35);
+  }
+
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+}
+
+// ─── SAVE BAR ─────────────────────────────────────────────────
+.saveBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 2.5rem;
+  background: rgba(179,0,0,0.08);
+  border-bottom: 1px solid rgba(179,0,0,0.2);
+  gap: 1rem;
+}
+
+.saveBarText {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: #f87171;
+}
+
+.saveBarBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.9rem;
+  background: $accent;
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover:not(:disabled) { background: $accentHl; }
+  &:disabled { opacity: 0.6; }
+}
+
+// ─── MAIN CONTENT ─────────────────────────────────────────────
+.mainContent {
+  padding: 2rem 2.5rem;
+  flex: 1;
+}
+
+// ─── STATS GRID ───────────────────────────────────────────────
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+
+  @media (max-width: 900px) { grid-template-columns: repeat(2, 1fr); }
+}
+
+.statCard {
+  background: $bg3;
+  border: 1px solid $border;
+  border-radius: 14px;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: all 0.25s;
+
+  &:hover {
+    border-color: rgba(255,255,255,0.12);
+    transform: translateY(-2px);
+  }
+}
+
+.statIcon {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background: rgba(var(--accent), 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  background: rgba(0,0,0,0.25);
+  border: 1px solid $border;
+  color: $muted;
+}
+
+.statValue {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: $text;
+  line-height: 1;
+}
+
+.statLabel {
+  font-size: 0.75rem;
+  color: $muted;
+  margin-top: 0.2rem;
+}
+
+// ─── OVERVIEW GRID ────────────────────────────────────────────
+.overviewGrid {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 1.5rem;
+
+  @media (max-width: 900px) { grid-template-columns: 1fr; }
+}
+
+.overviewCard {
+  background: $bg3;
+  border: 1px solid $border;
+  border-radius: 16px;
+  padding: 1.5rem;
+}
+
+.cardTitle {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: $text;
+  margin-bottom: 1.25rem;
+}
+
+.cardTitleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+.cardLink {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  background: none;
+  border: none;
+  color: $muted;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: color 0.2s;
+
+  &:hover { color: $text; }
+}
+
+.quickActions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.quickAction {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid $border;
+  border-radius: 10px;
+  color: $muted;
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+  width: 100%;
+
+  span { flex: 1; }
+
+  &:hover {
+    background: rgba(255,255,255,0.06);
+    color: $text;
+    border-color: $border2;
+  }
+}
+
+// ─── RECENT MESSAGES ──────────────────────────────────────────
+.recentMessages {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.recentMsg {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.8rem;
+  background: rgba(255,255,255,0.025);
+  border-radius: 10px;
+  border: 1px solid $border;
+}
+
+.recentMsgAvatar {
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #374151, #1f2937);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.8rem;
+  flex-shrink: 0;
+}
+
+.recentMsgBody { flex: 1; overflow: hidden; }
+.recentMsgName { font-size: 0.8rem; font-weight: 600; color: $text; }
+.recentMsgText {
+  font-size: 0.75rem;
+  color: $muted;
+  margin-top: 0.1rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.recentMsgDate {
+  font-size: 0.68rem;
+  color: $muted;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.emptySmall {
+  text-align: center;
+  color: $muted;
+  font-size: 0.85rem;
+  padding: 2rem 0;
+}
+
+// ─── SECTION DESC ─────────────────────────────────────────────
+.sectionDesc {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.75rem 1.1rem;
+  background: rgba(99,102,241,0.07);
+  border: 1px solid rgba(99,102,241,0.15);
+  border-radius: 10px;
+  color: #a5b4fc;
+  font-size: 0.82rem;
+  margin-bottom: 1.5rem;
+}
+
+// ─── FORM CARDS ───────────────────────────────────────────────
+.heroEditorGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.formCard {
+  background: $bg3;
+  border: 1px solid $border;
+  border-radius: 16px;
+  padding: 1.5rem;
+}
+
+.formCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid $border;
+
+  h3 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: $text;
+  }
+}
+
+.addBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.9rem;
+  background: rgba(179,0,0,0.12);
+  border: 1px solid rgba(179,0,0,0.25);
+  border-radius: 8px;
+  color: #f87171;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: rgba(179,0,0,0.2);
+    border-color: rgba(179,0,0,0.5);
+  }
+}
+
+// ─── IMAGE LIST ───────────────────────────────────────────────
+.imageList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.imageItem {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid $border;
+  border-radius: 12px;
+}
+
+.imageItemNum {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: $muted;
+  flex-shrink: 0;
+}
+
+.imagePreviewLg {
+  width: 80px;
+  height: 56px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.04);
+  background-size: cover;
+  background-position: center;
+  border: 1px solid $border;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.imgPlaceholderIcon {
+  color: $muted;
+  opacity: 0.4;
+}
+
+.imageItemRight {
+  flex: 1;
+  min-width: 0;
+}
+
+.primaryBadge {
+  display: inline-block;
+  margin-top: 0.4rem;
+  padding: 0.15rem 0.5rem;
+  background: rgba(16,185,129,0.1);
+  border: 1px solid rgba(16,185,129,0.2);
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #6ee7b7;
+}
+
+.removeBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(239,68,68,0.08);
+  border: 1px solid rgba(239,68,68,0.15);
+  color: #f87171;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+
+  &:hover {
+    background: rgba(239,68,68,0.2);
+  }
+}
+
+.emptyImageSlot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 3rem;
+  border: 2px dashed $border2;
+  border-radius: 12px;
+  color: $muted;
+  font-size: 0.82rem;
+  text-align: center;
+  line-height: 1.6;
+
+  svg { opacity: 0.3; }
+}
+
+// ─── FIELDS ───────────────────────────────────────────────────
+.field {
+  margin-bottom: 1.25rem;
+
+  &:last-child { margin-bottom: 0; }
+}
+
+.fieldLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: $muted;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+
+.input {
+  width: 100%;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid $border2;
+  border-radius: 8px;
+  padding: 0.7rem 1rem;
+  color: $text;
+  font-size: 0.875rem;
+  font-family: inherit;
+  transition: all 0.2s;
+  box-sizing: border-box;
+
+  &:focus {
+    outline: none;
+    border-color: $accent;
+    background: rgba(179,0,0,0.05);
+  }
+
+  &::placeholder { color: rgba(255,255,255,0.15); }
+}
+
+.textarea {
+  @extend .input;
+  resize: vertical;
+  line-height: 1.6;
+  min-height: 80px;
+}
+
+.charCount {
+  display: block;
+  text-align: right;
+  font-size: 0.7rem;
+  color: $muted;
+  margin-top: 0.35rem;
+}
+
+.contactFieldsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+
+  @media (max-width: 640px) { grid-template-columns: 1fr; }
+}
+
+.fullWidth {
+  grid-column: 1 / -1;
+}
+
+// ─── MESSAGES ─────────────────────────────────────────────────
+.messagesHeader {
+  margin-bottom: 1.25rem;
+}
+
+.msgCount {
+  font-size: 0.8rem;
+  color: $muted;
+  font-weight: 500;
+}
+
+.messagesList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.messageCard {
+  display: flex;
+  gap: 1rem;
+  background: $bg3;
+  border: 1px solid $border;
+  border-radius: 14px;
+  padding: 1.25rem;
+  transition: border-color 0.2s;
+
+  &:hover { border-color: $border2; }
+}
+
+.msgAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #374151, #111827);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: $text;
+  flex-shrink: 0;
+}
+
+.msgContent { flex: 1; min-width: 0; }
+
+.msgTopRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.6rem;
+}
+
+.msgName {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: $text;
+  display: block;
+}
+
+.msgEmail {
+  font-size: 0.75rem;
+  color: $accent;
+  display: block;
+  margin-top: 0.1rem;
+}
+
+.msgDate {
+  font-size: 0.72rem;
+  color: $muted;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.msgSubject {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.6);
+  margin-bottom: 0.4rem;
+}
+
+.msgText {
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.7);
+  line-height: 1.6;
+  white-space: pre-wrap;
+  margin: 0;
+}
+
+.msgPhone {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.72rem;
+  color: $muted;
+  margin-top: 0.5rem;
+}
+
+.msgDeleteBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(239,68,68,0.06);
+  border: 1px solid rgba(239,68,68,0.1);
+  color: $muted;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+  align-self: flex-start;
+
+  &:hover {
+    background: rgba(239,68,68,0.2);
+    border-color: rgba(239,68,68,0.3);
+    color: #f87171;
+  }
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 5rem 2rem;
+  color: $muted;
+  text-align: center;
+
+  svg { opacity: 0.2; }
+
+  h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: rgba(255,255,255,0.4);
+  }
+
+  p { font-size: 0.85rem; line-height: 1.6; }
+}
+
+// ─── LOADING ──────────────────────────────────────────────────
+.fullLoading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  gap: 1rem;
+  color: $muted;
+  font-size: 0.85rem;
+  background: $bg;
+}
+
+.loadingPulse {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid $border;
+  border-top-color: $accent;
+  animation: spin 0.8s linear infinite;
+}
+
+// ─── TOAST ────────────────────────────────────────────────────
+.toast {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.8rem 1.2rem;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+}
+
+.toastSuccess {
+  background: rgba(16,185,129,0.12);
+  border: 1px solid rgba(16,185,129,0.3);
+  color: #6ee7b7;
+}
+
+.toastError {
+  background: rgba(239,68,68,0.12);
+  border: 1px solid rgba(239,68,68,0.3);
+  color: #fca5a5;
+}
+
+// ─── SPINNER ──────────────────────────────────────────────────
+.spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.2);
+  border-top-color: #fff;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+// ─── HERO BANNER CARDS ────────────────────────────────────────
+.heroBannerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+
+  h3 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: $muted;
+  }
+}
+
+.heroBannerList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.heroBannerCard {
+  display: flex;
+  flex-direction: column;
+  background: $bg3;
+  border: 1px solid $border;
+  border-radius: 14px;
+  overflow: hidden;
+  transition: all 0.2s;
+  cursor: default;
+
+  &:hover {
+    border-color: $border2;
+  }
+}
+
+.heroBannerDragging {
+  opacity: 0.5;
+  border-color: $accent !important;
+  box-shadow: 0 0 20px rgba(179,0,0,0.15);
+}
+
+.heroDragHandle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  color: rgba(255,255,255,0.2);
+  cursor: grab;
+  transition: color 0.2s;
+  align-self: stretch;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 36px;
+  z-index: 2;
+
+  &:hover {
+    color: rgba(255,255,255,0.5);
+  }
+
+  &:active {
+    cursor: grabbing;
+    color: $accent;
+  }
+}
+
+.heroBannerOrder {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  span {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(255,255,255,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #fff;
+  }
+}
+
+.heroPrimaryTag {
+  background: rgba(179,0,0,0.75);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(179,0,0,0.5);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.heroBannerPreview {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  background-color: rgba(255,255,255,0.03);
+  background-size: cover;
+  background-position: center;
+  border-bottom: 1px solid $border;
+}
+
+.heroBannerEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 0.5rem;
+  color: rgba(255,255,255,0.15);
+
+  span {
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+}
+
+.heroBannerCard {
+  position: relative;
+  padding-left: 36px; // space for drag handle
+}
+
+.heroBannerFooter {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+}
+
+.heroBannerUrlWrap {
+  flex: 1;
+  min-width: 0;
+}
+
+.heroBannerUrl {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: rgba(0,0,0,0.2);
+  border: 1px solid $border;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    border-color: $border2;
+    background: rgba(0,0,0,0.35);
+
+    svg { color: rgba(255,255,255,0.5); }
+  }
+
+  svg {
+    flex-shrink: 0;
+    color: rgba(255,255,255,0.2);
+    transition: color 0.2s;
+  }
+}
+
+.urlText {
+  flex: 1;
+  font-size: 0.78rem;
+  color: $muted;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.heroBannerUrlInput {
+  width: 100%;
+  background: rgba(0,0,0,0.35);
+  border: 1px solid $accent;
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  color: $text;
+  font-size: 0.78rem;
+  font-family: inherit;
+  box-sizing: border-box;
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(179,0,0,0.2);
+  }
+
+  &::placeholder { color: rgba(255,255,255,0.15); }
+}
+
+.heroBannerDeleteBtn {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: rgba(239,68,68,0.06);
+  border: 1px solid rgba(239,68,68,0.12);
+  color: rgba(255,255,255,0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+
+  &:hover {
+    background: rgba(239,68,68,0.2);
+    border-color: rgba(239,68,68,0.35);
+    color: #f87171;
+  }
+}

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import useCmsStore from '../../store/cmsStore';
 import { m, AnimatePresence } from 'framer-motion';
 import styles from './About.module.scss';
 import { Palette, Code2, X } from 'lucide-react';
@@ -22,6 +23,7 @@ const memberDetails = {
 
 const About = () => {
   const [selectedMember, setSelectedMember] = useState(null);
+  const cms = useCmsStore(state => state.cms);
 
   const closeModal = () => setSelectedMember(null);
 
@@ -30,8 +32,22 @@ const About = () => {
       <div className={styles.container}>
         <div className={styles.header}>
           <span className={styles.subtitle}>Hakkımızda</span>
-          <h1 className={styles.title}>Gelenekten İlham Alan,<br/>Geleceğe Yön Veren Tasarımlar</h1>
+          <h1 className={styles.title}>{cms?.aboutTitle || 'Gelenekten İlham Alan, Geleceğe Yön Veren Tasarımlar'}</h1>
         </div>
+
+        <m.div 
+          className={styles.introSection}
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+        >
+          {cms?.aboutImage && (
+            <div className={styles.aboutImage} style={{ backgroundImage: `url(${cms.aboutImage})` }}></div>
+          )}
+          <div className={styles.aboutText}>
+            <p>{cms?.aboutText || 'Geido Studio, dijital dünyada markalarınızın potansiyelini en üst düzeye çıkarmak için yenilikçi, modern ve etkili çözümler sunar.'}</p>
+          </div>
+        </m.div>
 
         <div className={styles.teamSection}>
           {/* Team Member 1 */}

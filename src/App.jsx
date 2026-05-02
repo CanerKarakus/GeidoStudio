@@ -1,5 +1,5 @@
 // src/App.jsx
-import { HashRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { LazyMotion, domAnimation, AnimatePresence } from 'framer-motion';
 import { lazy, Suspense, useEffect } from 'react';
 
@@ -15,6 +15,18 @@ const Projects = lazy(() => import('./pages/Projects/Projects'));
 const About = lazy(() => import('./pages/About/About'));
 const Contact = lazy(() => import('./pages/Contact/Contact'));
 
+// Admin pages
+const AdminLayout = lazy(() => import('./components/AdminLayout/AdminLayout'));
+const AdminLogin = lazy(() => import('./pages/Admin/AdminLogin'));
+const AdminDashboard = lazy(() => import('./pages/Admin/AdminDashboard'));
+const AdminHero = lazy(() => import('./pages/Admin/AdminHero'));
+const AdminTexts = lazy(() => import('./pages/Admin/AdminTexts'));
+const AdminImages = lazy(() => import('./pages/Admin/AdminImages'));
+const AdminContact = lazy(() => import('./pages/Admin/AdminContact'));
+const AdminMessages = lazy(() => import('./pages/Admin/AdminMessages'));
+
+import useCmsStore from './store/cmsStore';
+
 function AnimatedRoutes() {
   const location = useLocation();
 
@@ -25,28 +37,53 @@ function AnimatedRoutes() {
         <Route path="/projeler" element={<PageTransition><Projects /></PageTransition>} />
         <Route path="/hakkinda" element={<PageTransition><About /></PageTransition>} />
         <Route path="/iletisim" element={<PageTransition><Contact /></PageTransition>} />
+        
+        {/* Admin Routes */}
+        <Route path="/admin/login" element={<Suspense fallback={<div>Yükleniyor...</div>}><AdminLogin /></Suspense>} />
+        <Route path="/admin" element={<Suspense fallback={<div>Yükleniyor...</div>}><AdminLayout /></Suspense>}>
+          <Route index element={<AdminDashboard />} />
+          <Route path="hero" element={<AdminHero />} />
+          <Route path="texts" element={<AdminTexts />} />
+          <Route path="images" element={<AdminImages />} />
+          <Route path="contact" element={<AdminContact />} />
+          <Route path="messages" element={<AdminMessages />} />
+        </Route>
       </Routes>
     </AnimatePresence>
   );
 }
 
 function App() {
+  const init = useCmsStore((state) => state.init);
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith('/admin');
+
+  useEffect(() => {
+    init();
+  }, [init]);
+
+  return (
+    <LazyMotion features={domAnimation}>
+      <div className="app">
+        {!isAdminRoute && <ScrollFeatures />}
+        {!isAdminRoute && <Navbar />}
+        <main className="main-content">
+          <Suspense fallback={<div className="loading-screen">Yükleniyor...</div>}>
+            <AnimatedRoutes />
+          </Suspense>
+        </main>
+        {!isAdminRoute && <Footer />}
+      </div>
+    </LazyMotion>
+  );
+}
+
+function AppWrapper() {
   return (
     <Router>
-      <LazyMotion features={domAnimation}>
-        <div className="app">
-          <ScrollFeatures />
-          <Navbar />
-          <main className="main-content">
-            <Suspense fallback={<div className="loading-screen">Yükleniyor...</div>}>
-              <AnimatedRoutes />
-            </Suspense>
-          </main>
-          <Footer />
-        </div>
-      </LazyMotion>
+      <App />
     </Router>
   );
 }
 
-export default App;
+export default AppWrapper;

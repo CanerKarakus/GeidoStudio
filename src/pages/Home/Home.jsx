@@ -1,17 +1,89 @@
-import React from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import styles from './Home.module.scss';
 import { ArrowUpRight } from 'lucide-react';
 import { m } from 'framer-motion';
 import Button from '../../components/Button/Button';
 import { projectsData } from '../../data/projectsData';
 import { Link } from 'react-router-dom';
+import useCmsStore from '../../store/cmsStore';
+import CookieBanner from '../../components/CookieBanner/CookieBanner';
+import geidoHeroFallback from '../../assets/images/geido_hero.png';
 
 const Home = () => {
+  const cms = useCmsStore((state) => state.cms);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [loadedImage, setLoadedImage] = useState(null);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const timerRef = useRef(null);
+
+  const heroImages = cms?.heroImages?.length > 0 ? cms.heroImages : [geidoHeroFallback];
+
+  // Preload an image and return a promise
+  const preloadImage = useCallback((src) => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => resolve(src);
+      img.onerror = () => resolve(src); // Show even if broken
+      img.src = src;
+    });
+  }, []);
+
+  // Preload current slide image
+  useEffect(() => {
+    const src = heroImages[currentSlide] || geidoHeroFallback;
+    setIsTransitioning(true);
+    preloadImage(src).then((loaded) => {
+      setLoadedImage(loaded);
+      // Small delay so CSS transition triggers properly
+      requestAnimationFrame(() => setIsTransitioning(false));
+    });
+  }, [currentSlide, heroImages, preloadImage]);
+
+  // Auto-advance timer — only runs after image is loaded
+  useEffect(() => {
+    if (heroImages.length <= 1 || isTransitioning) return;
+
+    timerRef.current = setTimeout(() => {
+      setCurrentSlide((prev) => (prev + 1) % heroImages.length);
+    }, 15000);
+
+    return () => clearTimeout(timerRef.current);
+  }, [heroImages, isTransitioning, currentSlide]);
+
   return (
     <div className={styles.home}>
+      <CookieBanner />
       {/* HERO SECTION */}
       <section className={styles.hero}>
-        <div className={styles.heroBackgroundImg}></div>
+        {/* Background — crossfade via opacity */}
+        <div
+          className={`${styles.heroBackgroundImg} ${!isTransitioning && loadedImage ? styles.heroImgLoaded : ''}`}
+          style={{ backgroundImage: loadedImage ? `url(${loadedImage})` : 'none' }}
+        ></div>
+
+        {/* Loading spinner overlay */}
+        {isTransitioning && heroImages.length > 1 && (
+          <div className={styles.heroLoader}>
+            <div className={styles.heroSpinner}></div>
+          </div>
+        )}
+        
+        {/* HERO CONTENT OVERLAY */}
+        <div className={styles.heroContent}>
+        </div>
+
+        {/* SLIDER DOTS — bottom of hero */}
+        {heroImages.length > 1 && (
+          <div className={styles.sliderDots}>
+            {heroImages.map((_, idx) => (
+              <button 
+                key={idx} 
+                className={`${styles.dot} ${idx === currentSlide ? styles.activeDot : ''}`}
+                onClick={() => setCurrentSlide(idx)}
+              />
+            ))}
+          </div>
+        )}
 
         <div className={styles.tickerBanner}>
           <div className={styles.tickerTrack}>

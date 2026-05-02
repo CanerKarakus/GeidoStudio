@@ -34,6 +34,34 @@
   }
 }
 
+.introSection {
+  margin-bottom: 5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  align-items: center;
+
+  .aboutImage {
+    width: 100%;
+    height: 400px;
+    background-size: cover;
+    background-position: center;
+    border-radius: radius(lg);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+  }
+
+  .aboutText {
+    max-width: 800px;
+    text-align: center;
+    
+    p {
+      font-size: 1.25rem;
+      line-height: 1.8;
+      color: color(dark-secondary);
+    }
+  }
+}
+
 .teamSection {
   display: flex;
   flex-direction: column;

@@ -28,10 +28,99 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background-image: url('../../assets/images/geido_hero.png');
   background-size: cover;
   background-position: center;
   z-index: 0;
+  opacity: 0;
+  transition: opacity 1.5s ease-in-out;
+}
+
+.heroImgLoaded {
+  opacity: 1;
+}
+
+.heroLoader {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 3;
+}
+
+.heroSpinner {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-top-color: rgba(255, 255, 255, 0.6);
+  animation: heroSpin 0.8s linear infinite;
+}
+
+@keyframes heroSpin {
+  to { transform: rotate(360deg); }
+}
+
+.heroContent {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  max-width: 800px;
+  padding: 0 2rem;
+  margin-top: -10vh; // slight offset for visual balance
+  
+  h1 {
+    font-size: 4.5rem;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.1;
+    margin-bottom: 1.5rem;
+    
+    @include respond-to-max(md) {
+      font-size: 3rem;
+    }
+  }
+
+  p {
+    font-size: 1.25rem;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 2.5rem;
+    line-height: 1.6;
+    
+    @include respond-to-max(md) {
+      font-size: 1.1rem;
+    }
+  }
+}
+
+.sliderDots {
+  position: absolute;
+  bottom: 80px; // Above ticker
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0.8rem;
+  z-index: 4;
+}
+
+.dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 0;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.6);
+  }
+}
+
+.activeDot {
+  background: #b30000;
+  width: 30px;
+  border-radius: 12px;
 }
 
 .tickerBanner {
