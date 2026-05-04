@@ -145,7 +145,6 @@
   border-radius: 8px;
   width: 36px;
   height: 36px;
-  @include flex-center;
   cursor: pointer;
   transition: all 0.2s ease;
 
@@ -155,6 +154,8 @@
 
   @include respond-to-max(lg) {
     display: flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 

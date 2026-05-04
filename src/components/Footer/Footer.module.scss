@@ -4,19 +4,6 @@
 .footer {
   background-color: color(dark);
   color: color(white);
-  padding: 6rem 0 2rem;
-  margin-top: 4rem;
-}
-
-.container {
-  max-width: map-get($breakpoints, xxl);
-  margin: 0 auto;
-  padding: 0 2rem;
-}
-
-.footer {
-  background-color: color(dark);
-  color: color(white);
   padding: 6rem 0 0;
   position: relative;
   overflow: hidden;
