@@ -1,0 +1,99 @@
+.splashContainer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+
+  // Rich, deep red-black gradient
+  background:
+    radial-gradient(ellipse at 65% 40%, rgba(180, 0, 0, 0.75) 0%, rgba(80, 0, 0, 0.6) 35%, transparent 65%),
+    radial-gradient(ellipse at 20% 70%, rgba(100, 0, 0, 0.5) 0%, transparent 50%),
+    linear-gradient(160deg, #0d0000 0%, #1a0000 30%, #0a0000 60%, #000000 100%);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999999;
+  pointer-events: all;
+
+  // Liquid glass overlay effect (same principle as header)
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.015);
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+    pointer-events: none;
+  }
+
+  // Subtle top-edge light refraction (liquid glass rim)
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 80, 80, 0.3) 30%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 80, 80, 0.3) 70%, transparent 100%);
+    pointer-events: none;
+  }
+}
+
+// Liquid glass "card" behind the video
+.splashGlass {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 40px;
+  padding: 20px;
+
+  // Glass surface
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+
+  // Glass border — light refraction at the edges
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 0 0 1px rgba(200, 0, 0, 0.15),
+    0 30px 80px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.4);
+
+  // Inner glow — warm red tint
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: 41px;
+    background: linear-gradient(
+      135deg,
+      rgba(220, 30, 30, 0.12) 0%,
+      transparent 40%,
+      transparent 60%,
+      rgba(180, 0, 0, 0.08) 100%
+    );
+    pointer-events: none;
+  }
+}
+
+.splashVideo {
+  width: 740px;
+  height: 740px;
+  object-fit: contain;
+  outline: none;
+  border: none;
+  display: block;
+  mix-blend-mode: screen;
+  border-radius: 20px;
+}
+
+@media (max-width: 768px) {
+  .splashVideo {
+    width: 320px;
+    height: 320px;
+  }
+}

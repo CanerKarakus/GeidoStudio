@@ -1,0 +1,30 @@
+.loadingContainer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.82);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999999;
+  pointer-events: all;
+}
+
+.loadingVideo {
+  width: 740px;
+  height: 740px;
+  object-fit: contain;
+  outline: none;
+  border: none;
+  display: block;
+  mix-blend-mode: screen;
+}
+
+@media (max-width: 768px) {
+  .loadingVideo {
+    width: 320px;
+    height: 320px;
+  }
+}

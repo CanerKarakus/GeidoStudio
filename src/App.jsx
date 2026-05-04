@@ -1,13 +1,15 @@
 // src/App.jsx
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { LazyMotion, domAnimation, AnimatePresence } from 'framer-motion';
-import { lazy, Suspense, useEffect } from 'react';
+import { lazy, Suspense, useEffect, useState, useRef } from 'react';
 
 // Components
 import Navbar from './components/Navbar/Navbar';
 import Footer from './components/Footer/Footer';
 import PageTransition from './components/PageTransition/PageTransition';
 import ScrollFeatures from './components/ScrollFeatures/ScrollFeatures';
+import LoadingScreen from './components/LoadingScreen/LoadingScreen';
+import SplashScreen from './components/SplashScreen/SplashScreen';
 
 // Lazy loaded pages
 const Home = lazy(() => import('./pages/Home/Home'));
@@ -27,6 +29,9 @@ const AdminMessages = lazy(() => import('./pages/Admin/AdminMessages'));
 
 import useCmsStore from './store/cmsStore';
 
+// Module-level flag — survives re-renders, resets on full page refresh
+let splashHasShown = false;
+
 function AnimatedRoutes() {
   const location = useLocation();
 
@@ -39,8 +44,8 @@ function AnimatedRoutes() {
         <Route path="/iletisim" element={<PageTransition><Contact /></PageTransition>} />
         
         {/* Admin Routes */}
-        <Route path="/admin/login" element={<Suspense fallback={<div>Yükleniyor...</div>}><AdminLogin /></Suspense>} />
-        <Route path="/admin" element={<Suspense fallback={<div>Yükleniyor...</div>}><AdminLayout /></Suspense>}>
+        <Route path="/admin/login" element={<Suspense fallback={<LoadingScreen />}><AdminLogin /></Suspense>} />
+        <Route path="/admin" element={<Suspense fallback={<LoadingScreen />}><AdminLayout /></Suspense>}>
           <Route index element={<AdminDashboard />} />
           <Route path="hero" element={<AdminHero />} />
           <Route path="texts" element={<AdminTexts />} />
@@ -55,12 +60,33 @@ function AnimatedRoutes() {
 
 function App() {
   const init = useCmsStore((state) => state.init);
+  const [isNavigating, setIsNavigating] = useState(false);
+  const [showSplash, setShowSplash] = useState(!splashHasShown);
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
+  const isHomePage = location.pathname === '/';
 
   useEffect(() => {
     init();
   }, [init]);
+
+  // Navigation loading for non-home pages
+  useEffect(() => {
+    // Skip navigation loader during splash
+    if (showSplash) return;
+
+    setIsNavigating(true);
+    const timer = setTimeout(() => setIsNavigating(false), 800);
+    return () => clearTimeout(timer);
+  }, [location.pathname]);
+
+  const handleSplashComplete = () => {
+    splashHasShown = true;
+    setShowSplash(false);
+  };
+
+  const shouldShowSplash = isHomePage && showSplash && !isAdminRoute;
+  const isLoading = !shouldShowSplash && isNavigating;
 
   return (
     <LazyMotion features={domAnimation}>
@@ -68,9 +94,20 @@ function App() {
         {!isAdminRoute && <ScrollFeatures />}
         {!isAdminRoute && <Navbar />}
         <main className="main-content">
-          <Suspense fallback={<div className="loading-screen">Yükleniyor...</div>}>
+          <Suspense fallback={<LoadingScreen />}>
             <AnimatedRoutes />
           </Suspense>
+
+          <AnimatePresence>
+            {/* Home page first load: full splash with gradient */}
+            {shouldShowSplash && (
+              <SplashScreen key="splash" onComplete={handleSplashComplete} />
+            )}
+            {/* Other pages: quick dark overlay */}
+            {isLoading && !shouldShowSplash && (
+              <LoadingScreen key="loading-overlay" />
+            )}
+          </AnimatePresence>
         </main>
         {!isAdminRoute && <Footer />}
       </div>
