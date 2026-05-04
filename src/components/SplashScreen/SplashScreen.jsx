@@ -11,19 +11,17 @@ const SplashScreen = ({ onComplete }) => {
       initial={{ opacity: 1 }}
       exit={{ opacity: 0, transition: { duration: 0.8, ease: [0.4, 0, 0.2, 1] } }}
     >
-      <div className={styles.splashGlass}>
-        <video
-          className={styles.splashVideo}
-          autoPlay
-          muted
-          playsInline
-          onEnded={onComplete}
-        >
-          <source src={loadingVideoWebm} type="video/webm" />
-          <source src={loadingVideoMov} type="video/quicktime" />
-          Your browser does not support the video tag.
-        </video>
-      </div>
+      <video
+        className={styles.splashVideo}
+        autoPlay
+        muted
+        playsInline
+        onEnded={onComplete}
+      >
+        <source src={loadingVideoWebm} type="video/webm" />
+        <source src={loadingVideoMov} type="video/quicktime" />
+        Your browser does not support the video tag.
+      </video>
     </m.div>
   );
 };

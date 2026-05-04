@@ -5,17 +5,48 @@
   z-index: 9999;
   width: 360px;
   max-width: calc(100vw - 2rem);
-  background: #0f0f14;
+
+  // Liquid glass background
+  background: rgba(12, 8, 8, 0.55);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+
+  // Glass border — light refraction
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.18);
+  border-left: 1px solid rgba(255, 255, 255, 0.12);
+
+  border-radius: 22px;
   padding: 1.25rem;
+
+  // Layered shadow + subtle red glow
   box-shadow:
-    0 0 0 1px rgba(255,255,255,0.04),
-    0 20px 60px rgba(0, 0, 0, 0.6),
-    0 8px 24px rgba(0, 0, 0, 0.4);
+    0 0 0 1px rgba(179, 0, 0, 0.08),
+    0 8px 32px rgba(0, 0, 0, 0.5),
+    0 32px 80px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+
   font-family: 'Inter', sans-serif;
   color: #fff;
   overflow: hidden;
+
+  // Inner top-left light reflection (liquid glass shine)
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.04) 0%,
+      transparent 100%
+    );
+    border-radius: 22px 22px 0 0;
+    pointer-events: none;
+  }
 }
 
 // Header
