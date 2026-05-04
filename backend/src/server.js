@@ -44,12 +44,20 @@ const ALLOWED_ORIGINS = [
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow requests with no origin (mobile apps, curl, etc.) — only in dev
-    if (!origin && process.env.NODE_ENV !== 'production') return callback(null, true);
+    // Allow requests with no origin (mobile apps, curl, etc.)
+    if (!origin) return callback(null, true);
+    
+    // Allow local dev origins
     if (ALLOWED_ORIGINS.includes(origin)) return callback(null, true);
+    
+    // Allow ngrok subdomains for testing
+    if (origin.endsWith('.ngrok-free.dev') || origin.endsWith('.ngrok.io')) {
+      return callback(null, true);
+    }
+    
     return callback(new Error(`CORS: Origin not allowed: ${origin}`));
   },
-  credentials: true,          // Required for cookies
+  credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type'],
 }));

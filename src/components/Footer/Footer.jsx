@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Twitter, Facebook, Dribbble, Instagram, ArrowUpRight } from 'lucide-react';
+import { Instagram, Linkedin, Github, X, ArrowUpRight } from 'lucide-react';
 import Button from '../Button/Button';
 import styles from './Footer.module.scss';
 
@@ -31,10 +31,15 @@ const Footer = () => {
               Dijital dünyada iz bırakan, yaratıcı ve yenilikçi çözümler üretiyoruz. Markanızı geleceğe taşıyoruz.
             </p>
             <div className={styles.socials}>
-              <a href="#" aria-label="Instagram"><Instagram size={20} /></a>
-              <a href="#" aria-label="Twitter"><Twitter size={20} /></a>
-              <a href="#" aria-label="Dribbble"><Dribbble size={20} /></a>
-              <a href="#" aria-label="Facebook"><Facebook size={20} /></a>
+              <a href="https://www.instagram.com/geido.studio/" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><Instagram size={20} /></a>
+              <a href="https://x.com" target="_blank" rel="noopener noreferrer" aria-label="X"><X size={18} /></a>
+              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><Linkedin size={20} /></a>
+              <a href="https://www.behance.net/YasarhanPekergin" target="_blank" rel="noopener noreferrer" aria-label="Behance">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M9 12h2a2 2 0 0 1 0 4h-2v-4z"/><path d="M9 6h2a2 2 0 0 1 0 4h-2V6z"/><path d="M12 20H5V4h7a4 4 0 0 1 0 8 4 4 0 0 1 0 8z"/><path d="M18 12h4"/><path d="M21 15c0 1.1-.9 2-2 2s-2-.9-2-2v-1c0-1.1.9-2 2-2s2 .9 2 2v1z"/>
+                </svg>
+              </a>
+              <a href="https://github.com/CanerKarakus" target="_blank" rel="noopener noreferrer" aria-label="GitHub"><Github size={20} /></a>
             </div>
           </div>
 
@@ -55,25 +60,15 @@ const Footer = () => {
             <p className={styles.address}>Levent, Beşiktaş<br/>İstanbul, Türkiye</p>
           </div>
 
-          <div className={styles.storeCol}>
-             <h3>Uygulamalarımız</h3>
-             <div className={styles.storeLogos}>
-                <a href="#" className={styles.storeBtn} aria-label="Download on the App Store">
-                  <img src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg" alt="App Store" />
-                </a>
-                <a href="#" className={styles.storeBtn} aria-label="Get it on Google Play">
-                  <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Google Play" />
-                </a>
-             </div>
-          </div>
+
         </div>
 
         {/* Bottom Section */}
         <div className={styles.bottomSection}>
           <p>© {new Date().getFullYear()} Geido Studio. Tüm hakları saklıdır.</p>
           <div className={styles.legalLinks}>
-            <Link to="/">Gizlilik Politikası</Link>
-            <Link to="/">Kullanım Koşulları</Link>
+            <Link to="/gizlilik-politikasi">Gizlilik Politikası</Link>
+            <Link to="/kullanim-kosullari">Kullanım Koşulları</Link>
           </div>
         </div>
 

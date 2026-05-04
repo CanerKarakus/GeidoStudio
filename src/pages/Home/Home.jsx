@@ -39,14 +39,7 @@ const Home = () => {
     return () => clearTimeout(timerRef.current);
   }, [heroImages, currentSlide]);
 
-  const defaultArticles = [
-    { slug: '2024-ui-ux-tasarim-trendleri', title: '2024 UI/UX Tasarım Trendleri', author: 'Geido', date: '12 Mayıs 2024', image: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?auto=format&fit=crop&q=80&w=600' },
-    { slug: 'sosyal-medyada-etkilesimi-artirmanin-5-yolu', title: 'Sosyal Medyada Etkileşimi Artırmanın 5 Yolu', author: 'Geido', date: '05 Mayıs 2024', image: 'https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?auto=format&fit=crop&q=80&w=600' },
-    { slug: 'yeni-baslayanlar-icin-reactjs-rehberi', title: 'Yeni Başlayanlar İçin React.js Rehberi', author: 'Geido', date: '28 Nisan 2024', image: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?auto=format&fit=crop&q=80&w=600' },
-    { slug: 'marka-kimligi-nasil-olusturulur', title: 'Marka Kimliği Nasıl Oluşturulur?', author: 'Geido', date: '20 Nisan 2024', image: 'https://images.unsplash.com/photo-1572044162444-ad60f128bdea?auto=format&fit=crop&q=80&w=600' },
-  ];
-
-  const articles = cms?.blogs?.length > 0 ? cms.blogs.slice(0, 4) : defaultArticles;
+  const articles = cms?.blogs || [];
 
   return (
     <div className={styles.home}>
@@ -169,26 +162,37 @@ const Home = () => {
       {/* ARTICLES SECTION */}
       <section className={styles.articles}>
         <div className={styles.container}>
-          <div className={styles.sectionHeaderCenter}>
-            <span className={styles.subtitle}>Makale & Kaynaklar</span>
-            <h2 className={styles.title}>Blog Yazılarımıza<br/>Göz Atın</h2>
+          <div className={styles.sectionHeader}>
+            <div>
+              <span className={styles.subtitle}>Blog</span>
+              <h2 className={styles.title}>En Son Haberler &<br/>İçgörüler</h2>
+            </div>
+            <Button to="/blog" variant="outline">Tümünü Gör</Button>
           </div>
 
           <div className={styles.articleGrid}>
-            {articles.map((a, i) => (
-              <Link to={`/blog/${a.slug}`} key={i} className={styles.articleCard} style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
-                <div className={styles.articleImgWrapper}>
-                  <div className={styles.articleImg} style={{ backgroundImage: `url(${a.image || a.img})` }}></div>
-                </div>
-                <div className={styles.articleInfo}>
-                  <span className={styles.articleCat}>{a.author || 'Geido Studio'}</span>
-                  <h3>{a.title}</h3>
-                  <div className={styles.articleMeta}>
-                    <span>🕒 {a.date}</span>
+            {articles.length > 0 ? (
+              articles.slice(0, 3).map((a, i) => (
+                <Link to={`/blog/${a.slug}`} key={i} className={styles.articleCard}>
+                  <div className={styles.articleImgWrapper}>
+                    <div className={styles.articleImg} style={{ backgroundImage: `url(${a.image})` }}></div>
                   </div>
-                </div>
-              </Link>
-            ))}
+                  <div className={styles.articleInfo}>
+                    <div className={styles.articleMeta}>
+                      <span>{a.author || 'Geido Studio'}</span>
+                      <span className={styles.dot}>•</span>
+                      <span>{a.date}</span>
+                    </div>
+                    <h3>{a.title}</h3>
+                    <p className={styles.articleExcerpt}>
+                      {a.content?.replace(/<[^>]+>/g, '').substring(0, 90)}...
+                    </p>
+                  </div>
+                </Link>
+              ))
+            ) : (
+              <p className={styles.emptyText}>Henüz blog yazısı eklenmemiş.</p>
+            )}
           </div>
         </div>
       </section>
