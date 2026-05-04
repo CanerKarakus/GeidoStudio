@@ -37,6 +37,10 @@
   text-align: center;
   position: relative;
   z-index: 1;
+  
+  @include respond-to-max(md) {
+    padding: 8rem 0 2rem;
+  }
 
   .subtitle {
     display: inline-block;
@@ -49,6 +53,12 @@
     text-transform: uppercase;
     letter-spacing: 0.05em;
     margin-bottom: 2rem;
+    
+    @include respond-to-max(md) {
+      margin-bottom: 1.5rem;
+      padding: 0.3rem 1rem;
+      font-size: 0.75rem;
+    }
   }
   
   .title {
@@ -61,7 +71,8 @@
     line-height: 1.1;
     
     @include respond-to-max(md) {
-      font-size: 3rem;
+      font-size: 2.4rem;
+      margin-bottom: 1rem;
     }
   }
 
@@ -72,6 +83,11 @@
     margin: 0 auto;
     line-height: 1.6;
     font-weight: 500;
+    
+    @include respond-to-max(md) {
+      font-size: 1rem;
+      padding: 0 1rem;
+    }
   }
 }
 
@@ -85,6 +101,12 @@
   @include respond-to(md) {
     grid-template-columns: repeat(3, 1fr);
   }
+
+  @include respond-to-max(md) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-bottom: 3rem;
+  }
 }
 
 .contactCard {
@@ -95,6 +117,12 @@
   border: 1px solid rgba(0, 0, 0, 0.05);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
   transition: all 0.4s ease;
+
+  &:nth-child(2) {
+    @include respond-to-max(md) {
+      display: none;
+    }
+  }
 
   &:hover {
     transform: translateY(-10px);
@@ -108,6 +136,12 @@
     }
   }
 
+  @include respond-to-max(md) {
+    padding: 1.5rem 1rem;
+    border-radius: 20px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.03);
+  }
+
   .iconBox {
     width: 64px;
     height: 64px;
@@ -117,6 +151,13 @@
     border-radius: radius(round);
     @include flex-center;
     transition: all 0.4s ease;
+    
+    @include respond-to-max(md) {
+      width: 48px;
+      height: 48px;
+      margin: 0 auto 1rem;
+      svg { width: 20px; height: 20px; }
+    }
   }
 
   h3 {
@@ -125,6 +166,10 @@
     font-weight: 700;
     color: color(dark);
     margin-bottom: 0.5rem;
+    
+    @include respond-to-max(md) {
+      font-size: 1.1rem;
+    }
   }
 
   p {
@@ -132,6 +177,10 @@
     font-size: 0.95rem;
     margin-bottom: 1.5rem;
     line-height: 1.5;
+    
+    @include respond-to-max(md) {
+      display: none; // Hide the description paragraph on mobile to save space
+    }
   }
 
   a, address {
@@ -140,6 +189,12 @@
     text-decoration: none;
     font-style: normal;
     transition: color 0.3s ease;
+    word-break: break-word;
+    font-size: 1rem;
+
+    @include respond-to-max(md) {
+      font-size: 0.85rem;
+    }
 
     &:hover {
       color: color(primary);
@@ -173,7 +228,9 @@
   margin: 0 auto;
   
   @include respond-to-max(md) {
-    padding: 3rem 1.5rem;
+    padding: 2.5rem 1.5rem;
+    border-radius: 24px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
   }
 }
 
@@ -181,17 +238,30 @@
   text-align: center;
   margin-bottom: 4rem;
 
+  @include respond-to-max(md) {
+    margin-bottom: 2rem;
+  }
+
   h2 {
     font-size: 2.5rem;
     font-family: font(heading);
     color: color(dark);
     margin-bottom: 0.5rem;
     font-weight: 700;
+    
+    @include respond-to-max(md) {
+      font-size: 2rem;
+    }
   }
 
   p {
     color: color(text-muted);
     font-size: 1.1rem;
+    
+    @include respond-to-max(md) {
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
   }
 }
 
@@ -221,6 +291,10 @@
   @include respond-to(md) {
     grid-template-columns: 1fr 1fr;
   }
+
+  @include respond-to-max(md) {
+    gap: 1.5rem;
+  }
 }
 
 .formGroup {
@@ -236,6 +310,10 @@
     font-family: font(heading);
     text-transform: uppercase;
     letter-spacing: 0.05em;
+    
+    @include respond-to-max(md) {
+      font-size: 0.8rem;
+    }
   }
   
   input, textarea, .customSelect {
@@ -249,6 +327,11 @@
     transition: all 0.3s ease;
     color: color(dark);
     border-radius: 0;
+    
+    @include respond-to-max(md) {
+      padding: 0.75rem 0;
+      font-size: 1rem;
+    }
     
     &::placeholder {
       color: rgba(0, 0, 0, 0.2);

@@ -100,6 +100,11 @@
     background-position: center;
     border: 2px solid color(dark);
     box-shadow: 10px 10px 0px color(primary);
+
+    @include respond-to-max(md) {
+      height: auto;
+      aspect-ratio: 1 / 1;
+    }
     
     &.yasarhan {
       background-color: #f1c40f; // Placeholder color
@@ -139,6 +144,13 @@
     border-radius: radius(pill);
     margin-bottom: 1.5rem;
     font-weight: 500;
+    white-space: normal;
+    text-align: center;
+    
+    @include respond-to-max(md) {
+      font-size: 0.9rem;
+      padding: 0.25rem 0.75rem;
+    }
   }
   
   p {
@@ -155,7 +167,7 @@
   gap: 2rem;
   
   @include respond-to-max(sm) {
-    grid-template-columns: 1fr;
+    gap: 1rem; // Less gap for mobile to fit better
   }
 }
 
@@ -166,6 +178,11 @@
     border-bottom: 2px solid color(primary);
     padding-bottom: 0.5rem;
     display: inline-block;
+    
+    @include respond-to-max(sm) {
+      font-size: 1rem;
+      margin-bottom: 0.75rem;
+    }
   }
   
   ul {
@@ -173,17 +190,30 @@
       margin-bottom: 0.5rem;
       color: color(text-muted);
       position: relative;
-      padding-left: 1.5rem;
+      padding-left: 1.25rem;
+      font-size: 1rem;
+      
+      @include respond-to-max(sm) {
+        font-size: 0.85rem;
+        padding-left: 1rem;
+        margin-bottom: 0.4rem;
+      }
       
       &::before {
         content: '';
         position: absolute;
         left: 0;
         top: 8px;
-        width: 8px;
-        height: 8px;
+        width: 6px;
+        height: 6px;
         background: color(primary);
         border-radius: 50%;
+        
+        @include respond-to-max(sm) {
+          top: 6px;
+          width: 5px;
+          height: 5px;
+        }
       }
     }
   }
@@ -196,9 +226,9 @@
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(10, 10, 10, 0.8);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: rgba(5, 5, 5, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   z-index: 1000;
   @include flex-center;
   padding: 2rem;
@@ -206,112 +236,120 @@
 
 .modalContent {
   background: color(white);
-  border-radius: radius(lg);
-  padding: 3rem;
-  max-width: 600px;
+  border-radius: 24px;
+  padding: 3.5rem 3rem 3rem;
+  max-width: 550px;
   width: 100%;
   position: relative;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(0, 0, 0, 0.04);
   color: color(dark);
 
   @include respond-to-max(sm) {
-    padding: 2rem;
+    padding: 3rem 1.5rem 2rem;
   }
 }
 
 .closeBtn {
   position: absolute;
-  top: 1.5rem;
-  right: 1.5rem;
-  background: transparent;
+  top: 1rem;
+  right: 1rem;
+  background: rgba(0, 0, 0, 0.04);
   border: none;
   color: color(text-muted);
   cursor: pointer;
   transition: all 0.3s ease;
   @include flex-center;
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   
   &:hover {
-    color: color(primary);
-    background: rgba(179, 0, 0, 0.1);
+    color: color(white);
+    background: color(primary);
     transform: rotate(90deg);
   }
 }
 
 .modalHeader {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 1.5rem;
-  margin-bottom: 2.5rem;
+  text-align: center;
+  margin-bottom: 2rem;
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
   padding-bottom: 2rem;
 
-  @include respond-to-max(sm) {
-    flex-direction: column;
-    text-align: center;
-  }
-
   .modalIcon {
     @include flex-center;
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    background: color(dark);
-    color: color(white);
-    flex-shrink: 0;
-    box-shadow: 4px 4px 0px color(primary);
+    width: 72px;
+    height: 72px;
+    border-radius: 20px;
+    background: rgba(179, 0, 0, 0.06);
+    color: color(primary);
+    margin-bottom: 1.5rem;
+    box-shadow: inset 0 0 0 1px rgba(179, 0, 0, 0.1);
   }
 
   h2 {
     font-size: 2rem;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
     font-family: font(heading);
-    font-weight: 700;
+    font-weight: 800;
+    color: color(dark);
+    letter-spacing: -0.02em;
+    
+    @include respond-to-max(sm) {
+      font-size: 1.75rem;
+    }
   }
 
   .modalRole {
-    color: color(primary);
+    color: color(white);
     font-weight: 600;
-    font-size: 1rem;
+    font-size: 0.95rem;
     display: inline-block;
-    padding: 0.25rem 1rem;
-    background: rgba(179, 0, 0, 0.1);
+    padding: 0.4rem 1.25rem;
+    background: color(primary);
     border-radius: radius(pill);
+    box-shadow: 0 4px 12px rgba(179, 0, 0, 0.2);
   }
 }
 
 .modalBody {
+  text-align: center;
+
   p {
-    font-size: 1.1rem;
-    line-height: 1.7;
-    color: color(text-main);
+    font-size: 1.05rem;
+    line-height: 1.8;
+    color: color(text-muted);
     margin-bottom: 2.5rem;
   }
 
   .focusArea {
     h4 {
-      font-size: 1.25rem;
-      margin-bottom: 1.5rem;
+      font-size: 1.15rem;
+      margin-bottom: 1.25rem;
       font-family: font(heading);
       color: color(dark);
+      font-weight: 700;
     }
 
     .tags {
       display: flex;
       flex-wrap: wrap;
-      gap: 1rem;
+      gap: 0.75rem;
+      justify-content: center;
 
       .tag {
-        background: color(light);
+        background: color(white);
         color: color(dark);
-        padding: 0.5rem 1.25rem;
+        padding: 0.5rem 1rem;
         border-radius: radius(pill);
-        font-size: 0.9rem;
-        font-weight: 500;
-        border: 1px solid rgba(0, 0, 0, 0.05);
+        font-size: 0.85rem;
+        font-weight: 600;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
       }
     }
   }

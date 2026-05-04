@@ -46,6 +46,7 @@ const Navbar = () => {
     { name: 'Ana Sayfa', path: '/' },
     { name: 'Projeler', path: '/projeler' },
     { name: 'Hakkında', path: '/hakkinda' },
+    { name: 'Blog', path: '/blog' },
     { name: 'İletişim', path: '/iletisim' }
   ];
 

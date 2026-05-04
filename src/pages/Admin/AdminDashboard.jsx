@@ -8,11 +8,12 @@ import {
 } from 'lucide-react';
 
 const QUICK_LINKS = [
-  { path: '/admin/hero',     label: 'Hero / Vitrin',      icon: Layers },
-  { path: '/admin/texts',    label: 'İçerik & Metinler',  icon: Edit3 },
-  { path: '/admin/images',   label: 'Görseller',          icon: ImageIcon },
-  { path: '/admin/contact',  label: 'İletişim Bilgileri', icon: Globe },
-  { path: '/admin/messages', label: 'Gelen Mesajlar',     icon: MessageSquare },
+  { path: '/admin/hero',       label: 'Hero / Vitrin',      icon: Layers },
+  { path: '/admin/texts',      label: 'İçerik & Metinler',  icon: Edit3 },
+  { path: '/admin/images',     label: 'Görseller',          icon: ImageIcon },
+  { path: '/admin/contact',    label: 'İletişim Bilgileri', icon: Globe },
+  { path: '/admin/messages',   label: 'Gelen Mesajlar',     icon: MessageSquare },
+  { path: '/admin/newsletter', label: 'Bülten Aboneleri',   icon: Globe },
 ];
 
 const StatCard = ({ icon: Icon, label, value, color, delay = 0 }) => (

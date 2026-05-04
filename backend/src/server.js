@@ -62,9 +62,10 @@ app.use(cookieParser());
 app.set('trust proxy', 1);
 
 // ── Routes ───────────────────────────────────────────────────────────────────
-app.use('/api/auth',     require('./routes/auth'));
-app.use('/api/cms',      require('./routes/cms'));
-app.use('/api/messages', require('./routes/messages'));
+app.use('/api/auth',       require('./routes/auth'));
+app.use('/api/cms',        require('./routes/cms'));
+app.use('/api/messages',   require('./routes/messages'));
+app.use('/api/newsletter', require('./routes/newsletter'));
 
 // ── Health Check ─────────────────────────────────────────────────────────────
 app.get('/api/health', (req, res) => {

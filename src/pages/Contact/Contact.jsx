@@ -31,7 +31,8 @@ const Contact = () => {
     reset
   } = useForm({
     defaultValues: {
-      service: ''
+      service: '',
+      phone: '+90 '
     }
   });
 
@@ -68,6 +69,60 @@ const Contact = () => {
     } catch (err) {
       alert("Mesaj gönderilirken bir hata oluştu.");
     }
+  };
+
+  const handlePhoneChange = (e) => {
+    const input = e.target;
+    let value = input.value;
+    
+    // Ensure prefix +90 is always there and has a space
+    if (!value.startsWith('+90')) {
+      value = '+90 ' + value.replace(/^\+90\s*/, '');
+    } else if (value.length === 3) {
+      value = '+90 ';
+    }
+
+    // Extract digits only after +90
+    let digits = value.slice(3).replace(/\D/g, '');
+    
+    // Detect if backspace was pressed on a formatting character
+    const isDeleting = e.nativeEvent.inputType === 'deleteContentBackward';
+    if (isDeleting) {
+      const oldDigits = input.getAttribute('data-digits') || '';
+      if (digits === oldDigits && digits.length > 0) {
+        digits = digits.slice(0, -1);
+      }
+    }
+
+    // Limit to 10 digits
+    let processed = digits.slice(0, 10);
+    
+    // If user starts typing, enforce '5' as first digit, 
+    // but only if there is actually a digit.
+    if (processed.length > 0 && processed[0] !== '5') {
+      processed = '5' + processed.slice(1);
+    }
+    
+    input.setAttribute('data-digits', processed);
+
+    let formatted = '+90 ';
+    if (processed.length > 0) {
+      formatted += '(' + processed.slice(0, 3);
+      if (processed.length >= 3) {
+        formatted += ') ';
+        if (processed.length > 3) {
+          formatted += processed.slice(3, 6);
+          if (processed.length >= 6) {
+            formatted += ' ';
+            if (processed.length > 6) {
+              formatted += processed.slice(6, 10);
+            }
+          }
+        }
+      }
+    }
+
+    setValue('phone', formatted);
   };
 
   return (
@@ -177,8 +232,9 @@ const Contact = () => {
                 <input 
                   id="phone"
                   type="tel"
-                  placeholder="+90 (555) 000 00 00"
-                  {...register("phone")} 
+                  placeholder="+90 (5XX) XXX XXXX"
+                  {...register("phone")}
+                  onChange={handlePhoneChange}
                 />
               </div>
 

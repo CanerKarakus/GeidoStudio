@@ -39,12 +39,14 @@ const Home = () => {
     return () => clearTimeout(timerRef.current);
   }, [heroImages, currentSlide]);
 
-  const articles = [
-    { title: '2024 UI/UX Tasarım Trendleri', cat: 'UI/UX Tasarım', date: '12 Mayıs 2024', img: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?auto=format&fit=crop&q=80&w=600' },
-    { title: 'Sosyal Medyada Etkileşimi Artırmanın 5 Yolu', cat: 'Sosyal Medya', date: '05 Mayıs 2024', img: 'https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?auto=format&fit=crop&q=80&w=600' },
-    { title: 'Yeni Başlayanlar İçin React.js Rehberi', cat: 'Web Geliştirme', date: '28 Nisan 2024', img: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?auto=format&fit=crop&q=80&w=600' },
-    { title: 'Marka Kimliği Nasıl Oluşturulur?', cat: 'Branding', date: '20 Nisan 2024', img: 'https://images.unsplash.com/photo-1572044162444-ad60f128bdea?auto=format&fit=crop&q=80&w=600' },
+  const defaultArticles = [
+    { slug: '2024-ui-ux-tasarim-trendleri', title: '2024 UI/UX Tasarım Trendleri', author: 'Geido', date: '12 Mayıs 2024', image: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?auto=format&fit=crop&q=80&w=600' },
+    { slug: 'sosyal-medyada-etkilesimi-artirmanin-5-yolu', title: 'Sosyal Medyada Etkileşimi Artırmanın 5 Yolu', author: 'Geido', date: '05 Mayıs 2024', image: 'https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?auto=format&fit=crop&q=80&w=600' },
+    { slug: 'yeni-baslayanlar-icin-reactjs-rehberi', title: 'Yeni Başlayanlar İçin React.js Rehberi', author: 'Geido', date: '28 Nisan 2024', image: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?auto=format&fit=crop&q=80&w=600' },
+    { slug: 'marka-kimligi-nasil-olusturulur', title: 'Marka Kimliği Nasıl Oluşturulur?', author: 'Geido', date: '20 Nisan 2024', image: 'https://images.unsplash.com/photo-1572044162444-ad60f128bdea?auto=format&fit=crop&q=80&w=600' },
   ];
+
+  const articles = cms?.blogs?.length > 0 ? cms.blogs.slice(0, 4) : defaultArticles;
 
   return (
     <div className={styles.home}>
@@ -174,18 +176,18 @@ const Home = () => {
 
           <div className={styles.articleGrid}>
             {articles.map((a, i) => (
-              <div key={i} className={styles.articleCard}>
+              <Link to={`/blog/${a.slug}`} key={i} className={styles.articleCard} style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
                 <div className={styles.articleImgWrapper}>
-                  <div className={styles.articleImg} style={{ backgroundImage: `url(${a.img})` }}></div>
+                  <div className={styles.articleImg} style={{ backgroundImage: `url(${a.image || a.img})` }}></div>
                 </div>
                 <div className={styles.articleInfo}>
-                  <span className={styles.articleCat}>{a.cat}</span>
+                  <span className={styles.articleCat}>{a.author || 'Geido Studio'}</span>
                   <h3>{a.title}</h3>
                   <div className={styles.articleMeta}>
                     <span>🕒 {a.date}</span>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>

@@ -16,6 +16,9 @@ const Home = lazy(() => import('./pages/Home/Home'));
 const Projects = lazy(() => import('./pages/Projects/Projects'));
 const About = lazy(() => import('./pages/About/About'));
 const Contact = lazy(() => import('./pages/Contact/Contact'));
+const Blog = lazy(() => import('./pages/Blog/Blog'));
+const BlogPost = lazy(() => import('./pages/BlogPost/BlogPost'));
+const NotFound = lazy(() => import('./pages/NotFound/NotFound'));
 
 // Admin pages
 const AdminLayout = lazy(() => import('./components/AdminLayout/AdminLayout'));
@@ -26,6 +29,8 @@ const AdminTexts = lazy(() => import('./pages/Admin/AdminTexts'));
 const AdminImages = lazy(() => import('./pages/Admin/AdminImages'));
 const AdminContact = lazy(() => import('./pages/Admin/AdminContact'));
 const AdminMessages = lazy(() => import('./pages/Admin/AdminMessages'));
+const AdminBlog = lazy(() => import('./pages/Admin/AdminBlog'));
+const AdminNewsletter = lazy(() => import('./pages/Admin/AdminNewsletter'));
 
 import useCmsStore from './store/cmsStore';
 
@@ -42,6 +47,8 @@ function AnimatedRoutes() {
         <Route path="/projeler" element={<PageTransition><Projects /></PageTransition>} />
         <Route path="/hakkinda" element={<PageTransition><About /></PageTransition>} />
         <Route path="/iletisim" element={<PageTransition><Contact /></PageTransition>} />
+        <Route path="/blog" element={<PageTransition><Blog /></PageTransition>} />
+        <Route path="/blog/:slug" element={<PageTransition><BlogPost /></PageTransition>} />
         
         {/* Admin Routes */}
         <Route path="/admin/login" element={<Suspense fallback={<LoadingScreen />}><AdminLogin /></Suspense>} />
@@ -50,9 +57,14 @@ function AnimatedRoutes() {
           <Route path="hero" element={<AdminHero />} />
           <Route path="texts" element={<AdminTexts />} />
           <Route path="images" element={<AdminImages />} />
+          <Route path="blog" element={<AdminBlog />} />
           <Route path="contact" element={<AdminContact />} />
           <Route path="messages" element={<AdminMessages />} />
+          <Route path="newsletter" element={<AdminNewsletter />} />
         </Route>
+
+        {/* 404 Route */}
+        <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
       </Routes>
     </AnimatePresence>
   );

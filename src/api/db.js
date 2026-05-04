@@ -59,4 +59,14 @@ export const api = {
 
   deleteMessage: (id) =>
     request('DELETE', `/api/messages/${id}`),
+
+  // ── Newsletter ────────────────────────────────────────────────────────────
+  getSubscribers: () =>
+    request('GET', '/api/newsletter'),
+
+  subscribe: (email) =>
+    request('POST', '/api/newsletter', { email }),
+
+  deleteSubscriber: (id) =>
+    request('DELETE', `/api/newsletter/${id}`),
 };

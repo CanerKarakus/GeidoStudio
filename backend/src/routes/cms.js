@@ -22,6 +22,7 @@ const DEFAULT_CMS = {
   contactEmail: 'hello@geidostudio.com',
   contactPhone: '+90 (555) 123 45 67',
   contactAddress: 'Levent, Büyükdere Cd., 34330 Beşiktaş/İstanbul',
+  blogs: [],
 };
 
 const readCMS = () => {
@@ -42,6 +43,7 @@ const ALLOWED_FIELDS = [
   'heroImages', 'heroTitle', 'heroSubtitle',
   'aboutTitle', 'aboutText', 'aboutImage',
   'contactEmail', 'contactPhone', 'contactAddress',
+  'blogs',
 ];
 
 // ── GET /api/cms ─────────────────────────────────────────────────────────────

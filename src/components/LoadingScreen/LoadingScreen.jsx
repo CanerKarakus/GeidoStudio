@@ -8,7 +8,7 @@ const LoadingScreen = () => {
   const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
   return (
-    <m.div 
+    <m.div
       className={styles.loadingContainer}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -36,11 +36,11 @@ const LoadingScreen = () => {
           ))}
         </div>
       ) : (
-        <video 
+        <video
           className={styles.loadingVideo}
-          autoPlay 
-          loop 
-          muted 
+          autoPlay
+          loop
+          muted
           playsInline
         >
           <source src={loadingVideoWebm} type="video/webm" />
