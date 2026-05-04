@@ -35,7 +35,7 @@ const Home = () => {
     timerRef.current = setTimeout(() => {
       setDirection(1);
       setCurrentSlide((prev) => (prev + 1) % heroImages.length);
-    }, 5000);
+    }, 13000);
     return () => clearTimeout(timerRef.current);
   }, [heroImages, currentSlide]);
 

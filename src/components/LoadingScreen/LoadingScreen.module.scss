@@ -28,3 +28,17 @@
     height: 320px;
   }
 }
+
+.safariLoaderWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.safariLoaderBar {
+  height: 32px;
+  width: 8px;
+  border-radius: 9999px;
+  background-color: #b30000;
+}
