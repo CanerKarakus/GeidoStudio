@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Cookie, X, ChevronDown, ChevronUp, Check } from 'lucide-react';
 import styles from './CookieBanner.module.scss';
+import useUIStore from '../../store/uiStore';
 
 const STORAGE_KEY = 'geido_cookie_consent';
 const SHOW_INTERVAL_MS = 10 * 60 * 1000; // 10 minutes
@@ -51,14 +52,16 @@ const CookieBanner = () => {
   const [prefs, setPrefs] = useState(() =>
     CATEGORIES.reduce((acc, c) => ({ ...acc, [c.id]: c.default }), {})
   );
+  const splashReady = useUIStore((state) => state.splashReady);
 
+  // Show after splashReady + 800ms delay so it appears after hero animations
   useEffect(() => {
-    // Slight delay so it doesn't flash on first render
+    if (!splashReady) return;
     const t = setTimeout(() => {
       setVisible(shouldShow());
-    }, 1200);
+    }, 800);
     return () => clearTimeout(t);
-  }, []);
+  }, [splashReady]);
 
   const save = (type) => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ ts: Date.now(), accepted: type }));

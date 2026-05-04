@@ -6,11 +6,14 @@ import Button from '../../components/Button/Button';
 import { projectsData } from '../../data/projectsData';
 import { Link } from 'react-router-dom';
 import useCmsStore from '../../store/cmsStore';
+import useUIStore, { splashHasShown } from '../../store/uiStore';
 import CookieBanner from '../../components/CookieBanner/CookieBanner';
 import geidoHeroFallback from '../../assets/images/geido_hero.png';
 
 const Home = () => {
   const cms = useCmsStore((state) => state.cms);
+  const splashReady = useUIStore((state) => state.splashReady);
+  const needsSplashAnim = !splashHasShown;
   const [currentSlide, setCurrentSlide] = useState(0);
   const [loadedImage, setLoadedImage] = useState(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -54,7 +57,12 @@ const Home = () => {
     <div className={styles.home}>
       <CookieBanner />
       {/* HERO SECTION */}
-      <section className={styles.hero}>
+      <m.section
+        className={styles.hero}
+        initial={needsSplashAnim ? { opacity: 0, scale: 1.04 } : false}
+        animate={needsSplashAnim ? (splashReady ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 1.04 }) : undefined}
+        transition={{ duration: 1.2, ease: [0.4, 0, 0.2, 1], delay: 0.15 }}
+      >
         {/* Background — crossfade via opacity */}
         <div
           className={`${styles.heroBackgroundImg} ${!isTransitioning && loadedImage ? styles.heroImgLoaded : ''}`}
@@ -85,7 +93,12 @@ const Home = () => {
           </div>
         )}
 
-        <div className={styles.tickerBanner}>
+        <m.div
+          className={styles.tickerBanner}
+          initial={needsSplashAnim ? { opacity: 0, y: 60 } : false}
+          animate={needsSplashAnim ? (splashReady ? { opacity: 1, y: 0 } : { opacity: 0, y: 60 }) : undefined}
+          transition={{ duration: 0.8, ease: [0.4, 0, 0.2, 1], delay: 0.5 }}
+        >
           <div className={styles.tickerTrack}>
             <div className={styles.tickerContent}>
               <span>Web Geliştirme</span>
@@ -104,8 +117,8 @@ const Home = () => {
               <span>Kurumsal Kimlik</span>
             </div>
           </div>
-        </div>
-      </section>
+        </m.div>
+      </m.section>
 
       {/* SERVICES SECTION */}
       <section className={styles.services}>

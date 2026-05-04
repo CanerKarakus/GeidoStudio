@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, Link } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
+import { m } from 'framer-motion';
 import clsx from 'clsx';
 import Button from '../Button/Button';
 import styles from './Navbar.module.scss';
+import useUIStore, { splashHasShown } from '../../store/uiStore';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [hidden, setHidden] = useState(false);
   const lastScrollY = React.useRef(0);
+  const splashReady = useUIStore((state) => state.splashReady);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -40,11 +43,19 @@ const Navbar = () => {
     { name: 'İletişim', path: '/iletisim' }
   ];
 
+  // If splash hasn't played yet, start hidden and animate in when ready
+  const needsSplashAnim = !splashHasShown;
+
   return (
-    <header className={clsx(styles.header, {
-      [styles.scrolled]: scrolled,
-      [styles.hidden]: hidden
-    })}>
+    <m.header
+      className={clsx(styles.header, {
+        [styles.scrolled]: scrolled,
+        [styles.hidden]: hidden
+      })}
+      initial={needsSplashAnim ? { opacity: 0, y: -50 } : false}
+      animate={needsSplashAnim ? (splashReady ? { opacity: 1, y: 0 } : { opacity: 0, y: -50 }) : undefined}
+      transition={{ duration: 0.8, ease: [0.4, 0, 0.2, 1], delay: 0.05 }}
+    >
       <div className={styles.container}>
         <Link to="/" className={styles.logo} onClick={closeMenu}>
           <div className={styles.logoIcon}>
@@ -79,7 +90,7 @@ const Navbar = () => {
           </button>
         </div>
       </div>
-    </header>
+    </m.header>
   );
 };
 
