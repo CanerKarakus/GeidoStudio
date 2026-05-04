@@ -1,7 +1,7 @@
 // src/App.jsx
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import { LazyMotion, domAnimation, AnimatePresence } from 'framer-motion';
-import { lazy, Suspense, useEffect, useState, useRef } from 'react';
+import { LazyMotion, domAnimation, AnimatePresence, m } from 'framer-motion';
+import { lazy, Suspense, useEffect, useState } from 'react';
 
 // Components
 import Navbar from './components/Navbar/Navbar';
@@ -32,6 +32,27 @@ import useCmsStore from './store/cmsStore';
 // Module-level flag — survives re-renders, resets on full page refresh
 let splashHasShown = false;
 
+// ─── Stagger variants ──────────────────────────────────────────────────────
+const pageRevealVariants = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.18,
+      delayChildren: 0.05,
+    },
+  },
+};
+
+const revealItem = {
+  hidden: { opacity: 0, y: 28, filter: 'blur(8px)' },
+  visible: {
+    opacity: 1,
+    y: 0,
+    filter: 'blur(0px)',
+    transition: { duration: 0.75, ease: [0.22, 1, 0.36, 1] },
+  },
+};
+
 function AnimatedRoutes() {
   const location = useLocation();
 
@@ -42,7 +63,7 @@ function AnimatedRoutes() {
         <Route path="/projeler" element={<PageTransition><Projects /></PageTransition>} />
         <Route path="/hakkinda" element={<PageTransition><About /></PageTransition>} />
         <Route path="/iletisim" element={<PageTransition><Contact /></PageTransition>} />
-        
+
         {/* Admin Routes */}
         <Route path="/admin/login" element={<Suspense fallback={<LoadingScreen />}><AdminLogin /></Suspense>} />
         <Route path="/admin" element={<Suspense fallback={<LoadingScreen />}><AdminLayout /></Suspense>}>
@@ -62,6 +83,7 @@ function App() {
   const init = useCmsStore((state) => state.init);
   const [isNavigating, setIsNavigating] = useState(false);
   const [showSplash, setShowSplash] = useState(!splashHasShown);
+  const [contentRevealed, setContentRevealed] = useState(splashHasShown);
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
   const isHomePage = location.pathname === '/';
@@ -70,11 +92,9 @@ function App() {
     init();
   }, [init]);
 
-  // Navigation loading for non-home pages
+  // Navigation loading for non-home pages (skip during splash)
   useEffect(() => {
-    // Skip navigation loader during splash
     if (showSplash) return;
-
     setIsNavigating(true);
     const timer = setTimeout(() => setIsNavigating(false), 800);
     return () => clearTimeout(timer);
@@ -83,34 +103,69 @@ function App() {
   const handleSplashComplete = () => {
     splashHasShown = true;
     setShowSplash(false);
+    // Start content reveal slightly before/as splash exits
+    setTimeout(() => setContentRevealed(true), 200);
   };
 
   const shouldShowSplash = isHomePage && showSplash && !isAdminRoute;
   const isLoading = !shouldShowSplash && isNavigating;
 
+  // Use stagger reveal only for the initial home page load
+  const useReveal = isHomePage && !isAdminRoute;
+  const revealState = contentRevealed ? 'visible' : 'hidden';
+
   return (
     <LazyMotion features={domAnimation}>
-      <div className="app">
-        {!isAdminRoute && <ScrollFeatures />}
-        {!isAdminRoute && <Navbar />}
-        <main className="main-content">
-          <Suspense fallback={<LoadingScreen />}>
-            <AnimatedRoutes />
-          </Suspense>
+      {useReveal ? (
+        // ── HOME PAGE: everything stagger-reveals after splash ──────────────
+        <m.div
+          className="app"
+          variants={pageRevealVariants}
+          initial={splashHasShown ? 'visible' : 'hidden'}
+          animate={revealState}
+        >
+          <m.div variants={revealItem}>
+            <ScrollFeatures />
+          </m.div>
 
+          <m.div variants={revealItem}>
+            <Navbar />
+          </m.div>
+
+          <m.main className="main-content" variants={revealItem}>
+            <Suspense fallback={<LoadingScreen />}>
+              <AnimatedRoutes />
+            </Suspense>
+          </m.main>
+
+          <m.div variants={revealItem}>
+            <Footer />
+          </m.div>
+
+          {/* Splash overlay on top of everything */}
           <AnimatePresence>
-            {/* Home page first load: full splash with gradient */}
             {shouldShowSplash && (
               <SplashScreen key="splash" onComplete={handleSplashComplete} />
             )}
-            {/* Other pages: quick dark overlay */}
-            {isLoading && !shouldShowSplash && (
-              <LoadingScreen key="loading-overlay" />
-            )}
           </AnimatePresence>
-        </main>
-        {!isAdminRoute && <Footer />}
-      </div>
+        </m.div>
+      ) : (
+        // ── OTHER PAGES / ADMIN: normal layout, no stagger ─────────────────
+        <div className="app">
+          {!isAdminRoute && <ScrollFeatures />}
+          {!isAdminRoute && <Navbar />}
+          <main className="main-content">
+            <Suspense fallback={<LoadingScreen />}>
+              <AnimatedRoutes />
+            </Suspense>
+
+            <AnimatePresence>
+              {isLoading && <LoadingScreen key="loading-overlay" />}
+            </AnimatePresence>
+          </main>
+          {!isAdminRoute && <Footer />}
+        </div>
+      )}
     </LazyMotion>
   );
 }
