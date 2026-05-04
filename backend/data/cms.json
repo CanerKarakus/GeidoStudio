@@ -1,0 +1,26 @@
+{
+  "heroImages": [
+    "/geido_hero.png",
+    "https://i.ibb.co/cXKVWHbR/Chat-GPT-mage-2-May-2026-23-29-18-Nero-A-mage-Upscaler-Photo-Face.png",
+    "https://i.ibb.co/6Ryr28Yp/Chat-GPT-mage-2-May-2026-23-32-46-Nero-A-mage-Upscaler-Photo-Face.png"
+  ],
+  "heroTitle": "Hayalinizdeki Dijital Dünyayı İnşa Ediyoruz",
+  "heroSubtitle": "Modern, estetik ve işlevsel web çözümleri ile markanızı geleceğe taşıyın. Profesyonel tasarım ve yazılım ajansı.",
+  "aboutTitle": "Hakkımızda",
+  "aboutText": "Geido Studio, dijital dünyada markalarınızın potansiyelini en üst düzeye çıkarmak için yenilikçi, modern ve etkili çözümler sunar.",
+  "aboutImage": "",
+  "contactEmail": "destek@geidostudio.com",
+  "contactPhone": "+90 (553) 003 7403",
+  "contactAddress": "Levent, Büyükdere Cd., 34330 Beşiktaş/İstanbul",
+  "blogs": [
+    {
+      "slug": "bu-bir-test-blog-yazisidir-blog",
+      "title": "Bu bir test blog yazısıdır",
+      "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed dictum nulla vel commodo mollis. Sed scelerisque massa vitae venenatis pulvinar. Proin enim tortor, scelerisque nec cursus id, tincidunt ut sapien. Aliquam a metus et tortor auctor tincidunt. Aenean lobortis faucibus feugiat. Sed a arcu tincidunt, auctor libero sit amet, scelerisque felis. Aenean et orci posuere, cursus tortor nec, auctor neque. Aliquam scelerisque nibh ac lacus faucibus, in fermentum mi sagittis.\n\nUt laoreet nisl ac magna cursus, aliquet pellentesque velit posuere. Etiam vestibulum dui eu viverra interdum. Sed fringilla cursus purus, vel egestas leo iaculis eu. Vestibulum finibus erat sed tristique commodo. Morbi sollicitudin nunc est, et pharetra eros placerat ut. Aenean placerat enim eget elit dignissim aliquet. Aliquam interdum nec neque vitae molestie. Donec id dui sed libero iaculis mollis non sit amet nisl. Sed at luctus mauris. Sed euismod tristique neque, eu aliquam nisl accumsan in. Sed sem nulla, malesuada id pretium id, rhoncus nec erat. Integer cursus vehicula lacus at vehicula. Praesent pulvinar nibh eu est cursus, sit amet tempor libero gravida. Nam quis aliquet massa. Aenean efficitur consequat pharetra. Praesent tortor enim, laoreet vel commodo a, euismod eu dolor.\n\nEtiam mattis tempor vulputate. Phasellus imperdiet eleifend enim sit amet pulvinar. Aliquam mauris nisi, placerat id egestas id, mollis vel urna. Nulla commodo elit nec augue rutrum, vel ullamcorper nisi aliquam. Fusce eu sodales odio. Quisque in turpis lectus. Pellentesque non gravida enim. Aliquam tristique pulvinar cursus.\n\nSed dignissim gravida justo id facilisis. Nulla et tincidunt quam. Curabitur lobortis nulla a ex rhoncus pulvinar. Nulla ac volutpat magna. Aliquam placerat quam a euismod pellentesque. Vestibulum pretium imperdiet dui, pellentesque tincidunt diam tempor at. Nullam aliquam mauris quis pretium fermentum. Nam dui lacus, tristique sit amet arcu id, porta euismod nisi. Nunc volutpat ac justo eu pellentesque. Aliquam erat volutpat. In bibendum lacinia scelerisque. Morbi eu turpis a enim egestas viverra quis sed magna. Cras ut arcu euismod, finibus eros non, ullamcorper dolor. Morbi dolor velit, sagittis at eros nec, dictum eleifend augue.\n\nSuspendisse laoreet sed velit at condimentum. Vivamus sed mattis est. Nullam fermentum id augue vel pretium. Integer elementum lorem id dui consequat aliquam. Nullam ut tempor tellus. Nam sodales laoreet dolor, sed pulvinar ante ultricies sed. Nunc fringilla ex ante, non auctor odio laoreet id. Etiam vestibulum pretium nisi. Curabitur augue felis, tincidunt sit amet nunc in, mollis pellentesque elit. Duis quam dolor, volutpat ac mauris at, feugiat egestas dolor.",
+      "image": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgbE-8m0IlVCLcWR1veexgQnY1hOcVZzqcQPfBZ-vWZI26ck7yjLmkmRqB79CT2jxmDdpGPHfrVUAYssHMF05OiBBlwd9UQf3bf0zTnBRDmHsq-bo_O-J3VHkkU1lzwQKlEi9h8gMgPDQJb/s1600/van-goh_6.jpg",
+      "author": "CANER KARAKUŞ",
+      "keywords": "blog, test, merhaba, yok, m, a, s, d, bfv, g, gt, fd, df, dvb, fn, nf, fgnfgn, fgn, fng, hm, tht",
+      "date": "4 Mayıs 2026"
+    }
+  ]
+}
