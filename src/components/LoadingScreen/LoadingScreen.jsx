@@ -6,6 +6,13 @@ import loadingVideoMov from '../../assets/loading/geido_loading.mov';
 
 const LoadingScreen = () => {
   const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+  const videoRef = React.useRef(null);
+
+  React.useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.playbackRate = 2.0;
+    }
+  }, []);
 
   return (
     <m.div
@@ -37,6 +44,7 @@ const LoadingScreen = () => {
         </div>
       ) : (
         <video
+          ref={videoRef}
           className={styles.loadingVideo}
           autoPlay
           loop

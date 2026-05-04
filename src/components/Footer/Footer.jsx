@@ -35,7 +35,7 @@ const Footer = () => {
             <div className={styles.socials}>
               <a href="https://www.instagram.com/geido.studio/" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><Instagram size={20} /></a>
               <a href="https://x.com" target="_blank" rel="noopener noreferrer" aria-label="X">
-                <img src={xIcon} alt="X" style={{ width: '18px', height: '18px', filter: 'brightness(0) invert(1)' }} />
+                <img src={xIcon} alt="X" style={{ width: '22px', height: '22px' }} />
               </a>
               <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><Linkedin size={20} /></a>
               <a href="https://www.behance.net/YasarhanPekergin" target="_blank" rel="noopener noreferrer" aria-label="Behance">

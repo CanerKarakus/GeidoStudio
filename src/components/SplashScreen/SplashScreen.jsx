@@ -5,6 +5,14 @@ import loadingVideoWebm from '../../assets/loading/geido_loading.webm';
 import loadingVideoMov from '../../assets/loading/geido_loading.mov';
 
 const SplashScreen = ({ onComplete }) => {
+  const videoRef = React.useRef(null);
+
+  React.useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.playbackRate = 2.0;
+    }
+  }, []);
+
   return (
     <m.div
       className={styles.splashContainer}
@@ -12,6 +20,7 @@ const SplashScreen = ({ onComplete }) => {
       exit={{ opacity: 0, transition: { duration: 0.8, ease: [0.4, 0, 0.2, 1] } }}
     >
       <video
+        ref={videoRef}
         className={styles.splashVideo}
         autoPlay
         muted
