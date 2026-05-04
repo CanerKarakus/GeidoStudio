@@ -28,7 +28,9 @@ const AdminContact = lazy(() => import('./pages/Admin/AdminContact'));
 const AdminMessages = lazy(() => import('./pages/Admin/AdminMessages'));
 
 import useCmsStore from './store/cmsStore';
-import useUIStore, { splashHasShown } from './store/uiStore';
+
+// Module-level flag — survives re-renders, resets on full page refresh
+let splashHasShown = false;
 
 function AnimatedRoutes() {
   const location = useLocation();
@@ -64,19 +66,9 @@ function App() {
   const isAdminRoute = location.pathname.startsWith('/admin');
   const isHomePage = location.pathname === '/';
 
-  const setSplashReady = useUIStore((state) => state.setSplashReady);
-
   useEffect(() => {
     init();
   }, [init]);
-
-  // If splash won't show (non-home page or already shown), mark ready immediately
-  useEffect(() => {
-    if (!isHomePage || splashHasShown) {
-      setSplashReady();
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   // Navigation loading for non-home pages
   useEffect(() => {
@@ -89,7 +81,7 @@ function App() {
   }, [location.pathname]);
 
   const handleSplashComplete = () => {
-    setSplashReady(); // sets splashHasShown = true in uiStore
+    splashHasShown = true;
     setShowSplash(false);
   };
 

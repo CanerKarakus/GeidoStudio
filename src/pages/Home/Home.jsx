@@ -1,104 +1,89 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import styles from './Home.module.scss';
 import { ArrowUpRight } from 'lucide-react';
-import { m } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import Button from '../../components/Button/Button';
 import { projectsData } from '../../data/projectsData';
 import { Link } from 'react-router-dom';
 import useCmsStore from '../../store/cmsStore';
-import useUIStore, { splashHasShown } from '../../store/uiStore';
 import CookieBanner from '../../components/CookieBanner/CookieBanner';
 import geidoHeroFallback from '../../assets/images/geido_hero.png';
 
+const slideVariants = {
+  enter: (dir) => ({ x: dir > 0 ? '100%' : '-100%', opacity: 0 }),
+  center: { x: 0, opacity: 1, transition: { duration: 0.7, ease: [0.4, 0, 0.2, 1] } },
+  exit: (dir) => ({ x: dir > 0 ? '-100%' : '100%', opacity: 0, transition: { duration: 0.7, ease: [0.4, 0, 0.2, 1] } }),
+};
+
 const Home = () => {
   const cms = useCmsStore((state) => state.cms);
-  const splashReady = useUIStore((state) => state.splashReady);
-  const needsSplashAnim = !splashHasShown;
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [loadedImage, setLoadedImage] = useState(null);
-  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [direction, setDirection] = useState(1);
   const timerRef = useRef(null);
 
   const heroImages = cms?.heroImages?.length > 0 ? cms.heroImages : [geidoHeroFallback];
 
-  // Preload an image and return a promise
-  const preloadImage = useCallback((src) => {
-    return new Promise((resolve) => {
-      const img = new Image();
-      img.onload = () => resolve(src);
-      img.onerror = () => resolve(src); // Show even if broken
-      img.src = src;
-    });
-  }, []);
+  const goToSlide = (idx) => {
+    const dir = idx > currentSlide ? 1 : idx < currentSlide ? -1 : 1;
+    setDirection(dir);
+    setCurrentSlide(idx);
+  };
 
-  // Preload current slide image
+  // Auto-advance — always slides forward
   useEffect(() => {
-    const src = heroImages[currentSlide] || geidoHeroFallback;
-    setIsTransitioning(true);
-    preloadImage(src).then((loaded) => {
-      setLoadedImage(loaded);
-      // Small delay so CSS transition triggers properly
-      requestAnimationFrame(() => setIsTransitioning(false));
-    });
-  }, [currentSlide, heroImages, preloadImage]);
-
-  // Auto-advance timer — only runs after image is loaded
-  useEffect(() => {
-    if (heroImages.length <= 1 || isTransitioning) return;
-
+    if (heroImages.length <= 1) return;
     timerRef.current = setTimeout(() => {
+      setDirection(1);
       setCurrentSlide((prev) => (prev + 1) % heroImages.length);
-    }, 15000);
-
+    }, 5000);
     return () => clearTimeout(timerRef.current);
-  }, [heroImages, isTransitioning, currentSlide]);
+  }, [heroImages, currentSlide]);
+
+  const articles = [
+    { title: '2024 UI/UX Tasarım Trendleri', cat: 'UI/UX Tasarım', date: '12 Mayıs 2024', img: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?auto=format&fit=crop&q=80&w=600' },
+    { title: 'Sosyal Medyada Etkileşimi Artırmanın 5 Yolu', cat: 'Sosyal Medya', date: '05 Mayıs 2024', img: 'https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?auto=format&fit=crop&q=80&w=600' },
+    { title: 'Yeni Başlayanlar İçin React.js Rehberi', cat: 'Web Geliştirme', date: '28 Nisan 2024', img: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?auto=format&fit=crop&q=80&w=600' },
+    { title: 'Marka Kimliği Nasıl Oluşturulur?', cat: 'Branding', date: '20 Nisan 2024', img: 'https://images.unsplash.com/photo-1572044162444-ad60f128bdea?auto=format&fit=crop&q=80&w=600' },
+  ];
 
   return (
     <div className={styles.home}>
       <CookieBanner />
       {/* HERO SECTION */}
-      <m.section
-        className={styles.hero}
-        initial={needsSplashAnim ? { opacity: 0, scale: 1.04 } : false}
-        animate={needsSplashAnim ? (splashReady ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 1.04 }) : undefined}
-        transition={{ duration: 1.2, ease: [0.4, 0, 0.2, 1], delay: 0.15 }}
-      >
-        {/* Background — crossfade via opacity */}
-        <div
-          className={`${styles.heroBackgroundImg} ${!isTransitioning && loadedImage ? styles.heroImgLoaded : ''}`}
-          style={{ backgroundImage: loadedImage ? `url(${loadedImage})` : 'none' }}
-        ></div>
-
-        {/* Loading spinner overlay */}
-        {isTransitioning && heroImages.length > 1 && (
-          <div className={styles.heroLoader}>
-            <div className={styles.heroSpinner}></div>
-          </div>
-        )}
-        
-        {/* HERO CONTENT OVERLAY */}
-        <div className={styles.heroContent}>
+      <section className={styles.hero}>
+        {/* Sliding background images */}
+        <div className={styles.heroSliderWrapper}>
+          <AnimatePresence initial={false} custom={direction} mode="sync">
+            <m.div
+              key={currentSlide}
+              custom={direction}
+              variants={slideVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              className={styles.heroBackgroundImg}
+              style={{ backgroundImage: `url(${heroImages[currentSlide] || geidoHeroFallback})` }}
+            />
+          </AnimatePresence>
         </div>
 
-        {/* SLIDER DOTS — bottom of hero */}
+        {/* HERO CONTENT OVERLAY */}
+        <div className={styles.heroContent} />
+
+        {/* SLIDER DOTS */}
         {heroImages.length > 1 && (
           <div className={styles.sliderDots}>
             {heroImages.map((_, idx) => (
-              <button 
-                key={idx} 
+              <button
+                key={idx}
                 className={`${styles.dot} ${idx === currentSlide ? styles.activeDot : ''}`}
-                onClick={() => setCurrentSlide(idx)}
+                onClick={() => goToSlide(idx)}
               />
             ))}
           </div>
         )}
 
-        <m.div
-          className={styles.tickerBanner}
-          initial={needsSplashAnim ? { opacity: 0, y: 60 } : false}
-          animate={needsSplashAnim ? (splashReady ? { opacity: 1, y: 0 } : { opacity: 0, y: 60 }) : undefined}
-          transition={{ duration: 0.8, ease: [0.4, 0, 0.2, 1], delay: 0.5 }}
-        >
+        <div className={styles.tickerBanner}>
           <div className={styles.tickerTrack}>
             <div className={styles.tickerContent}>
               <span>Web Geliştirme</span>
@@ -117,8 +102,8 @@ const Home = () => {
               <span>Kurumsal Kimlik</span>
             </div>
           </div>
-        </m.div>
-      </m.section>
+        </div>
+      </section>
 
       {/* SERVICES SECTION */}
       <section className={styles.services}>
@@ -149,7 +134,6 @@ const Home = () => {
         </div>
       </section>
 
-
       {/* PROJECTS SECTION */}
       <section className={styles.projects}>
         <div className={styles.container}>
@@ -162,7 +146,7 @@ const Home = () => {
           </div>
 
           <div className={styles.projectsGrid}>
-            {projectsData.slice(0, 3).map((p, i) => (
+            {projectsData.slice(0, 4).map((p, i) => (
               <div key={p.id} className={styles.projectCard}>
                 <div className={styles.projectImageWrapper}>
                   <div className={styles.projectImage} style={{ backgroundImage: `url(${p.image})` }}></div>
@@ -180,38 +164,6 @@ const Home = () => {
         </div>
       </section>
 
-      {/* TESTIMONIALS SECTION */}
-      <section className={styles.testimonials}>
-        <div className={styles.container}>
-          <div className={styles.sectionHeaderCenter}>
-            <span className={styles.subtitleDark}>Müşteri Yorumları</span>
-            <h2 className={styles.titleLight}>Müşterilerimiz Bizim İçin<br/>Ne Söylüyor?</h2>
-          </div>
-          
-          <div className={styles.testimonialGrid}>
-             {[
-               { name: "Ahmet Y.", role: "CEO, StartUp Inc", img: "https://randomuser.me/api/portraits/men/45.jpg", quote: "Geido Studio ile çalışmak harika bir deneyimdi. Vizyonumuzu anladılar ve mükemmel bir web sitesi teslim ettiler." },
-               { name: "Ayşe K.", role: "Pazarlama Müdürü", img: "https://randomuser.me/api/portraits/women/65.jpg", quote: "Sosyal medya tasarımlarımız sayesinde etkileşimlerimiz %200 arttı. Kesinlikle tavsiye ederim." },
-               { name: "Mehmet D.", role: "E-ticaret Sahibi", img: "https://randomuser.me/api/portraits/men/22.jpg", quote: "Mobil uygulamamızın UI/UX tasarımı kullanıcılarımızdan tam not aldı. Profesyonel ve yenilikçi bir ekip." },
-               { name: "Zeynep S.", role: "Kurucu, Moda Markası", img: "https://randomuser.me/api/portraits/women/33.jpg", quote: "Marka kimliğimizi baştan yarattılar. Tasarımları sayesinde sektörde öne çıkmayı başardık." }
-             ].map((t, i) => (
-               <div key={i} className={styles.testimonialCard}>
-                  <div className={styles.quoteIcon}>"</div>
-                  <p className={styles.quoteText}>{t.quote}</p>
-                  <div className={styles.rating}>★★★★★</div>
-                  <div className={styles.author}>
-                    <div className={styles.authorAvatar} style={{ backgroundImage: `url(${t.img})` }}></div>
-                    <div>
-                      <h4>{t.name}</h4>
-                      <span>{t.role}</span>
-                    </div>
-                  </div>
-               </div>
-             ))}
-          </div>
-        </div>
-      </section>
-
       {/* ARTICLES SECTION */}
       <section className={styles.articles}>
         <div className={styles.container}>
@@ -219,26 +171,22 @@ const Home = () => {
             <span className={styles.subtitle}>Makale & Kaynaklar</span>
             <h2 className={styles.title}>Blog Yazılarımıza<br/>Göz Atın</h2>
           </div>
-          
+
           <div className={styles.articleGrid}>
-             {[
-               { title: "2024 UI/UX Tasarım Trendleri", cat: "UI/UX Tasarım", date: "12 Mayıs 2024", img: "https://images.unsplash.com/photo-1561070791-2526d30994b5?auto=format&fit=crop&q=80&w=600" },
-               { title: "Sosyal Medyada Etkileşimi Artırmanın 5 Yolu", cat: "Sosyal Medya", date: "05 Mayıs 2024", img: "https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?auto=format&fit=crop&q=80&w=600" },
-               { title: "Yeni Başlayanlar İçin React.js Rehberi", cat: "Web Geliştirme", date: "28 Nisan 2024", img: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?auto=format&fit=crop&q=80&w=600" }
-             ].map((a, i) => (
-               <div key={i} className={styles.articleCard}>
-                 <div className={styles.articleImgWrapper}>
-                   <div className={styles.articleImg} style={{ backgroundImage: `url(${a.img})` }}></div>
-                 </div>
-                 <div className={styles.articleInfo}>
-                   <span className={styles.articleCat}>{a.cat}</span>
-                   <h3>{a.title}</h3>
-                   <div className={styles.articleMeta}>
-                     <span>🕒 {a.date}</span>
-                   </div>
-                 </div>
-               </div>
-             ))}
+            {articles.map((a, i) => (
+              <div key={i} className={styles.articleCard}>
+                <div className={styles.articleImgWrapper}>
+                  <div className={styles.articleImg} style={{ backgroundImage: `url(${a.img})` }}></div>
+                </div>
+                <div className={styles.articleInfo}>
+                  <span className={styles.articleCat}>{a.cat}</span>
+                  <h3>{a.title}</h3>
+                  <div className={styles.articleMeta}>
+                    <span>🕒 {a.date}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>

@@ -21,6 +21,16 @@
   justify-content: center;
   background-color: color(dark); // Ensure no white gaps
 }
+// Hero slider wrapper — clips sliding images
+.heroSliderWrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 0;
+}
 
 .heroBackgroundImg {
   position: absolute;
@@ -30,34 +40,6 @@
   height: 100%;
   background-size: cover;
   background-position: center;
-  z-index: 0;
-  opacity: 0;
-  transition: opacity 1.5s ease-in-out;
-}
-
-.heroImgLoaded {
-  opacity: 1;
-}
-
-.heroLoader {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 3;
-}
-
-.heroSpinner {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border: 3px solid rgba(255, 255, 255, 0.1);
-  border-top-color: rgba(255, 255, 255, 0.6);
-  animation: heroSpin 0.8s linear infinite;
-}
-
-@keyframes heroSpin {
-  to { transform: rotate(360deg); }
 }
 
 .heroContent {
@@ -277,9 +259,19 @@
 
 .projectsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  grid-template-columns: repeat(2, 1fr);
   gap: 2rem;
   margin-bottom: 3rem;
+
+  @include respond-to-max(md) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  @include respond-to-max(sm) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
 }
 
 .projectCard {
@@ -310,6 +302,14 @@
   overflow: hidden;
   width: 100%;
   height: 300px;
+
+  @include respond-to-max(md) {
+    height: 160px;
+  }
+
+  @include respond-to-max(sm) {
+    height: 130px;
+  }
 }
 
 .projectImage {
@@ -338,13 +338,19 @@
   }
   
   .arrowIcon {
-    width: 45px;
-    height: 45px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     border: 1px solid rgba(255, 255, 255, 0.1);
     color: color(white);
     @include flex-center;
     transition: transition(base);
+    flex-shrink: 0;
+
+    @include respond-to-max(md) {
+      width: 28px;
+      height: 28px;
+    }
   }
   
   &.highlightInfo {
@@ -357,83 +363,6 @@
 }
 
 
-// TESTIMONIALS
-.testimonials {
-  padding: 8rem 0;
-  background-color: color(dark);
-  color: color(white);
-}
-
-.testimonialGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
-}
-
-.testimonialCard {
-  background: color(dark-secondary);
-  padding: 2.5rem;
-  border-radius: radius(md);
-  position: relative;
-  border: 1px solid rgba(255,255,255,0.05);
-  transition: transition(base);
-  
-  &:hover {
-    border-color: rgba(179, 0, 0, 0.3);
-    transform: translateY(-5px);
-  }
-  
-  .quoteIcon {
-    font-family: serif;
-    font-size: 4rem;
-    color: color(primary);
-    line-height: 1;
-    position: absolute;
-    top: 2rem;
-    right: 2rem;
-    opacity: 0.5;
-  }
-  
-  .quoteText {
-    font-size: 1.125rem;
-    line-height: 1.6;
-    margin-bottom: 1.5rem;
-    color: rgba(255,255,255,0.9);
-  }
-  
-  .rating {
-    color: #f39c12;
-    margin-bottom: 1.5rem;
-    letter-spacing: 2px;
-  }
-  
-  .author {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    
-    .authorAvatar {
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      background-size: cover;
-      background-position: center;
-      border: 3px solid color(primary); // Çember rengimiz (Neon Yeşil)
-    }
-    
-    h4 {
-      font-size: 1rem;
-      margin-bottom: 0.25rem;
-      color: color(white); // Beyaz isim
-    }
-    
-    span {
-      font-size: 0.875rem;
-      color: rgba(255,255,255,0.5);
-    }
-  }
-}
-
 
 // ARTICLES
 .articles {
@@ -443,8 +372,18 @@
 
 .articleGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-template-columns: repeat(2, 1fr);
   gap: 2.5rem;
+
+  @include respond-to-max(md) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  @include respond-to-max(sm) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
 }
 
 .articleCard {
@@ -478,6 +417,14 @@
   overflow: hidden;
   position: relative;
 
+  @include respond-to-max(md) {
+    height: 140px;
+  }
+
+  @include respond-to-max(sm) {
+    height: 110px;
+  }
+
   &::after {
     content: '';
     position: absolute;
@@ -498,11 +445,15 @@
 }
 
 .articleInfo {
-  padding: 2rem;
+  padding: 1.25rem 2rem 2rem;
   flex-grow: 1;
   display: flex;
   flex-direction: column;
-  
+
+  @include respond-to-max(md) {
+    padding: 0.75rem;
+  }
+
   .articleCat {
     display: inline-block;
     width: fit-content;
@@ -516,16 +467,27 @@
     letter-spacing: 0.1em;
     margin-bottom: 1.25rem;
     transition: all 0.3s ease;
+
+    @include respond-to-max(md) {
+      font-size: 0.6rem;
+      padding: 0.2rem 0.5rem;
+      margin-bottom: 0.5rem;
+    }
   }
-  
+
   h3 {
     font-size: 1.5rem;
     margin-bottom: 1.5rem;
     line-height: 1.4;
     color: color(white);
     font-weight: 600;
+
+    @include respond-to-max(md) {
+      font-size: 0.85rem;
+      margin-bottom: 0.5rem;
+    }
   }
-  
+
   .articleMeta {
     margin-top: auto;
     padding-top: 1.5rem;
@@ -536,5 +498,9 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
+
+    @include respond-to-max(md) {
+      display: none;
+    }
   }
 }
