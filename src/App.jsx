@@ -21,6 +21,8 @@ const BlogPost = lazy(() => import('./pages/BlogPost/BlogPost'));
 const NotFound = lazy(() => import('./pages/NotFound/NotFound'));
 const PrivacyPolicy = lazy(() => import('./pages/Legal/PrivacyPolicy'));
 const TermsOfService = lazy(() => import('./pages/Legal/TermsOfService'));
+const CookiePolicy = lazy(() => import('./pages/Legal/CookiePolicy'));
+const KvkkPolicy = lazy(() => import('./pages/Legal/KvkkPolicy'));
 
 // Admin pages
 const AdminLayout = lazy(() => import('./components/AdminLayout/AdminLayout'));
@@ -53,6 +55,8 @@ function AnimatedRoutes() {
         <Route path="/blog/:slug" element={<PageTransition><BlogPost /></PageTransition>} />
         <Route path="/gizlilik-politikasi" element={<PageTransition><PrivacyPolicy /></PageTransition>} />
         <Route path="/kullanim-kosullari" element={<PageTransition><TermsOfService /></PageTransition>} />
+        <Route path="/cerez-politikasi" element={<PageTransition><CookiePolicy /></PageTransition>} />
+        <Route path="/kvkk" element={<PageTransition><KvkkPolicy /></PageTransition>} />
         
         {/* Admin Routes */}
         <Route path="/admin/login" element={<Suspense fallback={<LoadingScreen />}><AdminLogin /></Suspense>} />

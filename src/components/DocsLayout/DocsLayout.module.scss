@@ -4,46 +4,46 @@
 .docsLayout {
   display: flex;
   min-height: 100vh;
-  background-color: #fafafa;
-  padding-top: 80px; // account for navbar
+  background-color: #ffffff; // Changed to pure white
+  padding-top: 80px; 
   font-family: 'Inter', system-ui, sans-serif;
 }
 
 // ── LEFT SIDEBAR ─────────────────────────────────────────────────────────────
 .sidebar {
   width: 280px;
-  background: color(white);
-  border-right: 1px solid rgba(0,0,0,0.08);
+  background: #ffffff;
+  border-right: 1px solid #f3f4f6; // Lighter, more subtle border
   height: calc(100vh - 80px);
   position: sticky;
   top: 80px;
   overflow-y: auto;
-  padding: 2rem 1.5rem;
+  padding: 2.5rem 1.5rem;
   flex-shrink: 0;
 
   @include respond-to-max(md) {
-    display: none; // Hide on mobile for now, or add a toggle
+    display: none; 
   }
 
   &::-webkit-scrollbar {
-    width: 6px;
+    width: 4px;
   }
   &::-webkit-scrollbar-thumb {
-    background: #e5e7eb;
+    background: #f3f4f6;
     border-radius: 10px;
   }
 
   .navGroup {
-    margin-bottom: 2rem;
+    margin-bottom: 2.5rem;
 
     .groupTitle {
       font-size: 0.75rem;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.1em;
       color: #9ca3af;
-      font-weight: 600;
-      margin-bottom: 0.75rem;
-      padding-left: 0.5rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      padding-left: 0.75rem;
     }
 
     ul {
@@ -59,7 +59,7 @@
       display: flex;
       align-items: center;
       gap: 0.75rem;
-      padding: 0.5rem 0.75rem;
+      padding: 0.6rem 0.75rem;
       text-decoration: none;
       color: #4b5563;
       font-size: 0.95rem;
@@ -73,13 +73,13 @@
       }
 
       &:hover {
-        background: #f3f4f6;
+        background: #f9fafb;
         color: #111827;
-        svg { color: #4b5563; }
+        svg { color: #6b7280; }
       }
 
       &.active {
-        background: rgba(179, 0, 0, 0.05);
+        background: rgba(179, 0, 0, 0.04);
         color: #b30000;
         font-weight: 600;
 
@@ -92,20 +92,19 @@
 // ── MAIN CONTENT ─────────────────────────────────────────────────────────────
 .mainContent {
   flex-grow: 1;
-  padding: 3rem 4rem;
-  max-width: 900px;
+  padding: 4rem 5rem;
+  max-width: 960px;
   background: #ffffff;
   min-height: calc(100vh - 80px);
-  border-left: 1px solid rgba(0,0,0,0.03);
-  border-right: 1px solid rgba(0,0,0,0.03);
+  border-left: none; // Removed gray borders
+  border-right: none;
 
   @include respond-to-max(lg) {
-    padding: 2.5rem 2rem;
+    padding: 3rem 2.5rem;
   }
 
   @include respond-to-max(md) {
-    padding: 2rem 1.25rem;
-    border: none;
+    padding: 2rem 1.5rem;
   }
 }
 
@@ -253,28 +252,29 @@
 // ── RIGHT SIDEBAR (TOC) ──────────────────────────────────────────────────────
 .toc {
   width: 260px;
-  padding: 3rem 2rem 3rem 1rem;
+  padding: 4rem 2rem 3rem 1rem;
   position: sticky;
   top: 80px;
   height: calc(100vh - 80px);
   overflow-y: auto;
   flex-shrink: 0;
+  background: #ffffff;
 
   @include respond-to-max(xl) {
     display: none;
   }
 
   .tocCard {
-    background: color(white);
-    border: 1px solid rgba(0,0,0,0.06);
-    border-radius: 16px;
-    padding: 1.5rem;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+    background: #ffffff;
+    border-left: 1px solid #f3f4f6;
+    padding: 0.5rem 0 0.5rem 1.5rem;
 
     h4 {
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: #111827;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 700;
+      color: #9ca3af;
       margin-bottom: 1rem;
     }
 
@@ -291,17 +291,17 @@
           color: #6b7280;
           text-decoration: none;
           font-size: 0.85rem;
-          transition: color 0.2s ease;
+          transition: all 0.2s ease;
           display: block;
           line-height: 1.4;
 
           &:hover {
-            color: #b30000;
+            color: #111827;
           }
 
           &.activeToc {
             color: #b30000;
-            font-weight: 500;
+            font-weight: 600;
           }
         }
       }

@@ -1,6 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Instagram, Linkedin, Github, X, ArrowUpRight } from 'lucide-react';
+import { Instagram, Linkedin, Github, ArrowUpRight } from 'lucide-react';
+import xIcon from '../../assets/social_icons/x.png';
+import behanceIcon from '../../assets/social_icons/behance.png';
 import Button from '../Button/Button';
 import styles from './Footer.module.scss';
 
@@ -32,12 +34,12 @@ const Footer = () => {
             </p>
             <div className={styles.socials}>
               <a href="https://www.instagram.com/geido.studio/" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><Instagram size={20} /></a>
-              <a href="https://x.com" target="_blank" rel="noopener noreferrer" aria-label="X"><X size={18} /></a>
+              <a href="https://x.com" target="_blank" rel="noopener noreferrer" aria-label="X">
+                <img src={xIcon} alt="X" style={{ width: '18px', height: '18px', filter: 'brightness(0) invert(1)' }} />
+              </a>
               <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><Linkedin size={20} /></a>
               <a href="https://www.behance.net/YasarhanPekergin" target="_blank" rel="noopener noreferrer" aria-label="Behance">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M9 12h2a2 2 0 0 1 0 4h-2v-4z"/><path d="M9 6h2a2 2 0 0 1 0 4h-2V6z"/><path d="M12 20H5V4h7a4 4 0 0 1 0 8 4 4 0 0 1 0 8z"/><path d="M18 12h4"/><path d="M21 15c0 1.1-.9 2-2 2s-2-.9-2-2v-1c0-1.1.9-2 2-2s2 .9 2 2v1z"/>
-                </svg>
+                <img src={behanceIcon} alt="Behance" style={{ width: '20px', height: '20px', filter: 'brightness(0) invert(1)' }} />
               </a>
               <a href="https://github.com/CanerKarakus" target="_blank" rel="noopener noreferrer" aria-label="GitHub"><Github size={20} /></a>
             </div>
@@ -67,7 +69,9 @@ const Footer = () => {
         <div className={styles.bottomSection}>
           <p>© {new Date().getFullYear()} Geido Studio. Tüm hakları saklıdır.</p>
           <div className={styles.legalLinks}>
+            <Link to="/kvkk">KVKK Aydınlatma Metni</Link>
             <Link to="/gizlilik-politikasi">Gizlilik Politikası</Link>
+            <Link to="/cerez-politikasi">Çerez Politikası</Link>
             <Link to="/kullanim-kosullari">Kullanım Koşulları</Link>
           </div>
         </div>
