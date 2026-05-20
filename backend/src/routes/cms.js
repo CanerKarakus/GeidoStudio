@@ -14,11 +14,14 @@ const CMS_FILE = path.join(__dirname, '../../data/cms.json');
 
 const DEFAULT_CMS = {
   heroImages: [],
+  heroSliderDuration: 15,
   heroTitle: 'Hayalinizdeki Dijital Dünyayı İnşa Ediyoruz',
   heroSubtitle: 'Modern, estetik ve işlevsel web çözümleri ile markanızı geleceğe taşıyın. Profesyonel tasarım ve yazılım ajansı.',
   aboutTitle: 'Hakkımızda',
   aboutText: 'Geido Studio, dijital dünyada markalarınızın potansiyelini en üst düzeye çıkarmak için yenilikçi, modern ve etkili çözümler sunar.',
   aboutImage: '',
+  aboutTeamYasarhanImage: '',
+  aboutTeamCanerImage: '',
   contactEmail: 'hello@geidostudio.com',
   contactPhone: '+90 (555) 123 45 67',
   contactAddress: 'Levent, Büyükdere Cd., 34330 Beşiktaş/İstanbul',
@@ -40,8 +43,9 @@ const writeCMS = (data) => {
 
 // Allowed CMS fields — prevent unexpected data injection
 const ALLOWED_FIELDS = [
-  'heroImages', 'heroTitle', 'heroSubtitle',
+  'heroImages', 'heroSliderDuration', 'heroTitle', 'heroSubtitle',
   'aboutTitle', 'aboutText', 'aboutImage',
+  'aboutTeamYasarhanImage', 'aboutTeamCanerImage',
   'contactEmail', 'contactPhone', 'contactAddress',
   'blogs',
 ];

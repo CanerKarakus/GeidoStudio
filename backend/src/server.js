@@ -96,11 +96,92 @@ app.use((err, req, res, next) => {
 
 // ── Start ─────────────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
+const http = require('http');
+const { Server } = require('socket.io');
+const { initImap } = require('./services/emailService');
+const { readMessages, writeMessages } = require('./models/messageModel');
+
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: ALLOWED_ORIGINS,
+    credentials: true
+  }
+});
+
+app.set('io', io);
+
+io.on('connection', (socket) => {
+  console.log('Admin connected to socket:', socket.id);
+});
+
+// Initialize IMAP listener
+initImap((newMsg) => {
+  const messages = readMessages();
+
+  let targetIndex = -1;
+
+  // 1) Best: match by In-Reply-To or References header → threadMessageId
+  if (newMsg.inReplyTo) {
+    targetIndex = messages.findIndex(m =>
+      m.threadMessageId && m.threadMessageId === newMsg.inReplyTo
+    );
+    if (targetIndex === -1 && newMsg.references) {
+      // References can be a space-separated list; check any match
+      const refIds = newMsg.references.split(/\s+/);
+      targetIndex = messages.findIndex(m =>
+        m.threadMessageId && refIds.includes(m.threadMessageId)
+      );
+    }
+  }
+
+  // 2) Fallback: match by sender email (only if 1 thread with that email exists)
+  if (targetIndex === -1) {
+    const matchingByEmail = messages
+      .map((m, i) => ({ m, i }))
+      .filter(({ m }) => m.email.toLowerCase() === newMsg.from.toLowerCase());
+    if (matchingByEmail.length === 1) {
+      targetIndex = matchingByEmail[0].i;
+    }
+  }
+
+  if (targetIndex >= 0) {
+    const thread = messages[targetIndex];
+    thread.replies = thread.replies || [];
+
+    // Deduplicate by incoming Message-ID
+    const isDuplicate = thread.replies.some(r => r.messageId === newMsg.messageId);
+    if (!isDuplicate) {
+      const newReply = {
+        id: require('uuid').v4(),
+        sender: 'user',
+        text: newMsg.text,
+        date: newMsg.date,
+        messageId: newMsg.messageId
+      };
+      thread.replies.push(newReply);
+
+      // Move to top
+      messages.splice(targetIndex, 1);
+      messages.unshift(thread);
+      writeMessages(messages);
+
+      console.log(`[IMAP] Reply matched to thread "${thread.subject}" (${thread.email})`);
+      io.emit('new_reply', { threadId: thread.id, reply: newReply });
+      io.emit('messages_updated', messages);
+    } else {
+      console.log('[IMAP] Duplicate message ignored.');
+    }
+  } else {
+    console.log(`[IMAP] No matching thread found for message from: ${newMsg.from} (In-Reply-To: ${newMsg.inReplyTo})`);
+  }
+}).catch(err => console.error('IMAP Init error:', err));
+
+server.listen(PORT, () => {
   console.log(`\n🚀 Geido Studio Backend`);
   console.log(`   Port:    ${PORT}`);
   console.log(`   CORS:    ${ALLOWED_ORIGINS.join(', ')}`);
   console.log(`   Mode:    ${process.env.NODE_ENV || 'development'}\n`);
 });
 
-module.exports = app;
+module.exports = server;

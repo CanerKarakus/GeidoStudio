@@ -11,6 +11,13 @@ export default defineConfig({
     },
   },
   server: {
-    allowedHosts: ['jaquelyn-vitreum-collene.ngrok-free.dev'],
+    allowedHosts: ['jaquelyn-vitreum-collene.ngrok-free.dev', 'all'],
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+        secure: false,
+      },
+    },
   },
 })

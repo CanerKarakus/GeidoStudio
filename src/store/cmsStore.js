@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { api } from '../api/db';
+import { api, socket } from '../api/db';
 
 const useCmsStore = create((set) => ({
   cms: null,
@@ -21,6 +21,10 @@ const useCmsStore = create((set) => ({
       let msgs = [];
       let subs = [];
       if (authStatus) {
+        socket.connect();
+        socket.on('messages_updated', (newMsgs) => {
+          set({ messages: newMsgs });
+        });
         [msgs, subs] = await Promise.all([
           api.getMessages(),
           api.getSubscribers()
@@ -35,6 +39,10 @@ const useCmsStore = create((set) => ({
 
   login: async (email, password) => {
     await api.login(email, password);
+    socket.connect();
+    socket.on('messages_updated', (newMsgs) => {
+      set({ messages: newMsgs });
+    });
     const [msgs, subs] = await Promise.all([
       api.getMessages(),
       api.getSubscribers()
@@ -46,6 +54,7 @@ const useCmsStore = create((set) => ({
     try {
       await api.logout();
     } finally {
+      socket.disconnect();
       set({ isAdmin: false, messages: [], subscribers: [] });
     }
   },
@@ -64,6 +73,14 @@ const useCmsStore = create((set) => ({
     set((state) => ({
       messages: state.messages.filter((m) => m.id !== id),
     }));
+  },
+
+  replyToMessage: async (id, text) => {
+    await api.replyToMessage(id, text);
+    try {
+      const msgs = await api.getMessages();
+      set({ messages: msgs });
+    } catch { /* ignore */ }
   },
 
   refreshMessages: async () => {

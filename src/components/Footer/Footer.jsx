@@ -10,11 +10,11 @@ const Footer = () => {
   return (
     <footer className={styles.footer}>
       <div className={styles.container}>
-        
+
         {/* Big CTA Section */}
         <div className={styles.ctaSection}>
-          <h2 className={styles.hugeTitle}>Projenizi Hayata<br/>Geçirelim.</h2>
-          <Button to="/iletisim" variant="primary" className={styles.ctaBtn}>
+          <h2 className={styles.hugeTitle}>Projenizi Hayata<br />Geçirelim.</h2>
+          <Button to="/iletisim#contact-form" variant="primary" className={styles.ctaBtn}>
             Bize Ulaşın
           </Button>
         </div>
@@ -49,7 +49,6 @@ const Footer = () => {
             <h3>Hızlı Menü</h3>
             <ul>
               <li><Link to="/">Ana Sayfa</Link></li>
-              <li><Link to="/projeler">Projeler</Link></li>
               <li><Link to="/hakkinda">Hakkımızda</Link></li>
               <li><Link to="/iletisim">İletişim</Link></li>
             </ul>
@@ -57,9 +56,8 @@ const Footer = () => {
 
           <div className={styles.contactCol}>
             <h3>İletişim</h3>
-            <a href="mailto:hello@geidostudio.com" className={styles.contactLink}>hello@geidostudio.com</a>
-            <a href="tel:+905551234567" className={styles.contactLink}>+90 (555) 123 45 67</a>
-            <p className={styles.address}>Levent, Beşiktaş<br/>İstanbul, Türkiye</p>
+            <a href="mailto:info@geidostudio.com" className={styles.contactLink}>hello@geidostudio.com</a>
+            <a href="tel:+905530037403" className={styles.contactLink}>+90 (553) 003 74 03</a>
           </div>
 
 

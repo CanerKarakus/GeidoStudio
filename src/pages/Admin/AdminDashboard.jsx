@@ -10,6 +10,7 @@ import {
 const QUICK_LINKS = [
   { path: '/admin/hero',       label: 'Hero / Vitrin',      icon: Layers },
   { path: '/admin/texts',      label: 'İçerik & Metinler',  icon: Edit3 },
+  { path: '/admin/about',      label: 'Hakkımızda',         icon: Globe },
   { path: '/admin/images',     label: 'Görseller',          icon: ImageIcon },
   { path: '/admin/contact',    label: 'İletişim Bilgileri', icon: Globe },
   { path: '/admin/messages',   label: 'Gelen Mesajlar',     icon: MessageSquare },

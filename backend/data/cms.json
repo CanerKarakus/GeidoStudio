@@ -1,7 +1,6 @@
 {
   "heroImages": [
     "/geido_hero.png",
-    "https://i.ibb.co/cXKVWHbR/Chat-GPT-mage-2-May-2026-23-29-18-Nero-A-mage-Upscaler-Photo-Face.png",
     "https://i.ibb.co/6Ryr28Yp/Chat-GPT-mage-2-May-2026-23-32-46-Nero-A-mage-Upscaler-Photo-Face.png"
   ],
   "heroTitle": "Hayalinizdeki Dijital Dünyayı İnşa Ediyoruz",
@@ -9,9 +8,9 @@
   "aboutTitle": "Hakkımızda",
   "aboutText": "Geido Studio, dijital dünyada markalarınızın potansiyelini en üst düzeye çıkarmak için yenilikçi, modern ve etkili çözümler sunar.",
   "aboutImage": "",
-  "contactEmail": "destek@geidostudio.com",
+  "contactEmail": "info@geidostudio.com",
   "contactPhone": "+90 (553) 003 7403",
-  "contactAddress": "Levent, Büyükdere Cd., 34330 Beşiktaş/İstanbul",
+  "contactAddress": "",
   "blogs": [
     {
       "slug": "bu-bir-test-blog-yazisidir-blog",
@@ -22,5 +21,6 @@
       "keywords": "blog, test, merhaba, yok, m, a, s, d, bfv, g, gt, fd, df, dvb, fn, nf, fgnfgn, fgn, fng, hm, tht",
       "date": "4 Mayıs 2026"
     }
-  ]
+  ],
+  "heroSliderDuration": 10
 }

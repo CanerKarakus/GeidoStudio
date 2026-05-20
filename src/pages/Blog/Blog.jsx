@@ -15,8 +15,8 @@ const Blog = () => {
         <div className={styles.heroBackground}></div>
         <div className={styles.heroOverlay}></div>
         <div className={styles.container}>
-          <h1 className={styles.title}>Blog</h1>
-          <p className={styles.description}>
+          <h1 style={{ textAlign: 'center' }} className={styles.title}>Blog</h1>
+          <p style={{ textAlign: 'center' }} className={styles.description}>
             Dijital dünyadaki en son trendler, yenilikler ve Geido Studio'dan içgörüler.
           </p>
         </div>
@@ -39,8 +39,8 @@ const Blog = () => {
                 >
                   <Link to={`/blog/${blog.slug}`} className={styles.cardLink}>
                     <div className={styles.imageWrapper}>
-                      <div 
-                        className={styles.blogImg} 
+                      <div
+                        className={styles.blogImg}
                         style={{ backgroundImage: `url(${blog.image || 'https://images.unsplash.com/photo-1499951360447-b19be8fe80f5?auto=format&fit=crop&q=80&w=800'})` }}
                       ></div>
                       <div className={styles.overlay}>

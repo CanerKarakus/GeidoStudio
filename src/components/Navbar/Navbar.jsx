@@ -44,7 +44,6 @@ const Navbar = () => {
 
   const navLinks = [
     { name: 'Ana Sayfa', path: '/' },
-    { name: 'Projeler', path: '/projeler' },
     { name: 'Hakkında', path: '/hakkinda' },
     { name: 'Blog', path: '/blog' },
     { name: 'İletişim', path: '/iletisim' }
@@ -82,7 +81,7 @@ const Navbar = () => {
           </nav>
 
           <div className={styles.actions}>
-            <Button to="/iletisim" variant="primary" className={styles.contactBtn}>
+            <Button to="/iletisim#contact-form" variant="primary" className={styles.contactBtn}>
               Bize Ulaşın
             </Button>
             <button className={styles.mobileToggle} onClick={toggleMenu} aria-label="Toggle Menu">
@@ -149,7 +148,7 @@ const Navbar = () => {
               </nav>
 
               <div className={styles.sidebarFooter}>
-                <Button to="/iletisim" variant="primary" onClick={closeMenu}>
+                <Button to="/iletisim#contact-form" variant="primary" onClick={closeMenu}>
                   Bize Ulaşın
                 </Button>
               </div>

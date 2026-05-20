@@ -152,6 +152,30 @@
       padding: 0.25rem 0.75rem;
     }
   }
+
+  .memberEmail {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: color(primary);
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    width: fit-content;
+
+    svg {
+      color: color(primary);
+    }
+
+    &:hover {
+      color: color(dark);
+      border-bottom-color: color(primary);
+      transform: translateX(5px);
+    }
+  }
   
   p {
     font-size: 1.125rem;
@@ -318,6 +342,32 @@
 
 .modalBody {
   text-align: center;
+
+  .modalEmail {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+    color: color(primary);
+    
+    svg {
+      width: 24px;
+      height: 24px;
+    }
+    
+    a {
+      color: inherit;
+      text-decoration: none;
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
 
   p {
     font-size: 1.05rem;

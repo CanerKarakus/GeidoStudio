@@ -108,3 +108,39 @@
     cursor: not-allowed;
   }
 }
+
+// ==========================================
+// MOBILE RESPONSIVENESS OVERRIDES
+// ==========================================
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+  
+  .loginCard {
+    padding: 2rem 1.5rem;
+    border-radius: 16px;
+  }
+  
+  .header {
+    margin-bottom: 2rem;
+    
+    h2 {
+      font-size: 1.5rem;
+    }
+    
+    p {
+      font-size: 0.9rem;
+    }
+  }
+  
+  .inputGroup input {
+    padding: 0.8rem;
+    font-size: 0.95rem;
+  }
+  
+  .submitBtn {
+    padding: 1rem;
+    font-size: 0.95rem;
+  }
+}

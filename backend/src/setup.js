@@ -59,7 +59,7 @@ NODE_ENV=production
       aboutTitle: 'Hakkımızda',
       aboutText: 'Geido Studio, dijital dünyada markalarınızın potansiyelini en üst düzeye çıkarmak için yenilikçi, modern ve etkili çözümler sunar.',
       aboutImage: '',
-      contactEmail: 'hello@geidostudio.com',
+      contactEmail: 'info@geidostudio.com',
       contactPhone: '+90 (555) 123 45 67',
       contactAddress: 'Levent, Büyükdere Cd., 34330 Beşiktaş/İstanbul',
     };

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import styles from './AdminDashboard.module.scss';
 import { useCmsForm } from './useCmsForm';
@@ -8,11 +8,18 @@ import {
 } from 'lucide-react';
 
 const AdminHero = () => {
-  const { formData, handleChange, handleSave, isDirty, isSaving, toast } = useCmsForm();
+  const { formData, handleChange, handleSave, updateAndSave, isDirty, isSaving, toast } = useCmsForm();
   const [dragIndex, setDragIndex] = useState(null);
   const [editingUrl, setEditingUrl] = useState(null);
+  const listEndRef = useRef(null);
 
-  const handleAdd = () => handleChange('heroImages', [...(formData.heroImages || []), '']);
+  const handleAdd = () => {
+    const newImages = [...(formData.heroImages || []), ''];
+    updateAndSave('heroImages', newImages);
+    setTimeout(() => {
+      listEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
+  };
 
   const handleImgChange = (i, val) => {
     const imgs = [...(formData.heroImages || [])];
@@ -23,7 +30,7 @@ const AdminHero = () => {
   const handleRemove = (i) => {
     const imgs = [...(formData.heroImages || [])];
     imgs.splice(i, 1);
-    handleChange('heroImages', imgs);
+    updateAndSave('heroImages', imgs);
   };
 
   const onDragStart = (i) => setDragIndex(i);
@@ -37,13 +44,16 @@ const AdminHero = () => {
     handleChange('heroImages', imgs);
     setDragIndex(i);
   };
-  const onDragEnd = () => setDragIndex(null);
+  const onDragEnd = () => {
+    setDragIndex(null);
+    updateAndSave('heroImages', formData.heroImages);
+  };
 
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
       <div className={styles.sectionDesc}>
         <Layers size={18} />
-        <span>Görselleri <strong>sürükleyerek sıralayabilirsiniz.</strong> Birden fazla görsel varsa ana sayfada <strong>15 saniyede bir otomatik kayar.</strong></span>
+        <span>Görselleri <strong>sürükleyerek sıralayabilirsiniz.</strong> Sol taraftaki kutucuktan <strong>kayma süresini ayarlayabilirsiniz.</strong></span>
       </div>
 
       {isDirty && (
@@ -56,7 +66,34 @@ const AdminHero = () => {
       )}
 
       <div className={styles.heroBannerHeader}>
-        <h3>{formData.heroImages?.length || 0} Görsel</h3>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
+          <h3>{formData.heroImages?.length || 0} Görsel</h3>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <label style={{ fontSize: '0.8rem', color: '#a0a0a0', fontWeight: '500' }}>Süre (Saniye):</label>
+            <input 
+              type="number" 
+              min="1"
+              value={formData.heroSliderDuration !== undefined ? formData.heroSliderDuration : 15}
+              onChange={(e) => {
+                const val = e.target.value;
+                handleChange('heroSliderDuration', val === '' ? '' : Number(val));
+              }}
+              onBlur={(e) => {
+                const val = e.target.value;
+                const num = val === '' || Number(val) < 1 ? 15 : Number(val);
+                updateAndSave('heroSliderDuration', num);
+              }}
+              onKeyDown={(e) => { 
+                if (e.key === 'Enter') {
+                  const val = e.target.value;
+                  const num = val === '' || Number(val) < 1 ? 15 : Number(val);
+                  updateAndSave('heroSliderDuration', num);
+                } 
+              }}
+              style={{ width: '60px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '0.4rem 0.5rem', borderRadius: '6px', fontSize: '0.9rem' }}
+            />
+          </div>
+        </div>
         <button className={styles.addBtn} onClick={handleAdd}><Plus size={16} /> Yeni Görsel Ekle</button>
       </div>
 
@@ -84,7 +121,8 @@ const AdminHero = () => {
                   <input className={styles.heroBannerUrlInput} type="text" autoFocus
                     placeholder="https://example.com/hero.jpg" value={img}
                     onChange={e => handleImgChange(index, e.target.value)}
-                    onBlur={() => setEditingUrl(null)} onKeyDown={e => e.key === 'Enter' && setEditingUrl(null)} />
+                    onBlur={() => { setEditingUrl(null); handleSave(); }}
+                    onKeyDown={e => { if (e.key === 'Enter') { setEditingUrl(null); handleSave(); } }} />
                 ) : (
                   <div className={styles.heroBannerUrl} onClick={() => setEditingUrl(index)}>
                     <span className={styles.urlText}>{img || 'URL girilmedi — tıklayın'}</span>
@@ -99,6 +137,7 @@ const AdminHero = () => {
         {(formData.heroImages || []).length === 0 && (
           <div className={styles.emptyImageSlot}><ImageIcon size={40} /><p>Henüz hero görseli eklenmedi.<br /><strong>"Yeni Görsel Ekle"</strong> butonuna tıklayın.</p></div>
         )}
+        <div ref={listEndRef} style={{ height: '1px' }} />
       </div>
 
       {/* Toast */}

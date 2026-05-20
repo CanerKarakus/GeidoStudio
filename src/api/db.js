@@ -5,7 +5,14 @@
  * - Backend URL from environment variable (set in Netlify)
  */
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+import { io } from 'socket.io-client';
+
+const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3001';
+
+export const socket = io(BASE_URL, {
+  autoConnect: false,
+  withCredentials: true,
+});
 
 const request = async (method, endpoint, body = null) => {
   const options = {
@@ -57,8 +64,18 @@ export const api = {
   addMessage: (msg) =>
     request('POST', '/api/messages', msg),
 
+  replyToMessage: (id, text) =>
+    request('POST', `/api/messages/${id}/reply`, { text }),
+
   deleteMessage: (id) =>
     request('DELETE', `/api/messages/${id}`),
+
+  // ── Ticket (Public) ────────────────────────────────────────────────────────
+  getTicket: (id) =>
+    request('GET', `/api/messages/ticket/${id}`),
+
+  replyToTicket: (id, text) =>
+    request('POST', `/api/messages/ticket/${id}/reply`, { text }),
 
   // ── Newsletter ────────────────────────────────────────────────────────────
   getSubscribers: () =>

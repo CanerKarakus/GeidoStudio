@@ -50,6 +50,9 @@ const LoadingScreen = () => {
           loop
           muted
           playsInline
+          disablePictureInPicture
+          disableRemotePlayback
+          x-webkit-airplay="deny"
         >
           <source src={loadingVideoWebm} type="video/webm" />
           <source src={loadingVideoMov} type="video/quicktime" />

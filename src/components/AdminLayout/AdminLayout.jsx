@@ -1,4 +1,5 @@
 import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useEffect, useRef } from 'react';
 import useCmsStore from '../../store/cmsStore';
 import styles from '../../pages/Admin/AdminDashboard.module.scss';
 import {
@@ -11,6 +12,7 @@ const NAV_ITEMS = [
   { path: '/admin',          label: 'Genel Bakış',       icon: LayoutDashboard, exact: true },
   { path: '/admin/hero',     label: 'Hero / Vitrin',     icon: Layers },
   { path: '/admin/texts',    label: 'İçerik & Metinler', icon: Edit3 },
+  { path: '/admin/about',    label: 'Hakkımızda',        icon: Globe },
   { path: '/admin/images',   label: 'Görseller',         icon: ImageIcon },
   { path: '/admin/blog',     label: 'Blog Yönetimi',     icon: FileText },
   { path: '/admin/contact',  label: 'İletişim Bilgileri', icon: Globe },
@@ -22,6 +24,16 @@ const AdminLayout = () => {
   const { isAdmin, isLoading, logout, messages } = useCmsStore();
   const location = useLocation();
   const navigate = useNavigate();
+  const navRef = useRef(null);
+
+  useEffect(() => {
+    if (navRef.current) {
+      const activeElement = navRef.current.querySelector(`.${styles.navActive}`);
+      if (activeElement) {
+        activeElement.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+      }
+    }
+  }, [location.pathname]);
 
   if (isLoading) {
     return (
@@ -61,7 +73,7 @@ const AdminLayout = () => {
           </div>
         </div>
 
-        <nav className={styles.sidebarNav}>
+        <nav ref={navRef} className={styles.sidebarNav}>
           {NAV_ITEMS.map(item => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path;

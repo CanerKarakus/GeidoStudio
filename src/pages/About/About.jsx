@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import useCmsStore from '../../store/cmsStore';
 import { m, AnimatePresence } from 'framer-motion';
 import styles from './About.module.scss';
-import { Palette, Code2, X } from 'lucide-react';
+import { Palette, Code2, X, Mail } from 'lucide-react';
 
 const memberDetails = {
   yasarhan: {
     name: 'Yaşarhan Pekergin',
     role: 'Grafik Tasarım & Sosyal Medya Yönetimi',
+    email: 'yasarhanpekergin@geidostudio.com',
     icon: <Palette size={48} />,
     bio: 'Görsel iletişimin gücüne inanarak markaların hikayelerini estetik ve akılda kalıcı tasarımlarla anlatıyoruz. Sanat ve dijital dünyanın kesiştiği noktada markanıza eşsiz bir kimlik kazandırmak için buradayım. Detaylara olan tutkumla projelerinizi hayata geçiriyorum.',
     focus: ['Marka Kimliği', 'Kullanıcı Deneyimi (UX)', 'Yaratıcı Yönetim']
@@ -15,6 +16,7 @@ const memberDetails = {
   caner: {
     name: 'Caner Karakuş',
     role: 'Yazılım & Teknoloji',
+    email: 'canerkarakus@geidostudio.com',
     icon: <Code2 size={48} />,
     bio: 'Modern teknolojileri kullanarak performanslı, güvenli ve ölçeklenebilir dijital çözümler üretiyoruz. Kullanıcı deneyimini kodun gücüyle birleştirerek sadece çalışan değil, aynı zamanda fark yaratan web ve mobil uygulamalar geliştiriyorum.',
     focus: ['Full-Stack Geliştirme', 'Sistem Mimarisi', 'Performans Optimizasyonu']
@@ -58,7 +60,10 @@ const About = () => {
             className={styles.memberCard}
           >
             <div className={styles.memberVisual}>
-              <div className={`${styles.avatarPlaceholder} ${styles.yasarhan}`}></div>
+              <div 
+                className={`${styles.avatarPlaceholder} ${styles.yasarhan}`}
+                style={cms?.aboutTeamYasarhanImage ? { backgroundImage: `url(${cms.aboutTeamYasarhanImage})` } : {}}
+              ></div>
               <div 
                 className={styles.floatingIcon} 
                 onClick={() => setSelectedMember('yasarhan')}
@@ -71,6 +76,9 @@ const About = () => {
             <div className={styles.memberInfo}>
               <h2>Yaşarhan Pekergin</h2>
               <h3 className={styles.role}>Grafik Tasarım & Sosyal Medya Yönetimi</h3>
+              <a href="mailto:yasarhanpekergin@geidostudio.com" className={styles.memberEmail}>
+                <Mail size={16} /> yasarhanpekergin@geidostudio.com
+              </a>
               <p>Görsel iletişimin gücüne inanarak markaların hikayelerini estetik ve akılda kalıcı tasarımlarla anlatıyoruz.</p>
               
               <div className={styles.skills}>
@@ -104,7 +112,10 @@ const About = () => {
             className={`${styles.memberCard} ${styles.reverse}`}
           >
             <div className={styles.memberVisual}>
-              <div className={`${styles.avatarPlaceholder} ${styles.caner}`}></div>
+              <div 
+                className={`${styles.avatarPlaceholder} ${styles.caner}`}
+                style={cms?.aboutTeamCanerImage ? { backgroundImage: `url(${cms.aboutTeamCanerImage})` } : {}}
+              ></div>
               <div 
                 className={styles.floatingIcon}
                 onClick={() => setSelectedMember('caner')}
@@ -117,6 +128,9 @@ const About = () => {
             <div className={styles.memberInfo}>
               <h2>Caner Karakuş</h2>
               <h3 className={styles.role}>Yazılım & Teknoloji</h3>
+              <a href="mailto:canerkarakus@geidostudio.com" className={styles.memberEmail}>
+                <Mail size={16} /> canerkarakus@geidostudio.com
+              </a>
               <p>Modern teknolojileri kullanarak performanslı, güvenli ve ölçeklenebilir dijital çözümler üretiyoruz.</p>
               
               <div className={styles.skills}>
@@ -174,6 +188,10 @@ const About = () => {
               </div>
               
               <div className={styles.modalBody}>
+                <div className={styles.modalEmail}>
+                  <Mail size={18} />
+                  <a href={`mailto:${memberDetails[selectedMember].email}`}>{memberDetails[selectedMember].email}</a>
+                </div>
                 <p>{memberDetails[selectedMember].bio}</p>
                 
                 <div className={styles.focusArea}>

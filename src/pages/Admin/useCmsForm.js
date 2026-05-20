@@ -39,5 +39,20 @@ export function useCmsForm() {
     }
   };
 
-  return { cms, formData, setFormData, handleChange, handleSave, isDirty, isSaving, toast, showToast };
+  const updateAndSave = async (field, value) => {
+    const newFormData = { ...formData, [field]: value };
+    setFormData(newFormData);
+    setIsSaving(true);
+    try {
+      await updateCMS(newFormData);
+      setIsDirty(false);
+      showToast('Değişiklikler otomatik kaydedildi!', 'success');
+    } catch {
+      showToast('Kaydedilirken hata oluştu.', 'error');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  return { cms, formData, setFormData, handleChange, handleSave, updateAndSave, isDirty, isSaving, toast, showToast };
 }

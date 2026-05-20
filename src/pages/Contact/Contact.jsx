@@ -18,13 +18,13 @@ const Contact = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSelectOpen, setIsSelectOpen] = useState(false);
   const dropdownRef = useRef(null);
-  
+
   const cms = useCmsStore(state => state.cms);
   const addMessage = useCmsStore(state => state.addMessage);
-  
-  const { 
-    register, 
-    handleSubmit, 
+
+  const {
+    register,
+    handleSubmit,
     setValue,
     watch,
     formState: { errors, isSubmitting },
@@ -42,6 +42,16 @@ const Contact = () => {
   useEffect(() => {
     // Register the custom field manually if needed, but we used defaultValues and setValue
     register("service", { required: "Lütfen bir hizmet seçiniz" });
+
+    // Handle anchor link scrolling on mount
+    if (window.location.hash === '#contact-form') {
+      setTimeout(() => {
+        const el = document.getElementById('contact-form');
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
+    }
   }, [register]);
 
   useEffect(() => {
@@ -67,14 +77,14 @@ const Contact = () => {
       reset({ service: '' });
       setTimeout(() => setIsSubmitted(false), 5000);
     } catch (err) {
-      alert("Mesaj gönderilirken bir hata oluştu.");
+      alert(err.message || "Mesaj gönderilirken bir hata oluştu.");
     }
   };
 
   const handlePhoneChange = (e) => {
     const input = e.target;
     let value = input.value;
-    
+
     // Ensure prefix +90 is always there and has a space
     if (!value.startsWith('+90')) {
       value = '+90 ' + value.replace(/^\+90\s*/, '');
@@ -84,7 +94,7 @@ const Contact = () => {
 
     // Extract digits only after +90
     let digits = value.slice(3).replace(/\D/g, '');
-    
+
     // Detect if backspace was pressed on a formatting character
     const isDeleting = e.nativeEvent.inputType === 'deleteContentBackward';
     if (isDeleting) {
@@ -96,13 +106,13 @@ const Contact = () => {
 
     // Limit to 10 digits
     let processed = digits.slice(0, 10);
-    
+
     // If user starts typing, enforce '5' as first digit, 
     // but only if there is actually a digit.
     if (processed.length > 0 && processed[0] !== '5') {
       processed = '5' + processed.slice(1);
     }
-    
+
     input.setAttribute('data-digits', processed);
 
     let formatted = '+90 ';
@@ -127,17 +137,17 @@ const Contact = () => {
 
   return (
     <div className={styles.contactPage}>
-      
+
       {/* Huge Header */}
       <div className={styles.pageHeader}>
         <div className={styles.container}>
-          <m.div 
+          <m.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             className={styles.headerContent}
           >
             <span className={styles.subtitle}>İletişim</span>
-            <h1 className={styles.title}>Birlikte mükemmel<br/>işler yaratalım.</h1>
+            <h1 className={styles.title}>Birlikte mükemmel<br />işler yaratalım.</h1>
             <p className={styles.description}>
               Yeni bir projeniz mi var? Ekibimiz, vizyonunuzu hayata geçirmek için hazır. Bize hemen ulaşın.
             </p>
@@ -147,7 +157,7 @@ const Contact = () => {
 
       <div className={styles.container}>
         {/* Contact Cards Row */}
-        <m.div 
+        <m.div
           className={styles.cardsRow}
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
@@ -157,16 +167,9 @@ const Contact = () => {
             <div className={styles.iconBox}><Mail /></div>
             <h3>E-posta</h3>
             <p>Bize dilediğiniz zaman yazın.</p>
-            <a href={`mailto:${cms?.contactEmail || 'iletisim@geidostudio.com'}`}>{cms?.contactEmail || 'iletisim@geidostudio.com'}</a>
+            <a href={`mailto:${cms?.contactEmail || 'info@geidostudio.com'}`}>{cms?.contactEmail || 'info@geidostudio.com'}</a>
           </div>
-          
-          <div className={styles.contactCard}>
-            <div className={styles.iconBox}><MapPin /></div>
-            <h3>Ofisimiz</h3>
-            <p>Ziyaretinizden memnuniyet duyarız.</p>
-            <address>{cms?.contactAddress || 'Kolektif House, Levent\nİstanbul, Türkiye'}</address>
-          </div>
-          
+
           <div className={styles.contactCard}>
             <div className={styles.iconBox}><Phone /></div>
             <h3>Telefon</h3>
@@ -176,7 +179,8 @@ const Contact = () => {
         </m.div>
 
         {/* Minimalist Form */}
-        <m.div 
+        <m.div
+          id="contact-form"
           className={styles.formContainer}
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
@@ -186,7 +190,7 @@ const Contact = () => {
             <h2>Mesaj Gönderin</h2>
             <p>Aşağıdaki formu doldurun, en kısa sürede size dönüş yapalım.</p>
           </div>
-          
+
           {isSubmitted && (
             <div className={styles.successMessage}>
               Mesajınız başarıyla gönderildi. Teşekkür ederiz!
@@ -194,33 +198,33 @@ const Contact = () => {
           )}
 
           <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
-            
+
             <div className={styles.row}>
               <div className={styles.formGroup}>
                 <label htmlFor="fullName">Ad Soyad</label>
-                <input 
+                <input
                   id="fullName"
                   placeholder="John Doe"
                   className={errors.fullName ? styles.errorInput : ''}
-                  {...register("fullName", { required: "Ad Soyad alanı zorunludur" })} 
+                  {...register("fullName", { required: "Ad Soyad alanı zorunludur" })}
                 />
                 {errors.fullName && <span className={styles.errorText}>{errors.fullName.message}</span>}
               </div>
 
               <div className={styles.formGroup}>
                 <label htmlFor="email">E-posta</label>
-                <input 
+                <input
                   id="email"
                   type="email"
                   placeholder="ornek@email.com"
                   className={errors.email ? styles.errorInput : ''}
-                  {...register("email", { 
+                  {...register("email", {
                     required: "E-posta alanı zorunludur",
                     pattern: {
                       value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
                       message: "Geçerli bir e-posta adresi giriniz"
                     }
-                  })} 
+                  })}
                 />
                 {errors.email && <span className={styles.errorText}>{errors.email.message}</span>}
               </div>
@@ -229,7 +233,7 @@ const Contact = () => {
             <div className={styles.row}>
               <div className={styles.formGroup}>
                 <label htmlFor="phone">Telefon</label>
-                <input 
+                <input
                   id="phone"
                   type="tel"
                   placeholder="+90 (5XX) XXX XXXX"
@@ -240,17 +244,17 @@ const Contact = () => {
 
               <div className={styles.formGroup} ref={dropdownRef}>
                 <label>Konu</label>
-                <div 
+                <div
                   className={clsx(styles.customSelect, { [styles.errorInput]: errors.service, [styles.open]: isSelectOpen })}
                   onClick={() => setIsSelectOpen(!isSelectOpen)}
                 >
                   <span>{selectedServiceLabel}</span>
                   <ChevronDown size={20} className={styles.chevron} />
                 </div>
-                
+
                 <AnimatePresence>
                   {isSelectOpen && (
-                    <m.ul 
+                    <m.ul
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
@@ -258,8 +262,8 @@ const Contact = () => {
                       className={styles.dropdownOptions}
                     >
                       {services.map(s => (
-                        <li 
-                          key={s.value} 
+                        <li
+                          key={s.value}
                           onClick={() => {
                             setValue("service", s.value, { shouldValidate: true });
                             setIsSelectOpen(false);
@@ -272,14 +276,14 @@ const Contact = () => {
                     </m.ul>
                   )}
                 </AnimatePresence>
-                
+
                 {errors.service && <span className={styles.errorText}>{errors.service.message}</span>}
               </div>
             </div>
 
             <div className={styles.formGroup}>
               <label htmlFor="message">Projenizden Bahsedin</label>
-              <textarea 
+              <textarea
                 id="message"
                 rows="4"
                 placeholder="Nasıl yardımcı olabiliriz?"
@@ -290,9 +294,9 @@ const Contact = () => {
             </div>
 
             <div className={styles.submitArea}>
-              <Button 
-                type="submit" 
-                variant="primary" 
+              <Button
+                type="submit"
+                variant="primary"
                 className={styles.submitBtn}
                 disabled={isSubmitting}
               >

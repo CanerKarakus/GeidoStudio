@@ -20,6 +20,25 @@
   border: none;
   display: block;
   mix-blend-mode: screen;
+  pointer-events: none;
+  -webkit-user-select: none;
+  user-select: none;
+
+  &::-webkit-media-controls {
+    display: none !important;
+  }
+
+  &::-webkit-media-controls-enclosure {
+    display: none !important;
+  }
+
+  &::-webkit-media-controls-overlay-play-button {
+    display: none !important;
+  }
+
+  &::-webkit-media-controls-start-playback-button {
+    display: none !important;
+  }
 }
 
 @media (max-width: 768px) {

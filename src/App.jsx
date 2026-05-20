@@ -23,6 +23,7 @@ const PrivacyPolicy = lazy(() => import('./pages/Legal/PrivacyPolicy'));
 const TermsOfService = lazy(() => import('./pages/Legal/TermsOfService'));
 const CookiePolicy = lazy(() => import('./pages/Legal/CookiePolicy'));
 const KvkkPolicy = lazy(() => import('./pages/Legal/KvkkPolicy'));
+const Ticket = lazy(() => import('./pages/Ticket/Ticket'));
 
 // Admin pages
 const AdminLayout = lazy(() => import('./components/AdminLayout/AdminLayout'));
@@ -35,6 +36,7 @@ const AdminContact = lazy(() => import('./pages/Admin/AdminContact'));
 const AdminMessages = lazy(() => import('./pages/Admin/AdminMessages'));
 const AdminBlog = lazy(() => import('./pages/Admin/AdminBlog'));
 const AdminNewsletter = lazy(() => import('./pages/Admin/AdminNewsletter'));
+const AdminAbout = lazy(() => import('./pages/Admin/AdminAbout'));
 
 import useCmsStore from './store/cmsStore';
 
@@ -57,6 +59,7 @@ function AnimatedRoutes() {
         <Route path="/kullanim-kosullari" element={<PageTransition><TermsOfService /></PageTransition>} />
         <Route path="/cerez-politikasi" element={<PageTransition><CookiePolicy /></PageTransition>} />
         <Route path="/kvkk" element={<PageTransition><KvkkPolicy /></PageTransition>} />
+        <Route path="/ticket/:id" element={<PageTransition><Ticket /></PageTransition>} />
         
         {/* Admin Routes */}
         <Route path="/admin/login" element={<Suspense fallback={<LoadingScreen />}><AdminLogin /></Suspense>} />
@@ -69,6 +72,7 @@ function AnimatedRoutes() {
           <Route path="contact" element={<AdminContact />} />
           <Route path="messages" element={<AdminMessages />} />
           <Route path="newsletter" element={<AdminNewsletter />} />
+          <Route path="about" element={<AdminAbout />} />
         </Route>
 
         {/* 404 Route */}

@@ -3,7 +3,6 @@ import styles from './Home.module.scss';
 import { ArrowUpRight } from 'lucide-react';
 import { m, AnimatePresence } from 'framer-motion';
 import Button from '../../components/Button/Button';
-import { projectsData } from '../../data/projectsData';
 import { Link } from 'react-router-dom';
 import useCmsStore from '../../store/cmsStore';
 import CookieBanner from '../../components/CookieBanner/CookieBanner';
@@ -32,12 +31,15 @@ const Home = () => {
   // Auto-advance — always slides forward
   useEffect(() => {
     if (heroImages.length <= 1) return;
+    
+    const duration = (cms?.heroSliderDuration || 15) * 1000;
+    
     timerRef.current = setTimeout(() => {
       setDirection(1);
       setCurrentSlide((prev) => (prev + 1) % heroImages.length);
-    }, 13000);
+    }, duration);
     return () => clearTimeout(timerRef.current);
-  }, [heroImages, currentSlide]);
+  }, [heroImages, currentSlide, cms?.heroSliderDuration]);
 
   const articles = cms?.blogs || [];
 
@@ -113,10 +115,10 @@ const Home = () => {
 
           <div className={styles.servicesGrid}>
             {[
-              { title: 'Grafik Tasarım & Branding', desc: 'Markanızın ruhunu yansıtan, yaratıcı ve akılda kalıcı görsel dünyalar ve kurumsal kimlikler inşa ediyoruz.' },
-              { title: 'Web Geliştirme', desc: 'Hızlı, güvenli ve ölçeklenebilir altyapılar ile hayalinizdeki projeleri hayata geçiriyoruz.' },
+              { title: 'Grafik Tasarım & Branding', desc: 'Markanızın ruhunu yansıtan, yaratıcı ve akılda kalıcı görsel dünyalar ve kurumsal kimlikler inşa ediyoruz.', highlight: true },
+              { title: 'Web Geliştirme', desc: 'Hızlı, güvenli ve ölçeklenebilir altyapılar ile hayalinizdeki projeleri hayata geçiriyoruz.', highlight: true },
               { title: 'Mobil Uygulama', desc: 'Hem iOS hem Android için kullanıcı dostu ve yenilikçi mobil uygulama çözümleri sunuyoruz.', highlight: true },
-              { title: 'Sosyal Medya Yönetimi', desc: 'Markanızın dijital kimliğini stratejik içeriklerle hedef kitlenize en iyi şekilde yansıtıyoruz.' }
+              { title: 'Sosyal Medya Yönetimi', desc: 'Markanızın dijital kimliğini stratejik içeriklerle hedef kitlenize en iyi şekilde yansıtıyoruz.', highlight: true }
             ].map((s, i) => (
               <div key={i} className={`${styles.serviceCard} ${s.highlight ? styles.highlight : ''}`}>
                 <div className={styles.cardIcon}></div>
@@ -129,35 +131,6 @@ const Home = () => {
         </div>
       </section>
 
-      {/* PROJECTS SECTION */}
-      <section className={styles.projects}>
-        <div className={styles.container}>
-          <div className={styles.sectionHeader}>
-            <div>
-              <span className={styles.subtitle}>Projelerimiz</span>
-              <h2 className={styles.title}>Fark Yaratan Tasarımlar<br/>Üretiyoruz</h2>
-            </div>
-            <Button to="/projeler" variant="primary">Daha Fazla Proje Gör</Button>
-          </div>
-
-          <div className={styles.projectsGrid}>
-            {projectsData.slice(0, 4).map((p, i) => (
-              <div key={p.id} className={styles.projectCard}>
-                <div className={styles.projectImageWrapper}>
-                  <div className={styles.projectImage} style={{ backgroundImage: `url(${p.image})` }}></div>
-                </div>
-                <div className={`${styles.projectInfo} ${i === 1 ? styles.highlightInfo : ''}`}>
-                  <div>
-                    <h3>{p.title}</h3>
-                    <span>{p.category}</span>
-                  </div>
-                  <div className={styles.arrowIcon}><ArrowUpRight size={24} strokeWidth={1.5} /></div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* ARTICLES SECTION */}
       <section className={styles.articles}>
