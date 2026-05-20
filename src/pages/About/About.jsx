@@ -43,9 +43,6 @@ const About = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
         >
-          {cms?.aboutImage && (
-            <div className={styles.aboutImage} style={{ backgroundImage: `url(${cms.aboutImage})` }}></div>
-          )}
           <div className={styles.aboutText}>
             <p>{cms?.aboutText || 'Geido Studio, dijital dünyada markalarınızın potansiyelini en üst düzeye çıkarmak için yenilikçi, modern ve etkili çözümler sunar.'}</p>
           </div>

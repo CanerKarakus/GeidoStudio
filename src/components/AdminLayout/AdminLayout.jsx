@@ -15,9 +15,10 @@ const NAV_ITEMS = [
   { path: '/admin/about',    label: 'Hakkımızda',        icon: Globe },
   { path: '/admin/images',   label: 'Görseller',         icon: ImageIcon },
   { path: '/admin/blog',     label: 'Blog Yönetimi',     icon: FileText },
+  { path: '/admin/projects', label: 'Projeler',          icon: Layers },
   { path: '/admin/contact',  label: 'İletişim Bilgileri', icon: Globe },
   { path: '/admin/messages', label: 'Gelen Mesajlar',    icon: MessageSquare },
-  { path: '/admin/newsletter', label: 'Bülten Aboneleri', icon: Globe },
+  { path: '/admin/newsletter', label: 'Bülten', icon: Globe },
 ];
 
 const AdminLayout = () => {

@@ -5,6 +5,7 @@ import { m, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
 import Button from '../Button/Button';
 import styles from './Navbar.module.scss';
+import logoImg from '../../assets/logo/geido_logo.png';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -44,6 +45,7 @@ const Navbar = () => {
 
   const navLinks = [
     { name: 'Ana Sayfa', path: '/' },
+    { name: 'Projeler', path: '/projeler' },
     { name: 'Hakkında', path: '/hakkinda' },
     { name: 'Blog', path: '/blog' },
     { name: 'İletişim', path: '/iletisim' }
@@ -57,11 +59,7 @@ const Navbar = () => {
       })}>
         <div className={styles.container}>
           <Link to="/" className={styles.logo} onClick={closeMenu}>
-            <div className={styles.logoIcon}>
-              <span className={styles.greenTriangle}></span>
-              <span className={styles.blackTriangle}></span>
-            </div>
-            <span className={styles.logoText}>geidostudio</span>
+            <img src={logoImg} alt="Geido Studio" style={{ height: '36px', filter: 'brightness(0) invert(1)', marginLeft: '16px' }} />
           </Link>
 
           {/* Desktop nav */}
@@ -115,11 +113,7 @@ const Navbar = () => {
             >
               <div className={styles.sidebarHeader}>
                 <Link to="/" className={styles.logo} onClick={closeMenu}>
-                  <div className={styles.logoIcon}>
-                    <span className={styles.greenTriangle}></span>
-                    <span className={styles.blackTriangle}></span>
-                  </div>
-                  <span className={styles.logoText}>geidostudio</span>
+                  <img src={logoImg} alt="Geido Studio" style={{ height: '36px', filter: 'brightness(0) invert(1)', marginLeft: '16px' }} />
                 </Link>
                 <button className={styles.closeBtn} onClick={closeMenu} aria-label="Close Menu">
                   <X size={22} />

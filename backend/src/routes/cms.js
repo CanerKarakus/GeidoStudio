@@ -19,7 +19,7 @@ const DEFAULT_CMS = {
   heroSubtitle: 'Modern, estetik ve işlevsel web çözümleri ile markanızı geleceğe taşıyın. Profesyonel tasarım ve yazılım ajansı.',
   aboutTitle: 'Hakkımızda',
   aboutText: 'Geido Studio, dijital dünyada markalarınızın potansiyelini en üst düzeye çıkarmak için yenilikçi, modern ve etkili çözümler sunar.',
-  aboutImage: '',
+  projectsHeroImage: '',
   aboutTeamYasarhanImage: '',
   aboutTeamCanerImage: '',
   contactEmail: 'hello@geidostudio.com',
@@ -44,10 +44,10 @@ const writeCMS = (data) => {
 // Allowed CMS fields — prevent unexpected data injection
 const ALLOWED_FIELDS = [
   'heroImages', 'heroSliderDuration', 'heroTitle', 'heroSubtitle',
-  'aboutTitle', 'aboutText', 'aboutImage',
+  'aboutTitle', 'aboutText', 'projectsHeroImage',
   'aboutTeamYasarhanImage', 'aboutTeamCanerImage',
   'contactEmail', 'contactPhone', 'contactAddress',
-  'blogs',
+  'blogs', 'projects',
 ];
 
 // ── GET /api/cms ─────────────────────────────────────────────────────────────
@@ -61,6 +61,7 @@ router.get('/', (req, res) => {
 // Admin only
 router.put('/', authMiddleware, (req, res) => {
   try {
+    console.log('[CMS PUT] Received body:', req.body);
     const current = readCMS();
     const updated = { ...current };
 

@@ -4,6 +4,7 @@ const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 const rateLimit = require('express-rate-limit');
 const authMiddleware = require('../middleware/auth');
+const { sendEmail } = require('../services/emailService');
 
 const router = express.Router();
 
@@ -62,10 +63,69 @@ router.post('/', subscribeLimiter, (req, res) => {
   }
 });
 
+// POST /api/newsletter/unsubscribe
+router.post('/unsubscribe', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ error: 'E-posta gerekli.' });
+    }
+
+    const subscribers = readSubscribers();
+    const filtered = subscribers.filter(s => s.email !== email);
+
+    if (filtered.length === subscribers.length) {
+      return res.json({ success: true, message: 'Bu e-posta zaten abonelikten çıkmış veya bulunamadı.' });
+    }
+
+    writeSubscribers(filtered);
+
+    const htmlMessage = `<p>Merhaba,</p><p><b>${email}</b> adresli e-postanız bülten listemizden başarıyla çıkarılmıştır.</p><p>Eğer fikrinizi değiştirirseniz web sitemizden tekrar kayıt olabilirsiniz.</p>`;
+    await sendEmail(email, 'Abonelikten Ayrıldınız - Geido Studio', 'Bülten aboneliğinden ayrıldınız.', htmlMessage).catch(err => console.error(err));
+
+    return res.json({ success: true, message: 'Başarıyla abonelikten çıkıldı.' });
+  } catch (err) {
+    console.error('[Newsletter] Unsubscribe error:', err.message);
+    return res.status(500).json({ error: 'Abonelikten çıkılamadı.' });
+  }
+});
+
 // GET /api/newsletter
 router.get('/', authMiddleware, (req, res) => {
   const subscribers = readSubscribers();
   return res.json(subscribers);
+});
+
+// POST /api/newsletter/send
+router.post('/send', authMiddleware, async (req, res) => {
+  try {
+    const { subject, message } = req.body;
+    if (!subject || !message) {
+      return res.status(400).json({ error: 'Konu ve mesaj alanları zorunludur.' });
+    }
+
+    const subscribers = readSubscribers();
+    if (subscribers.length === 0) {
+      return res.status(400).json({ error: 'Hiç abone bulunamadı.' });
+    }
+
+    const htmlMessage = message.replace(/\n/g, '<br/>');
+
+    // Send emails sequentially to avoid spamming the SMTP server or being flagged immediately
+    for (const sub of subscribers) {
+      await sendEmail(
+        sub.email,
+        subject,
+        message,
+        htmlMessage
+      ).catch(err => console.error(`Bülten ${sub.email} adresine gönderilemedi:`, err));
+    }
+
+    return res.json({ success: true, message: `${subscribers.length} kişiye başarıyla gönderildi.` });
+  } catch (err) {
+    console.error('[Newsletter] Broadcast error:', err.message);
+    return res.status(500).json({ error: 'Toplu e-posta gönderilirken bir hata oluştu.' });
+  }
 });
 
 // DELETE /api/newsletter/:id

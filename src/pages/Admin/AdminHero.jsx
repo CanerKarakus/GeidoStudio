@@ -4,8 +4,9 @@ import styles from './AdminDashboard.module.scss';
 import { useCmsForm } from './useCmsForm';
 import {
   Image as ImageIcon, Plus, Trash2, GripVertical, Pencil,
-  Layers, Save, Check, AlertCircle
+  Layers, Save, Check, AlertCircle, Upload
 } from 'lucide-react';
+import { api } from '../../api/db';
 
 const AdminHero = () => {
   const { formData, handleChange, handleSave, updateAndSave, isDirty, isSaving, toast } = useCmsForm();
@@ -31,6 +32,19 @@ const AdminHero = () => {
     const imgs = [...(formData.heroImages || [])];
     imgs.splice(i, 1);
     updateAndSave('heroImages', imgs);
+  };
+
+  const handleUpload = async (index, file) => {
+    if (!file) return;
+    try {
+      // Optional: add a temporary loading state or just wait
+      const url = await api.uploadImage(file);
+      const imgs = [...(formData.heroImages || [])];
+      imgs[index] = url;
+      updateAndSave('heroImages', imgs);
+    } catch (err) {
+      toast({ type: 'error', msg: err.message || 'Yükleme başarısız.' });
+    }
   };
 
   const onDragStart = (i) => setDragIndex(i);
@@ -124,10 +138,16 @@ const AdminHero = () => {
                     onBlur={() => { setEditingUrl(null); handleSave(); }}
                     onKeyDown={e => { if (e.key === 'Enter') { setEditingUrl(null); handleSave(); } }} />
                 ) : (
-                  <div className={styles.heroBannerUrl} onClick={() => setEditingUrl(index)}>
-                    <span className={styles.urlText}>{img || 'URL girilmedi — tıklayın'}</span>
-                    <Pencil size={13} />
-                  </div>
+                  <>
+                    <div className={styles.heroBannerUrl} onClick={() => setEditingUrl(index)} style={{ flex: 1 }}>
+                      <span className={styles.urlText}>{img || 'URL girilmedi — tıklayın'}</span>
+                      <Pencil size={13} />
+                    </div>
+                    <label style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '0.4rem', color: '#a0a0a0', background: 'rgba(255,255,255,0.05)', borderRadius: '4px', marginLeft: '0.5rem' }} title="Cihazdan Yükle">
+                      <Upload size={14} />
+                      <input type="file" style={{ display: 'none' }} accept="image/*" onChange={e => handleUpload(index, e.target.files[0])} />
+                    </label>
+                  </>
                 )}
               </div>
               <button className={styles.heroBannerDeleteBtn} onClick={() => handleRemove(index)} title="Görseli Sil"><Trash2 size={15} /></button>

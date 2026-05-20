@@ -42,6 +42,7 @@ const Home = () => {
   }, [heroImages, currentSlide, cms?.heroSliderDuration]);
 
   const articles = cms?.blogs || [];
+  const projects = cms?.projects || [];
 
   return (
     <div className={styles.home}>
@@ -131,6 +132,40 @@ const Home = () => {
         </div>
       </section>
 
+
+      {/* PROJECTS SECTION */}
+      <section className={styles.projects}>
+        <div className={styles.container}>
+          <div className={styles.sectionHeader}>
+            <div>
+              <span className={styles.subtitle}>Projelerimiz</span>
+              <h2 className={styles.title}>Fark Yaratan Tasarımlar<br/>Üretiyoruz</h2>
+            </div>
+            <Button to="/projeler" variant="primary">Daha Fazla Proje Gör</Button>
+          </div>
+
+          <div className={styles.projectsGrid}>
+            {projects.length > 0 ? (
+              projects.slice(0, 4).map((p, i) => (
+                <div key={p.id || p.slug} className={styles.projectCard}>
+                  <div className={styles.projectImageWrapper}>
+                    <div className={styles.projectImage} style={{ backgroundImage: `url(${p.image})` }}></div>
+                  </div>
+                  <div className={`${styles.projectInfo} ${i === 1 ? styles.highlightInfo : ''}`}>
+                    <div>
+                      <h3>{p.title}</h3>
+                      <span>{p.category}</span>
+                    </div>
+                    <div className={styles.arrowIcon}><ArrowUpRight size={24} strokeWidth={1.5} /></div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className={styles.emptyText} style={{ gridColumn: '1 / -1' }}>Şimdilik içerik yok.</p>
+            )}
+          </div>
+        </div>
+      </section>
 
       {/* ARTICLES SECTION */}
       <section className={styles.articles}>

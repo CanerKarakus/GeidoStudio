@@ -7,7 +7,7 @@
   "heroSubtitle": "Modern, estetik ve işlevsel web çözümleri ile markanızı geleceğe taşıyın. Profesyonel tasarım ve yazılım ajansı.",
   "aboutTitle": "Hakkımızda",
   "aboutText": "Geido Studio, dijital dünyada markalarınızın potansiyelini en üst düzeye çıkarmak için yenilikçi, modern ve etkili çözümler sunar.",
-  "aboutImage": "",
+  "projectsHeroImage": "http://localhost:3001/uploads/8a059419-588c-4855-a910-f2c438bc755c.png",
   "contactEmail": "info@geidostudio.com",
   "contactPhone": "+90 (553) 003 7403",
   "contactAddress": "",
@@ -22,5 +22,7 @@
       "date": "4 Mayıs 2026"
     }
   ],
-  "heroSliderDuration": 10
+  "heroSliderDuration": 10,
+  "projects": [],
+  "aboutTeamYasarhanImage": ""
 }

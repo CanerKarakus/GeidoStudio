@@ -28,11 +28,12 @@ app.use(helmet({
     directives: {
       defaultSrc: ["'self'"],
       scriptSrc:  ["'self'"],
-      styleSrc:   ["'self'"],
-      imgSrc:     ["'self'", 'data:', 'https:'],
+      styleSrc:   ["'self'", "'unsafe-inline'"],
+      imgSrc:     ["'self'", 'data:', 'https:', 'http://localhost:*', 'http://127.0.0.1:*'],
     },
   },
   crossOriginEmbedderPolicy: false,
+  crossOriginResourcePolicy: false,
 }));
 
 // ── CORS ─────────────────────────────────────────────────────────────────────
@@ -63,8 +64,12 @@ app.use(cors({
 }));
 
 // ── Body Parsers ─────────────────────────────────────────────────────────────
-app.use(express.json({ limit: '50kb' }));  // Limit body size
+app.use(express.json({ limit: '5mb' }));  // CMS data can be large (blogs, images)
+app.use(express.urlencoded({ extended: true, limit: '5mb' }));
 app.use(cookieParser());
+
+// ── Static Files (Uploads) ──────────────────────────────────────────────────
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // ── Trust proxy (needed if behind Nginx/cPanel proxy) ───────────────────────
 app.set('trust proxy', 1);
@@ -74,6 +79,7 @@ app.use('/api/auth',       require('./routes/auth'));
 app.use('/api/cms',        require('./routes/cms'));
 app.use('/api/messages',   require('./routes/messages'));
 app.use('/api/newsletter', require('./routes/newsletter'));
+app.use('/api/upload',     require('./routes/upload'));
 
 // ── Health Check ─────────────────────────────────────────────────────────────
 app.get('/api/health', (req, res) => {

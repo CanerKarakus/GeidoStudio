@@ -5,6 +5,7 @@ import xIcon from '../../assets/social_icons/x.png';
 import behanceIcon from '../../assets/social_icons/behance.png';
 import Button from '../Button/Button';
 import styles from './Footer.module.scss';
+import logoImg from '../../assets/logo/geido_logo.png';
 
 const Footer = () => {
   return (
@@ -23,11 +24,7 @@ const Footer = () => {
         <div className={styles.mainContent}>
           <div className={styles.brandCol}>
             <Link to="/" className={styles.logo}>
-              <div className={styles.logoIcon}>
-                <span className={styles.greenTriangle}></span>
-                <span className={styles.whiteTriangle}></span>
-              </div>
-              <span className={styles.logoText}>geidostudio</span>
+              <img src={logoImg} alt="Geido Studio" style={{ height: '32px', filter: 'brightness(0) invert(1)' }} />
             </Link>
             <p className={styles.brandDesc}>
               Dijital dünyada iz bırakan, yaratıcı ve yenilikçi çözümler üretiyoruz. Markanızı geleceğe taşıyoruz.
@@ -49,6 +46,7 @@ const Footer = () => {
             <h3>Hızlı Menü</h3>
             <ul>
               <li><Link to="/">Ana Sayfa</Link></li>
+              <li><Link to="/projeler">Projeler</Link></li>
               <li><Link to="/hakkinda">Hakkımızda</Link></li>
               <li><Link to="/iletisim">İletişim</Link></li>
             </ul>

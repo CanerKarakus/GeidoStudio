@@ -14,7 +14,7 @@ const QUICK_LINKS = [
   { path: '/admin/images',     label: 'Görseller',          icon: ImageIcon },
   { path: '/admin/contact',    label: 'İletişim Bilgileri', icon: Globe },
   { path: '/admin/messages',   label: 'Gelen Mesajlar',     icon: MessageSquare },
-  { path: '/admin/newsletter', label: 'Bülten Aboneleri',   icon: Globe },
+  { path: '/admin/newsletter', label: 'Bülten',   icon: Globe },
 ];
 
 const StatCard = ({ icon: Icon, label, value, color, delay = 0 }) => (

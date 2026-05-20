@@ -26,7 +26,7 @@ const imapConfig = {
 
 const transporter = nodemailer.createTransport(smtpConfig);
 
-const wrapHtmlTemplate = (contentHtml) => {
+const wrapHtmlTemplate = (contentHtml, toEmail = '') => {
   return `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
 <head>
@@ -155,57 +155,6 @@ const wrapHtmlTemplate = (contentHtml) => {
                                   </table>
                                 </td>
                               </tr>
-                              <tr><td dir="ltr" class="ers-fs-173" style="font-size:17.3px;white-space:pre-wrap;text-align:center;padding:0px 24px 16px;line-height:1.4;mso-line-height-alt:24.2px;text-decoration:none">&nbsp;</td></tr>
-                              <tr><td dir="ltr" class="ers-fs-173" style="font-size:17.3px;white-space:pre-wrap;text-align:center;padding:0px 24px 16px;line-height:1.4;mso-line-height-alt:24.2px">Size en kısa zamanda dönüş yapacağız<br></td></tr>
-                              <tr>
-                                <td style="padding:0px 24px 16px">
-                                  <table cellpadding="0" cellspacing="0" border="0" style="width:100%">
-                                    <tbody>
-                                      <tr>
-                                        <td align="center">
-                                          <!--[if mso]><table cellpadding="0" cellspacing="0" border="0" width="216" style="width:216px"><tbody><tr><td><![endif]-->
-                                          <table cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:216px">
-                                            <tbody>
-                                              <tr>
-                                                <td style="width:100%">
-                                                  <a href="http://geidostudio.com" target="_blank" rel="noopener" ses:no-track="" style="color:#b30000;text-decoration:none">
-                                                    <!--[if mso]><v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="http://geidostudio.com" style="height:50px;width:216px;v-text-anchor:middle;" arcsize="44%" fillcolor="#ffe6e6"><v:stroke dashstyle="Solid" weight="1px" color="#b30000"/><w:anchorlock/><v:textbox inset="0px,0px,0px,0px"><center dir="false" style="color:#b30000;font-family:sans-serif;font-size:17.3px"><![endif]-->
-                                                    <span style="background-color:#ffe6e6;border-bottom:1px solid #b30000;border-left:1px solid #b30000;border-radius:22px;border-right:1px solid #b30000;border-top:1px solid #b30000;color:#b30000;display:table;font-family:Verdana, Geneva, sans-serif;font-size:17.3px;height:50px;mso-border-alt:none;text-align:center;width:100%;max-width:100%;box-sizing:border-box;border-spacing:0;border-collapse:separate;letter-spacing:0em;line-height:24.2px">
-                                                      <span style="word-break:break-word;padding-left:8px;padding-right:8px;display:table-cell;height:100%;vertical-align:middle">
-                                                        <span style="word-break:break-word;line-height:24.2px;mso-style-textfill-type:solid;mso-style-textfill-fill-color:#b30000">Siteyi Ziyaret et</span>
-                                                      </span>
-                                                    </span>
-                                                    <!--[if mso]></center></v:textbox></v:roundrect><![endif]-->
-                                                  </a>
-                                                </td>
-                                              </tr>
-                                            </tbody>
-                                          </table>
-                                          <!--[if mso]></td></tr></tbody></table><![endif]-->
-                                        </td>
-                                      </tr>
-                                    </tbody>
-                                  </table>
-                                </td>
-                              </tr>
-                              <tr><td dir="ltr" class="ers-fs-200" style="font-size:20px;white-space:pre-wrap;text-align:left;padding:0px 24px 16px;line-height:1.4;mso-line-height-alt:28px;text-decoration:none">&nbsp;</td></tr>
-                              <tr>
-                                <td style="padding:0px 24px 16px">
-                                  <table cellpadding="0" cellspacing="0" border="0" style="width:100%">
-                                    <tbody>
-                                      <tr>
-                                        <td align="center">
-                                          <table cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:552px">
-                                            <tbody>
-                                              <tr><td height="0" style="border-top:1px dotted #b30000;height:0;font-size:0">&nbsp;</td></tr>
-                                            </tbody>
-                                          </table>
-                                        </td>
-                                      </tr>
-                                    </tbody>
-                                  </table>
-                                </td>
-                              </tr>
                               <tr>
                                 <td style="padding:0px 0px 16px">
                                   <table border="0" cellpadding="0" cellspacing="0" class="layout-1" align="center" style="display:table;border-spacing:0px;border-collapse:separate;width:100%;max-width:100%;table-layout:fixed;margin:0 auto;background-color:#ffffff">
@@ -222,7 +171,7 @@ const wrapHtmlTemplate = (contentHtml) => {
                                                         <td style="padding:17px">
                                                           <table align="center" width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation" style="color:#000;font-style:normal;font-weight:normal;font-size:16px;line-height:1.4;letter-spacing:0;text-align:left;direction:ltr;border-collapse:collapse;font-family:Arial, Helvetica, sans-serif;white-space:normal;word-wrap:break-word;word-break:break-word">
                                                             <tbody>
-                                                              <tr><td dir="ltr" style="color:#1e1e1e;font-size:12.7px;letter-spacing:0.1em;white-space:pre-wrap;text-align:center;line-height:38.4px;mso-line-height-alt:38.4px"> BİZİMLE İLETİŞİME GEÇ  |  ABONELİKTEN ÇIK<br></td></tr>
+                                                              <tr><td dir="ltr" style="color:#1e1e1e;font-size:12.7px;letter-spacing:0.1em;white-space:pre-wrap;text-align:center;line-height:38.4px;mso-line-height-alt:38.4px"><a href="https://geidostudio.com/iletisim" style="color:#1e1e1e;text-decoration:none">BİZİMLE İLETİŞİME GEÇ</a>  |  <a href="https://geidostudio.com/unsubscribe?email=${encodeURIComponent(toEmail)}" style="color:#1e1e1e;text-decoration:none">ABONELİKTEN ÇIK</a></td></tr>
                                                             </tbody>
                                                           </table>
                                                         </td>
@@ -315,7 +264,7 @@ const wrapHtmlTemplate = (contentHtml) => {
 // matched back to the correct thread via the In-Reply-To header.
 const sendEmail = async (to, subject, text, html, replyTo, threadMessageId) => {
   try {
-    const finalHtml = wrapHtmlTemplate(html);
+    const finalHtml = wrapHtmlTemplate(html, to);
     const mailOptions = {
       from: process.env.SMTP_FROM || `"GeidoStudio" <${process.env.SMTP_USER}>`,
       to,

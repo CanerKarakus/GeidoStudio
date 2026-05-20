@@ -2,6 +2,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import styles from './AdminDashboard.module.scss';
 import { useCmsForm } from './useCmsForm';
 import { Save, Check, AlertCircle, User } from 'lucide-react';
+import ImageUploader from '../../components/ImageUploader/ImageUploader';
 
 const AdminAbout = () => {
   const { formData, handleChange, handleSave, isDirty, isSaving, toast } = useCmsForm();
@@ -24,21 +25,13 @@ const AdminAbout = () => {
             <User size={18} />
             <h3>Yaşarhan Pekergin — Görsel Alan</h3>
           </div>
-          <div className={styles.field}>
-            <label className={styles.fieldLabel}>Profil Görseli (URL)</label>
-            <input 
-              className={styles.input} 
-              type="text"
-              placeholder="https://example.com/yasarhan.jpg"
-              value={formData.aboutTeamYasarhanImage || ''} 
-              onChange={e => handleChange('aboutTeamYasarhanImage', e.target.value)} 
+          <div className={styles.field} style={{ padding: '0 1.5rem 1.5rem' }}>
+            <ImageUploader 
+              value={formData.aboutTeamYasarhanImage} 
+              onChange={url => handleChange('aboutTeamYasarhanImage', url)} 
+              label="Profil Görseli" 
             />
           </div>
-          {formData.aboutTeamYasarhanImage && (
-            <div className={styles.previewContainer}>
-              <img src={formData.aboutTeamYasarhanImage} alt="Yaşarhan Önizleme" className={styles.imagePreview} />
-            </div>
-          )}
         </div>
 
         {/* Team Member 2: Caner */}
@@ -47,21 +40,13 @@ const AdminAbout = () => {
             <User size={18} />
             <h3>Caner Karakuş — Görsel Alan</h3>
           </div>
-          <div className={styles.field}>
-            <label className={styles.fieldLabel}>Profil Görseli (URL)</label>
-            <input 
-              className={styles.input} 
-              type="text"
-              placeholder="https://example.com/caner.jpg"
-              value={formData.aboutTeamCanerImage || ''} 
-              onChange={e => handleChange('aboutTeamCanerImage', e.target.value)} 
+          <div className={styles.field} style={{ padding: '0 1.5rem 1.5rem' }}>
+            <ImageUploader 
+              value={formData.aboutTeamCanerImage} 
+              onChange={url => handleChange('aboutTeamCanerImage', url)} 
+              label="Profil Görseli" 
             />
           </div>
-          {formData.aboutTeamCanerImage && (
-            <div className={styles.previewContainer}>
-              <img src={formData.aboutTeamCanerImage} alt="Caner Önizleme" className={styles.imagePreview} />
-            </div>
-          )}
         </div>
       </div>
 

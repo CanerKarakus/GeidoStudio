@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import useCmsStore from '../../store/cmsStore';
 
 /**
@@ -11,9 +11,14 @@ export function useCmsForm() {
   const [isSaving, setIsSaving] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
   const [toast, setToast] = useState(null);
+  const initialized = useRef(false);
 
+  // Only initialize from cms on first load, not after saves
   useEffect(() => {
-    if (cms) setFormData(cms);
+    if (cms && !initialized.current) {
+      setFormData(cms);
+      initialized.current = true;
+    }
   }, [cms]);
 
   const showToast = (msg, type = 'success') => {
@@ -29,11 +34,12 @@ export function useCmsForm() {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      await updateCMS(formData);
+      const result = await updateCMS(formData);
       setIsDirty(false);
       showToast('Değişiklikler başarıyla kaydedildi!');
-    } catch {
-      showToast('Kaydedilirken hata oluştu.', 'error');
+    } catch (err) {
+      console.error('[useCmsForm] Save error:', err);
+      showToast('Kaydedilirken hata oluştu: ' + (err?.message || 'Bilinmeyen hata'), 'error');
     } finally {
       setIsSaving(false);
     }
@@ -46,9 +52,10 @@ export function useCmsForm() {
     try {
       await updateCMS(newFormData);
       setIsDirty(false);
-      showToast('Değişiklikler otomatik kaydedildi!', 'success');
-    } catch {
-      showToast('Kaydedilirken hata oluştu.', 'error');
+      showToast('Kaydedildi!', 'success');
+    } catch (err) {
+      console.error('[useCmsForm] AutoSave error:', err);
+      showToast('Kaydedilirken hata oluştu: ' + (err?.message || 'Bilinmeyen hata'), 'error');
     } finally {
       setIsSaving(false);
     }

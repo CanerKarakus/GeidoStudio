@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import useCmsStore from '../../store/cmsStore';
 import styles from './AdminBlog.module.scss';
 import { Plus, Trash2, Edit2, Save, X } from 'lucide-react';
+import ImageUploader from '../../components/ImageUploader/ImageUploader';
 
 const createSlug = (title) => {
   return title.toLowerCase().trim()
@@ -121,22 +122,11 @@ const AdminBlog = () => {
             />
           </div>
           
-          <div className={styles.inputRow}>
-            <div className={styles.inputGroup} style={{ flex: 1 }}>
-              <label>Görsel URL</label>
-              <input 
-                type="text" 
-                value={formData.image} 
-                onChange={e => setFormData({ ...formData, image: e.target.value })} 
-                placeholder="https://.../gorsel.jpg"
-              />
-            </div>
-            {formData.image && (
-              <div className={styles.imagePreviewWrapper}>
-                <div className={styles.imagePreview} style={{ backgroundImage: `url(${formData.image})` }}></div>
-              </div>
-            )}
-          </div>
+          <ImageUploader 
+            value={formData.image} 
+            onChange={url => setFormData({ ...formData, image: url })} 
+            label="Kapak Görseli" 
+          />
           
           <div className={styles.inputGroup}>
             <label>Yazar</label>

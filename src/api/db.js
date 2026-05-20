@@ -81,9 +81,39 @@ export const api = {
   getSubscribers: () =>
     request('GET', '/api/newsletter'),
 
+  getNewsletterSubscribers: () => 
+    request('GET', '/api/newsletter'),
+
   subscribe: (email) =>
     request('POST', '/api/newsletter', { email }),
 
   deleteSubscriber: (id) =>
     request('DELETE', `/api/newsletter/${id}`),
+
+  sendNewsletter: (subject, message) =>
+    request('POST', '/api/newsletter/send', { subject, message }),
+
+  unsubscribeFromNewsletter: (email) =>
+    request('POST', '/api/newsletter/unsubscribe', { email }),
+
+  // ── Upload ────────────────────────────────────────────────────────────────
+  uploadImage: async (file) => {
+    const formData = new FormData();
+    formData.append('image', file);
+    
+    const options = {
+      method: 'POST',
+      credentials: 'include',
+      body: formData,
+    };
+
+    const res = await fetch(`${BASE_URL}/api/upload`, options);
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+      throw new Error(data.error || `HTTP ${res.status}`);
+    }
+
+    return data.url;
+  },
 };

@@ -24,6 +24,7 @@ const TermsOfService = lazy(() => import('./pages/Legal/TermsOfService'));
 const CookiePolicy = lazy(() => import('./pages/Legal/CookiePolicy'));
 const KvkkPolicy = lazy(() => import('./pages/Legal/KvkkPolicy'));
 const Ticket = lazy(() => import('./pages/Ticket/Ticket'));
+const Unsubscribe = lazy(() => import('./pages/Unsubscribe/Unsubscribe'));
 
 // Admin pages
 const AdminLayout = lazy(() => import('./components/AdminLayout/AdminLayout'));
@@ -35,6 +36,7 @@ const AdminImages = lazy(() => import('./pages/Admin/AdminImages'));
 const AdminContact = lazy(() => import('./pages/Admin/AdminContact'));
 const AdminMessages = lazy(() => import('./pages/Admin/AdminMessages'));
 const AdminBlog = lazy(() => import('./pages/Admin/AdminBlog'));
+const AdminProjects = lazy(() => import('./pages/Admin/AdminProjects'));
 const AdminNewsletter = lazy(() => import('./pages/Admin/AdminNewsletter'));
 const AdminAbout = lazy(() => import('./pages/Admin/AdminAbout'));
 
@@ -60,6 +62,7 @@ function AnimatedRoutes() {
         <Route path="/cerez-politikasi" element={<PageTransition><CookiePolicy /></PageTransition>} />
         <Route path="/kvkk" element={<PageTransition><KvkkPolicy /></PageTransition>} />
         <Route path="/ticket/:id" element={<PageTransition><Ticket /></PageTransition>} />
+        <Route path="/unsubscribe" element={<PageTransition><Unsubscribe /></PageTransition>} />
         
         {/* Admin Routes */}
         <Route path="/admin/login" element={<Suspense fallback={<LoadingScreen />}><AdminLogin /></Suspense>} />
@@ -69,6 +72,7 @@ function AnimatedRoutes() {
           <Route path="texts" element={<AdminTexts />} />
           <Route path="images" element={<AdminImages />} />
           <Route path="blog" element={<AdminBlog />} />
+          <Route path="projects" element={<AdminProjects />} />
           <Route path="contact" element={<AdminContact />} />
           <Route path="messages" element={<AdminMessages />} />
           <Route path="newsletter" element={<AdminNewsletter />} />
