@@ -5,6 +5,7 @@ import { m } from 'framer-motion';
 import useCmsStore from '../../store/cmsStore';
 import Button from '../../components/Button/Button';
 import styles from './BlogPost.module.scss';
+import SEO from '../../components/SEO/SEO';
 
 const BlogPost = () => {
   const { slug } = useParams();
@@ -18,19 +19,6 @@ const BlogPost = () => {
     const foundBlog = cms?.blogs?.find(b => b.slug === slug);
     if (foundBlog) {
       setBlog(foundBlog);
-      // Update document title for SEO
-      document.title = `${foundBlog.title} | Geido Studio Blog`;
-      
-      // Try to update meta keywords if the tag exists, otherwise create it
-      let metaKeywords = document.querySelector('meta[name="keywords"]');
-      if (!metaKeywords && foundBlog.keywords) {
-        metaKeywords = document.createElement('meta');
-        metaKeywords.name = 'keywords';
-        document.head.appendChild(metaKeywords);
-      }
-      if (metaKeywords && foundBlog.keywords) {
-        metaKeywords.content = foundBlog.keywords;
-      }
     } else {
       // If no blog found after cms is loaded (and it's not a loading state), redirect
       if (cms) {
@@ -71,6 +59,12 @@ const BlogPost = () => {
 
   return (
     <div className={styles.blogPostPage}>
+      <SEO 
+        title={blog.title} 
+        description={blog.summary || "Geido Studio blog yazısı."}
+        keywords={blog.keywords || "blog, web tasarım, teknoloji, dijital pazarlama"}
+        image={blog.image}
+      />
       {/* Article Header */}
       <header className={styles.articleHeader}>
         <div className={styles.headerBackground} style={{ backgroundImage: `url(${blog.image || 'https://images.unsplash.com/photo-1499951360447-b19be8fe80f5?auto=format&fit=crop&q=80&w=1600'})` }}>

@@ -3,6 +3,7 @@ import useCmsStore from '../../store/cmsStore';
 import { m, AnimatePresence } from 'framer-motion';
 import styles from './About.module.scss';
 import { Palette, Code2, X, Mail } from 'lucide-react';
+import SEO from '../../components/SEO/SEO';
 
 const memberDetails = {
   yasarhan: {
@@ -31,6 +32,11 @@ const About = () => {
 
   return (
     <div className={styles.aboutPage}>
+      <SEO 
+        title="Hakkımızda" 
+        description="Geido Studio hikayesini, kurucularımızı ve vizyonumuzu keşfedin. Sanat ve dijital dünyanın kesiştiği noktada markanıza eşsiz bir kimlik kazandırmak için buradayız."
+        keywords="hakkımızda, geido studio kimdir, kreatif ajans ekibi, vizyonumuz"
+      />
       <div className={styles.container}>
         <div className={styles.header}>
           <span className={styles.subtitle}>Hakkımızda</span>

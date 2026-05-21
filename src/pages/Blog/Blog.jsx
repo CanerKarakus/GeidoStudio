@@ -4,6 +4,7 @@ import { m, AnimatePresence } from 'framer-motion';
 import { ArrowUpRight } from 'lucide-react';
 import useCmsStore from '../../store/cmsStore';
 import styles from './Blog.module.scss';
+import SEO from '../../components/SEO/SEO';
 
 const Blog = () => {
   const { cms } = useCmsStore();
@@ -11,6 +12,11 @@ const Blog = () => {
 
   return (
     <div className={styles.blogPage}>
+      <SEO 
+        title="Blog" 
+        description="Dijital dünyadaki en son tasarım trendleri, yazılım yenilikleri ve Geido Studio'dan yaratıcı içgörüler."
+        keywords="blog, web tasarım trendleri, teknoloji makaleleri, grafik tasarım blogu"
+      />
       <div className={styles.header}>
         <div className={styles.heroBackground}></div>
         <div className={styles.heroOverlay}></div>

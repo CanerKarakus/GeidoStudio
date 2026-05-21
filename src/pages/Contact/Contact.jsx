@@ -5,6 +5,7 @@ import { MapPin, Mail, Phone, ChevronDown } from 'lucide-react';
 import styles from './Contact.module.scss';
 import Button from '../../components/Button/Button';
 import useCmsStore from '../../store/cmsStore';
+import SEO from '../../components/SEO/SEO';
 
 const services = [
   { value: 'web', label: 'Web Tasarım & Geliştirme' },
@@ -137,6 +138,11 @@ const Contact = () => {
 
   return (
     <div className={styles.contactPage}>
+      <SEO 
+        title="İletişim" 
+        description="Geido Studio ile iletişime geçin. Yeni projeniz için teklif alın, yaratıcı ekibimizle tanışın."
+        keywords="iletişim, geido studio iletişim, web tasarım teklif al, grafik tasarım fiyatları"
+      />
 
       {/* Huge Header */}
       <div className={styles.pageHeader}>

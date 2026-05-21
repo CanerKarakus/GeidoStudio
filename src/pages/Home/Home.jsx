@@ -8,6 +8,8 @@ import useCmsStore from '../../store/cmsStore';
 import CookieBanner from '../../components/CookieBanner/CookieBanner';
 import geidoHeroFallback from '../../assets/images/geido_hero.png';
 
+import SEO from '../../components/SEO/SEO';
+
 const slideVariants = {
   enter: (dir) => ({ x: dir > 0 ? '100%' : '-100%', opacity: 0 }),
   center: { x: 0, opacity: 1, transition: { duration: 0.7, ease: [0.4, 0, 0.2, 1] } },
@@ -46,6 +48,11 @@ const Home = () => {
 
   return (
     <div className={styles.home}>
+      <SEO 
+        title="Ana Sayfa" 
+        description="Geido Studio ile modern web tasarımı, eşsiz UI/UX deneyimleri ve etkili kurumsal kimlik çalışmaları. İşletmenizi geleceğe taşıyoruz."
+        keywords="web tasarım, grafik tasarım, ui ux, geido studio, sosyal medya"
+      />
       <CookieBanner />
       {/* HERO SECTION */}
       <section className={styles.hero}>
