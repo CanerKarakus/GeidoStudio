@@ -37,8 +37,10 @@ app.use(helmet({
 }));
 
 // ── CORS ─────────────────────────────────────────────────────────────────────
+const FRONTEND_URLS = process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',').map(s => s.trim()) : [];
+
 const ALLOWED_ORIGINS = [
-  process.env.FRONTEND_URL,
+  ...FRONTEND_URLS,
   'http://localhost:5173',  // Local dev
   'http://localhost:4173',  // Vite preview
 ].filter(Boolean);
