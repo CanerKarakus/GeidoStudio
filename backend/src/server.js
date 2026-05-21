@@ -46,23 +46,13 @@ const ALLOWED_ORIGINS = [
 ].filter(Boolean);
 
 app.use(cors({
-  origin: (origin, callback) => {
-    // Allow requests with no origin (mobile apps, curl, etc.)
-    if (!origin) return callback(null, true);
-    
-    // Allow local dev origins
-    if (ALLOWED_ORIGINS.includes(origin)) return callback(null, true);
-    
-    // Allow ngrok subdomains for testing
-    if (origin.endsWith('.ngrok-free.dev') || origin.endsWith('.ngrok.io')) {
-      return callback(null, true);
-    }
-    
-    return callback(new Error(`CORS: Origin not allowed: ${origin}`));
+  origin: function(origin, callback) {
+    // Dinamik olarak gelen tüm adresleri kabul et (Wildcard gibi ama credentials ile uyumlu)
+    callback(null, origin || true);
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
 }));
 
 // ── Body Parsers ─────────────────────────────────────────────────────────────
