@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { m, AnimatePresence } from 'framer-motion';
 import { MapPin, Mail, Phone, ChevronDown } from 'lucide-react';
-import { useTranslation } from 'react-hooks-i18next';
+import { useTranslation } from 'react-i18next';
 import styles from './Contact.module.scss';
 import Button from '../../components/Button/Button';
 import useCmsStore from '../../store/cmsStore';

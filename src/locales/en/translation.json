@@ -8,7 +8,7 @@
     "tracking": "Track Project"
   },
   "footer": {
-    "cta_title": "Let's Bring Your<br />Project to Life.",
+    "cta_title": "Let's Bring Your Project<br />to Life.",
     "contact_us": "Contact Us",
     "brand_desc": "We produce creative and innovative solutions that leave a mark in the digital world. We carry your brand to the future.",
     "quick_links": "Quick Links",
@@ -17,7 +17,10 @@
     "kvkk": "KVKK Clarification Text",
     "privacy": "Privacy Policy",
     "cookie": "Cookie Policy",
-    "terms": "Terms of Service"
+    "terms": "Terms of Service",
+    "home": "Home",
+    "projects": "Projects",
+    "about": "About Us"
   },
   "home": {
     "seo_title": "Home",
@@ -83,7 +86,12 @@
     "client": "Client",
     "service": "Service",
     "date": "Date",
-    "no_projects": "No projects added yet."
+    "no_projects": "No projects added yet.",
+    "filter_graphic": "Graphic",
+    "filter_mobile": "Mobile",
+    "filter_web": "Web",
+    "filter_social": "Social Media",
+    "filter_script": "Web & Script"
   },
   "blog": {
     "seo_title": "Blog",

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-hooks-i18next';
+import { useTranslation } from 'react-i18next';
 import styles from './NotFound.module.scss';
 
 const NotFound = () => {

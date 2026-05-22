@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
-import { useTranslation } from 'react-hooks-i18next';
+import { useTranslation } from 'react-i18next';
 import styles from './Projects.module.scss';
 import useCmsStore from '../../store/cmsStore';
 import { ArrowUpRight } from 'lucide-react';
@@ -9,13 +9,22 @@ import SEO from '../../components/SEO/SEO';
 
 const Projects = () => {
   const { t } = useTranslation();
-  const categories = [t('projects.filter_all'), 'Grafik', 'Mobil', 'Web', 'Sosyal Medya', 'Web ve Script'];
-  const [activeCategory, setActiveCategory] = useState(t('projects.filter_all'));
+  
+  const categories = [
+    { key: 'Hepsi', label: t('projects.filter_all') },
+    { key: 'Grafik', label: t('projects.filter_graphic') },
+    { key: 'Mobil', label: t('projects.filter_mobile') },
+    { key: 'Web', label: t('projects.filter_web') },
+    { key: 'Sosyal Medya', label: t('projects.filter_social') },
+    { key: 'Web ve Script', label: t('projects.filter_script') }
+  ];
+
+  const [activeCategory, setActiveCategory] = useState('Hepsi');
   const cms = useCmsStore((state) => state.cms);
   const projectsData = cms?.projects || [];
   const heroImage = cms?.projectsHeroImage || projectsHeroImg;
 
-  const filteredProjects = activeCategory === t('projects.filter_all') 
+  const filteredProjects = activeCategory === 'Hepsi' 
     ? projectsData 
     : projectsData.filter(p => p.category === activeCategory);
 
@@ -39,11 +48,11 @@ const Projects = () => {
         <div className={styles.filterBar}>
           {categories.map(cat => (
             <button 
-              key={cat}
-              className={`${styles.filterBtn} ${activeCategory === cat ? styles.active : ''}`}
-              onClick={() => setActiveCategory(cat)}
+              key={cat.key}
+              className={`${styles.filterBtn} ${activeCategory === cat.key ? styles.active : ''}`}
+              onClick={() => setActiveCategory(cat.key)}
             >
-              {cat}
+              {cat.label}
             </button>
           ))}
         </div>

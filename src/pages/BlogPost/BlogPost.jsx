@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Share2, Clock, User } from 'lucide-react';
 import { m } from 'framer-motion';
-import { useTranslation } from 'react-hooks-i18next';
+import { useTranslation } from 'react-i18next';
 import useCmsStore from '../../store/cmsStore';
 import Button from '../../components/Button/Button';
 import styles from './BlogPost.module.scss';

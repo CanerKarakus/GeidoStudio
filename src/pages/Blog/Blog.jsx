@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { m, AnimatePresence } from 'framer-motion';
 import { ArrowUpRight } from 'lucide-react';
-import { useTranslation } from 'react-hooks-i18next';
+import { useTranslation } from 'react-i18next';
 import useCmsStore from '../../store/cmsStore';
 import styles from './Blog.module.scss';
 import SEO from '../../components/SEO/SEO';

@@ -17,7 +17,10 @@
     "kvkk": "KVKK Aydınlatma Metni",
     "privacy": "Gizlilik Politikası",
     "cookie": "Çerez Politikası",
-    "terms": "Kullanım Koşulları"
+    "terms": "Kullanım Koşulları",
+    "home": "Ana Sayfa",
+    "projects": "Projeler",
+    "about": "Hakkımızda"
   },
   "home": {
     "seo_title": "Ana Sayfa",
@@ -77,13 +80,18 @@
     "seo_desc": "Geido Studio tarafından hayata geçirilen web tasarım, mobil uygulama, kurumsal kimlik ve sosyal medya projelerini inceleyin.",
     "subtitle": "Çalışmalarımız",
     "title": "Dijital Dünyada<br/>İz Bırakan Projeler",
-    "filter_all": "Tümü",
+    "filter_all": "Hepsi",
     "view_project": "Projeyi İncele",
     "close": "Kapat",
     "client": "Müşteri",
     "service": "Hizmet",
     "date": "Tarih",
-    "no_projects": "Henüz proje eklenmemiş."
+    "no_projects": "Henüz proje eklenmemiş.",
+    "filter_graphic": "Grafik",
+    "filter_mobile": "Mobil",
+    "filter_web": "Web",
+    "filter_social": "Sosyal Medya",
+    "filter_script": "Web ve Script"
   },
   "blog": {
     "seo_title": "Blog",

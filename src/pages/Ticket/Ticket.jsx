@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { api, socket } from '../../api/db';
 import styles from './Ticket.module.scss';
 import { motion } from 'framer-motion';
-import { useTranslation } from 'react-hooks-i18next';
+import { useTranslation } from 'react-i18next';
 import { Send, ArrowLeft, MessageSquare, User } from 'lucide-react';
 
 const Ticket = () => {

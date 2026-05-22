@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import useCmsStore from '../../store/cmsStore';
 import { m, AnimatePresence } from 'framer-motion';
-import { useTranslation } from 'react-hooks-i18next';
+import { useTranslation } from 'react-i18next';
 import styles from './About.module.scss';
 import { Palette, Code2, X, Mail } from 'lucide-react';
 import SEO from '../../components/SEO/SEO';
@@ -9,7 +9,7 @@ import SEO from '../../components/SEO/SEO';
 const memberDetails = {
   yasarhan: {
     name: 'Yaşarhan Pekergin',
-    role: 'Grafik Tasarım & Sosyal Medya Yönetimi',
+    roleKey: 'yasarhan_role',
     email: 'yasarhanpekergin@geidostudio.com',
     icon: <Palette size={48} />,
     bioKey: 'yasarhan_desc',

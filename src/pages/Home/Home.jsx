@@ -4,7 +4,7 @@ import { ArrowUpRight } from 'lucide-react';
 import { m, AnimatePresence } from 'framer-motion';
 import Button from '../../components/Button/Button';
 import { Link } from 'react-router-dom';
-import { useTranslation } from 'react-hooks-i18next';
+import { useTranslation } from 'react-i18next';
 import useCmsStore from '../../store/cmsStore';
 import CookieBanner from '../../components/CookieBanner/CookieBanner';
 import geidoHeroFallback from '../../assets/images/geido_hero.png';

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Instagram, Linkedin, Github, ArrowUpRight } from 'lucide-react';
-import { useTranslation } from 'react-hooks-i18next';
+import { useTranslation } from 'react-i18next';
 import xIcon from '../../assets/social_icons/x.png';
 import behanceIcon from '../../assets/social_icons/behance.png';
 import Button from '../Button/Button';

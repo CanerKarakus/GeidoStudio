@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { useTranslation } from 'react-hooks-i18next';
+import { useTranslation } from 'react-i18next';
 import { api } from '../../api/db';
 import styles from './Unsubscribe.module.scss';
 import { MailX, Loader2, CheckCircle } from 'lucide-react';
