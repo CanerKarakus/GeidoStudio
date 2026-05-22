@@ -3,9 +3,11 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { ChevronRight, FileText, Shield, Info, Scale, Cookie, Menu, X } from 'lucide-react';
 import styles from './DocsLayout.module.scss';
 import { m, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 const DocsLayout = ({ title, breadcrumb, toc = [], children }) => {
   const { pathname, hash } = useLocation();
+  const { t } = useTranslation();
   const [activeId, setActiveId] = useState('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -48,19 +50,19 @@ const DocsLayout = ({ title, breadcrumb, toc = [], children }) => {
 
   const navGroups = [
     {
-      title: 'Kurumsal',
+      title: t('docs.corporate'),
       items: [
-        { name: 'Hakkımızda', path: '/hakkinda', icon: Info },
-        { name: 'İletişim', path: '/iletisim', icon: ChevronRight },
+        { name: t('footer.about'), path: '/hakkinda', icon: Info },
+        { name: t('footer.contact'), path: '/iletisim', icon: ChevronRight },
       ]
     },
     {
-      title: 'Yasal Belgeler',
+      title: t('docs.legal_docs'),
       items: [
-        { name: 'Gizlilik Politikası', path: '/gizlilik-politikasi', icon: Shield },
-        { name: 'Kullanım Koşulları', path: '/kullanim-kosullari', icon: Scale },
-        { name: 'Çerez Politikası', path: '/cerez-politikasi', icon: Cookie },
-        { name: 'KVKK Aydınlatma Metni', path: '/kvkk', icon: FileText },
+        { name: t('footer.privacy'), path: '/gizlilik-politikasi', icon: Shield },
+        { name: t('footer.terms'), path: '/kullanim-kosullari', icon: Scale },
+        { name: t('footer.cookie'), path: '/cerez-politikasi', icon: Cookie },
+        { name: t('footer.kvkk'), path: '/kvkk', icon: FileText },
       ]
     }
   ];
@@ -110,7 +112,7 @@ const DocsLayout = ({ title, breadcrumb, toc = [], children }) => {
       {/* 2. MAIN CONTENT */}
       <main className={styles.mainContent}>
         <div className={styles.breadcrumb}>
-          <span>Yasal</span>
+          <span>{t('docs.legal')}</span>
           <ChevronRight size={14} />
           <span className={styles.bcActive}>{breadcrumb || title}</span>
         </div>
@@ -129,7 +131,7 @@ const DocsLayout = ({ title, breadcrumb, toc = [], children }) => {
       {/* 3. RIGHT SIDEBAR (TABLE OF CONTENTS) */}
       <aside className={styles.toc}>
         <div className={styles.tocCard}>
-          <h4>İçindekiler</h4>
+          <h4>{t('docs.toc')}</h4>
           <ul>
             {toc.map((item, idx) => (
               <li key={idx} style={{ paddingLeft: item.level === 3 ? '1rem' : '0' }}>
@@ -149,7 +151,7 @@ const DocsLayout = ({ title, breadcrumb, toc = [], children }) => {
               </li>
             ))}
             {toc.length === 0 && (
-              <li><span style={{ color: '#9ca3af', fontSize: '0.85rem' }}>İçerik başlıkları yükleniyor...</span></li>
+              <li><span style={{ color: '#9ca3af', fontSize: '0.85rem' }}>{t('docs.loading')}</span></li>
             )}
           </ul>
         </div>

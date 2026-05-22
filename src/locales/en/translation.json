@@ -185,5 +185,31 @@
     "subscribe": "Subscribe",
     "subscribe_success": "Successfully subscribed to the newsletter!",
     "subscribe_error": "An error occurred."
+  },
+  "docs": {
+    "corporate": "Corporate",
+    "legal_docs": "Legal Documents",
+    "toc": "Table of Contents",
+    "legal": "Legal",
+    "loading": "Loading headings..."
+  },
+  "cookieBanner": {
+    "title": "Cookie Preferences",
+    "desc": "We use cookies to provide you with a better experience.",
+    "privacy_link": "Privacy Policy",
+    "terms_link": "Terms of Service",
+    "desc_suffix": "documents.",
+    "necessary_title": "Necessary Cookies",
+    "necessary_desc": "Required for basic site functionality. Cannot be disabled.",
+    "necessary_badge": "Required",
+    "analytics_title": "Analytics Cookies",
+    "analytics_desc": "Helps us understand how you use the site.",
+    "marketing_title": "Marketing Cookies",
+    "marketing_desc": "Used to show you personalized advertisements.",
+    "hide": "Hide",
+    "customize": "Customize",
+    "save": "Save",
+    "accept_all": "Accept All",
+    "close": "Close"
   }
 }

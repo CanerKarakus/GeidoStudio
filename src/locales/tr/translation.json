@@ -185,5 +185,31 @@
     "subscribe": "Abone Ol",
     "subscribe_success": "Bültene başarıyla abone oldunuz!",
     "subscribe_error": "Bir hata oluştu."
+  },
+  "docs": {
+    "corporate": "Kurumsal",
+    "legal_docs": "Yasal Belgeler",
+    "toc": "İçindekiler",
+    "legal": "Yasal",
+    "loading": "İçerik başlıkları yükleniyor..."
+  },
+  "cookieBanner": {
+    "title": "Çerez Tercihleri",
+    "desc": "Size daha iyi bir deneyim sunmak için çerezler kullanıyoruz.",
+    "privacy_link": "Gizlilik Politikası",
+    "terms_link": "Kullanım Koşulları",
+    "desc_suffix": "belgelerimizi inceleyebilirsiniz.",
+    "necessary_title": "Zorunlu Çerezler",
+    "necessary_desc": "Sitenin temel işlevleri için gereklidir. Devre dışı bırakılamaz.",
+    "necessary_badge": "Zorunlu",
+    "analytics_title": "Analitik Çerezler",
+    "analytics_desc": "Siteyi nasıl kullandığınızı anlamamıza yardımcı olur.",
+    "marketing_title": "Pazarlama Çerezleri",
+    "marketing_desc": "Size özel reklamlar göstermek için kullanılır.",
+    "hide": "Gizle",
+    "customize": "Özelleştir",
+    "save": "Kaydet",
+    "accept_all": "Tümünü Kabul Et",
+    "close": "Kapat"
   }
 }

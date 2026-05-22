@@ -26,7 +26,8 @@ const memberDetails = {
 };
 
 const About = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language === 'en';
   const [selectedMember, setSelectedMember] = useState(null);
   const cms = useCmsStore(state => state.cms);
 
@@ -42,7 +43,7 @@ const About = () => {
       <div className={styles.container}>
         <div className={styles.header}>
           <span className={styles.subtitle}>{t('about.subtitle')}</span>
-          <h1 className={styles.title}>{cms?.aboutTitle || t('about.default_title')}</h1>
+          <h1 className={styles.title}>{!isEn && cms?.aboutTitle ? cms.aboutTitle : t('about.default_title')}</h1>
         </div>
 
         <m.div 
@@ -52,7 +53,7 @@ const About = () => {
           viewport={{ once: true }}
         >
           <div className={styles.aboutText}>
-            <p>{cms?.aboutText || t('about.default_text')}</p>
+            <p>{!isEn && cms?.aboutText ? cms.aboutText : t('about.default_text')}</p>
           </div>
         </m.div>
 

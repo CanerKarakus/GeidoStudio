@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Cookie, X, ChevronDown, ChevronUp, Check } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import styles from './CookieBanner.module.scss';
 
 const STORAGE_KEY = 'geido_cookie_consent';
@@ -9,22 +11,22 @@ const SHOW_INTERVAL_MS = 10 * 60 * 1000; // 10 minutes
 const CATEGORIES = [
   {
     id: 'necessary',
-    label: 'Zorunlu Çerezler',
-    description: 'Sitenin temel işlevleri için gereklidir. Devre dışı bırakılamaz.',
+    titleKey: 'cookieBanner.necessary_title',
+    descKey: 'cookieBanner.necessary_desc',
     locked: true,
     default: true,
   },
   {
     id: 'analytics',
-    label: 'Analitik Çerezler',
-    description: 'Siteyi nasıl kullandığınızı anlamamıza yardımcı olur.',
+    titleKey: 'cookieBanner.analytics_title',
+    descKey: 'cookieBanner.analytics_desc',
     locked: false,
     default: false,
   },
   {
     id: 'marketing',
-    label: 'Pazarlama Çerezleri',
-    description: 'Size özel reklamlar göstermek için kullanılır.',
+    titleKey: 'cookieBanner.marketing_title',
+    descKey: 'cookieBanner.marketing_desc',
     locked: false,
     default: false,
   },
@@ -46,6 +48,7 @@ const shouldShow = () => {
 };
 
 const CookieBanner = () => {
+  const { t } = useTranslation();
   const [visible, setVisible] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [prefs, setPrefs] = useState(() =>
@@ -93,20 +96,20 @@ const CookieBanner = () => {
           <div className={styles.header}>
             <div className={styles.titleRow}>
               <Cookie size={18} className={styles.cookieIcon} />
-              <span className={styles.title}>Çerez Tercihleri</span>
+              <span className={styles.title}>{t('cookieBanner.title')}</span>
             </div>
-            <button className={styles.closeBtn} onClick={() => save('dismissed')} aria-label="Kapat">
+            <button className={styles.closeBtn} onClick={() => save('dismissed')} aria-label={t('cookieBanner.close')}>
               <X size={15} />
             </button>
           </div>
 
           {/* Body */}
           <p className={styles.desc}>
-            Size daha iyi bir deneyim sunmak için çerezler kullanıyoruz.{' '}
-            <a href="#" className={styles.link}>Gizlilik Politikası</a>
+            {t('cookieBanner.desc')}{' '}
+            <Link to="/gizlilik-politikasi" className={styles.link}>{t('cookieBanner.privacy_link')}</Link>
             {' '}ve{' '}
-            <a href="#" className={styles.link}>Kullanım Koşulları</a>
-            {' '}belgelerimizi inceleyebilirsiniz.
+            <Link to="/kullanim-kosullari" className={styles.link}>{t('cookieBanner.terms_link')}</Link>
+            {' '}{t('cookieBanner.desc_suffix')}
           </p>
 
           {/* Expanded preferences */}
@@ -123,10 +126,10 @@ const CookieBanner = () => {
                   <div key={cat.id} className={styles.prefItem}>
                     <div className={styles.prefInfo}>
                       <span className={styles.prefLabel}>
-                        {cat.label}
-                        {cat.locked && <span className={styles.lockedBadge}>Zorunlu</span>}
+                        {t(cat.titleKey)}
+                        {cat.locked && <span className={styles.lockedBadge}>{t('cookieBanner.necessary_badge')}</span>}
                       </span>
-                      <span className={styles.prefDesc}>{cat.description}</span>
+                      <span className={styles.prefDesc}>{t(cat.descKey)}</span>
                     </div>
                     <button
                       className={`${styles.toggle} ${prefs[cat.id] ? styles.toggleOn : ''} ${cat.locked ? styles.toggleLocked : ''}`}
@@ -151,17 +154,17 @@ const CookieBanner = () => {
               onClick={() => setExpanded((v) => !v)}
             >
               {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-              {expanded ? 'Gizle' : 'Özelleştir'}
+              {expanded ? t('cookieBanner.hide') : t('cookieBanner.customize')}
             </button>
 
             <div className={styles.rightBtns}>
               {expanded && (
                 <button className={styles.saveBtn} onClick={handleSaveCustom}>
-                  Kaydet
+                  {t('cookieBanner.save')}
                 </button>
               )}
               <button className={styles.acceptBtn} onClick={handleAcceptAll}>
-                Tümünü Kabul Et
+                {t('cookieBanner.accept_all')}
               </button>
             </div>
           </div>
