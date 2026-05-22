@@ -1,9 +1,11 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-hooks-i18next';
 import styles from './NotFound.module.scss';
 
 const NotFound = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   return (
     <section className={styles.notFoundSection}>
@@ -17,16 +19,16 @@ const NotFound = () => {
           </div>
 
           <div className={styles.textWrapper}>
-            <h3 className={styles.subtitle}>Look like you're lost</h3>
+            <h3 className={styles.subtitle}>{t('notfound.subtitle')}</h3>
             <p className={styles.description}>
-              The page you are looking for is not available!
+              {t('notfound.desc')}
             </p>
 
             <button
               onClick={() => navigate('/')}
               className={styles.homeBtn}
             >
-              Go to Home
+              {t('notfound.back_home')}
             </button>
           </div>
         </div>

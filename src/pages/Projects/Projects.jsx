@@ -1,38 +1,37 @@
 import React, { useState } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-hooks-i18next';
 import styles from './Projects.module.scss';
 import useCmsStore from '../../store/cmsStore';
 import { ArrowUpRight } from 'lucide-react';
 import projectsHeroImg from '../../assets/images/projects_hero.png';
 import SEO from '../../components/SEO/SEO';
 
-const categories = ['Hepsi', 'Grafik', 'Mobil', 'Web', 'Sosyal Medya', 'Web ve Script'];
-
 const Projects = () => {
-  const [activeCategory, setActiveCategory] = useState('Hepsi');
+  const { t } = useTranslation();
+  const categories = [t('projects.filter_all'), 'Grafik', 'Mobil', 'Web', 'Sosyal Medya', 'Web ve Script'];
+  const [activeCategory, setActiveCategory] = useState(t('projects.filter_all'));
   const cms = useCmsStore((state) => state.cms);
   const projectsData = cms?.projects || [];
   const heroImage = cms?.projectsHeroImage || projectsHeroImg;
 
-  const filteredProjects = activeCategory === 'Hepsi' 
+  const filteredProjects = activeCategory === t('projects.filter_all') 
     ? projectsData 
     : projectsData.filter(p => p.category === activeCategory);
 
   return (
     <div className={styles.projectsPage}>
       <SEO 
-        title="Projelerimiz" 
-        description="Geido Studio'nun farklı disiplinlerde ürettiği vizyoner, kullanıcı odaklı web ve grafik tasarım projelerini inceleyin."
+        title={t('projects.seo_title')} 
+        description={t('projects.seo_desc')}
         keywords="projeler, portfolyo, web tasarım referansları, grafik tasarım çalışmaları"
       />
       <div className={styles.header}>
         <div className={styles.heroBackground} style={{ backgroundImage: `url(${heroImage})` }}></div>
         <div className={styles.heroOverlay}></div>
         <div className={styles.container}>
-          <h1 className={styles.title}>Projelerimiz</h1>
-          <p className={styles.description}>
-            Farklı disiplinlerde ürettiğimiz, vizyoner ve kullanıcı odaklı çözümler.
-          </p>
+          <h1 className={styles.title}>{t('projects.subtitle')}</h1>
+          <p className={styles.description} dangerouslySetInnerHTML={{ __html: t('projects.title') }}></p>
         </div>
       </div>
 
@@ -66,7 +65,7 @@ const Projects = () => {
                     <img src={project.image} alt={project.title} loading="lazy" />
                     <div className={styles.overlay}>
                       <button className={styles.viewBtn}>
-                        İncele <ArrowUpRight size={20} />
+                        {t('projects.view_project')} <ArrowUpRight size={20} />
                       </button>
                     </div>
                   </div>
@@ -79,7 +78,7 @@ const Projects = () => {
               ))
             ) : (
               <p style={{ gridColumn: '1 / -1', textAlign: 'center', color: 'var(--text-secondary)', padding: '3rem 0' }}>
-                Şimdilik içerik yok.
+                {t('projects.no_projects')}
               </p>
             )}
           </AnimatePresence>

@@ -4,6 +4,7 @@ import { ArrowUpRight } from 'lucide-react';
 import { m, AnimatePresence } from 'framer-motion';
 import Button from '../../components/Button/Button';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-hooks-i18next';
 import useCmsStore from '../../store/cmsStore';
 import CookieBanner from '../../components/CookieBanner/CookieBanner';
 import geidoHeroFallback from '../../assets/images/geido_hero.png';
@@ -17,6 +18,7 @@ const slideVariants = {
 };
 
 const Home = () => {
+  const { t } = useTranslation();
   const cms = useCmsStore((state) => state.cms);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [direction, setDirection] = useState(1);
@@ -49,8 +51,8 @@ const Home = () => {
   return (
     <div className={styles.home}>
       <SEO 
-        title="Ana Sayfa" 
-        description="Geido Studio ile modern web tasarımı, eşsiz UI/UX deneyimleri ve etkili kurumsal kimlik çalışmaları. İşletmenizi geleceğe taşıyoruz."
+        title={t('home.seo_title')} 
+        description={t('home.seo_desc')}
         keywords="web tasarım, grafik tasarım, ui ux, geido studio, sosyal medya"
       />
       <CookieBanner />
@@ -91,20 +93,20 @@ const Home = () => {
         <div className={styles.tickerBanner}>
           <div className={styles.tickerTrack}>
             <div className={styles.tickerContent}>
-              <span>Web Geliştirme</span>
+              <span>{t('home.service_2_title')}</span>
               <span>UI/UX Tasarım</span>
-              <span>Mobil Uygulama</span>
-              <span>Sosyal Medya</span>
-              <span>Grafik Tasarım</span>
-              <span>Kurumsal Kimlik</span>
+              <span>{t('home.service_3_title')}</span>
+              <span>{t('home.service_4_title')}</span>
+              <span>{t('about.graphic_design')}</span>
+              <span>{t('about.gd_1')}</span>
             </div>
             <div className={styles.tickerContent}>
-              <span>Web Geliştirme</span>
+              <span>{t('home.service_2_title')}</span>
               <span>UI/UX Tasarım</span>
-              <span>Mobil Uygulama</span>
-              <span>Sosyal Medya</span>
-              <span>Grafik Tasarım</span>
-              <span>Kurumsal Kimlik</span>
+              <span>{t('home.service_3_title')}</span>
+              <span>{t('home.service_4_title')}</span>
+              <span>{t('about.graphic_design')}</span>
+              <span>{t('about.gd_1')}</span>
             </div>
           </div>
         </div>
@@ -115,18 +117,18 @@ const Home = () => {
         <div className={styles.container}>
           <div className={styles.sectionHeader}>
             <div>
-              <span className={styles.subtitle}>Hizmetlerimiz</span>
-              <h2 className={styles.title}>Markanızı geleceğe taşıyan<br/>yaratıcı süreçler.</h2>
+              <span className={styles.subtitle}>{t('home.services_subtitle')}</span>
+              <h2 className={styles.title} dangerouslySetInnerHTML={{ __html: t('home.services_title') }}></h2>
             </div>
-            <Button to="/iletisim" variant="outline">Detaylı Bilgi</Button>
+            <Button to="/iletisim" variant="outline">{t('home.learn_more')}</Button>
           </div>
 
           <div className={styles.servicesGrid}>
             {[
-              { title: 'Grafik Tasarım & Branding', desc: 'Markanızın ruhunu yansıtan, yaratıcı ve akılda kalıcı görsel dünyalar ve kurumsal kimlikler inşa ediyoruz.', highlight: true },
-              { title: 'Web Geliştirme', desc: 'Hızlı, güvenli ve ölçeklenebilir altyapılar ile hayalinizdeki projeleri hayata geçiriyoruz.', highlight: true },
-              { title: 'Mobil Uygulama', desc: 'Hem iOS hem Android için kullanıcı dostu ve yenilikçi mobil uygulama çözümleri sunuyoruz.', highlight: true },
-              { title: 'Sosyal Medya Yönetimi', desc: 'Markanızın dijital kimliğini stratejik içeriklerle hedef kitlenize en iyi şekilde yansıtıyoruz.', highlight: true }
+              { title: t('home.service_1_title'), desc: t('home.service_1_desc'), highlight: true },
+              { title: t('home.service_2_title'), desc: t('home.service_2_desc'), highlight: true },
+              { title: t('home.service_3_title'), desc: t('home.service_3_desc'), highlight: true },
+              { title: t('home.service_4_title'), desc: t('home.service_4_desc'), highlight: true }
             ].map((s, i) => (
               <div key={i} className={`${styles.serviceCard} ${s.highlight ? styles.highlight : ''}`}>
                 <div className={styles.cardIcon}></div>
@@ -145,10 +147,10 @@ const Home = () => {
         <div className={styles.container}>
           <div className={styles.sectionHeader}>
             <div>
-              <span className={styles.subtitle}>Projelerimiz</span>
-              <h2 className={styles.title}>Fark Yaratan Tasarımlar<br/>Üretiyoruz</h2>
+              <span className={styles.subtitle}>{t('home.projects_subtitle')}</span>
+              <h2 className={styles.title} dangerouslySetInnerHTML={{ __html: t('home.projects_title') }}></h2>
             </div>
-            <Button to="/projeler" variant="primary">Daha Fazla Proje Gör</Button>
+            <Button to="/projeler" variant="primary">{t('home.more_projects')}</Button>
           </div>
 
           <div className={styles.projectsGrid}>
@@ -168,7 +170,7 @@ const Home = () => {
                 </div>
               ))
             ) : (
-              <p className={styles.emptyText} style={{ gridColumn: '1 / -1' }}>Şimdilik içerik yok.</p>
+              <p className={styles.emptyText} style={{ gridColumn: '1 / -1' }}>{t('home.no_content')}</p>
             )}
           </div>
         </div>
@@ -179,10 +181,10 @@ const Home = () => {
         <div className={styles.container}>
           <div className={styles.sectionHeader}>
             <div>
-              <span className={styles.subtitle}>Blog</span>
-              <h2 className={styles.title}>En Son Haberler &<br/>İçgörüler</h2>
+              <span className={styles.subtitle}>{t('home.blog_subtitle')}</span>
+              <h2 className={styles.title} dangerouslySetInnerHTML={{ __html: t('home.blog_title') }}></h2>
             </div>
-            <Button to="/blog" variant="outline">Tümünü Gör</Button>
+            <Button to="/blog" variant="outline">{t('home.see_all')}</Button>
           </div>
 
           <div className={styles.articleGrid}>
@@ -206,7 +208,7 @@ const Home = () => {
                 </Link>
               ))
             ) : (
-              <p className={styles.emptyText}>Henüz blog yazısı eklenmemiş.</p>
+              <p className={styles.emptyText}>{t('home.no_blogs')}</p>
             )}
           </div>
         </div>

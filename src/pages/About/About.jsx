@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import useCmsStore from '../../store/cmsStore';
 import { m, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-hooks-i18next';
 import styles from './About.module.scss';
 import { Palette, Code2, X, Mail } from 'lucide-react';
 import SEO from '../../components/SEO/SEO';
@@ -11,20 +12,21 @@ const memberDetails = {
     role: 'Grafik Tasarım & Sosyal Medya Yönetimi',
     email: 'yasarhanpekergin@geidostudio.com',
     icon: <Palette size={48} />,
-    bio: 'Görsel iletişimin gücüne inanarak markaların hikayelerini estetik ve akılda kalıcı tasarımlarla anlatıyoruz. Sanat ve dijital dünyanın kesiştiği noktada markanıza eşsiz bir kimlik kazandırmak için buradayım. Detaylara olan tutkumla projelerinizi hayata geçiriyorum.',
-    focus: ['Marka Kimliği', 'Kullanıcı Deneyimi (UX)', 'Yaratıcı Yönetim']
+    bioKey: 'yasarhan_desc',
+    focusKeys: ['gd_1', 'sm_1', 'sm_2']
   },
   caner: {
     name: 'Caner Karakuş',
-    role: 'Yazılım & Teknoloji',
+    roleKey: 'caner_role',
     email: 'canerkarakus@geidostudio.com',
     icon: <Code2 size={48} />,
-    bio: 'Modern teknolojileri kullanarak performanslı, güvenli ve ölçeklenebilir dijital çözümler üretiyoruz. Kullanıcı deneyimini kodun gücüyle birleştirerek sadece çalışan değil, aynı zamanda fark yaratan web ve mobil uygulamalar geliştiriyorum.',
-    focus: ['Full-Stack Geliştirme', 'Sistem Mimarisi', 'Performans Optimizasyonu']
+    bioKey: 'caner_desc',
+    focusKeys: ['dev_2', 'sys_3', 'sys_2']
   }
 };
 
 const About = () => {
+  const { t } = useTranslation();
   const [selectedMember, setSelectedMember] = useState(null);
   const cms = useCmsStore(state => state.cms);
 
@@ -33,14 +35,14 @@ const About = () => {
   return (
     <div className={styles.aboutPage}>
       <SEO 
-        title="Hakkımızda" 
-        description="Geido Studio hikayesini, kurucularımızı ve vizyonumuzu keşfedin. Sanat ve dijital dünyanın kesiştiği noktada markanıza eşsiz bir kimlik kazandırmak için buradayız."
+        title={t('about.seo_title')} 
+        description={t('about.seo_desc')}
         keywords="hakkımızda, geido studio kimdir, kreatif ajans ekibi, vizyonumuz"
       />
       <div className={styles.container}>
         <div className={styles.header}>
-          <span className={styles.subtitle}>Hakkımızda</span>
-          <h1 className={styles.title}>{cms?.aboutTitle || 'Gelenekten İlham Alan, Geleceğe Yön Veren Tasarımlar'}</h1>
+          <span className={styles.subtitle}>{t('about.subtitle')}</span>
+          <h1 className={styles.title}>{cms?.aboutTitle || t('about.default_title')}</h1>
         </div>
 
         <m.div 
@@ -50,7 +52,7 @@ const About = () => {
           viewport={{ once: true }}
         >
           <div className={styles.aboutText}>
-            <p>{cms?.aboutText || 'Geido Studio, dijital dünyada markalarınızın potansiyelini en üst düzeye çıkarmak için yenilikçi, modern ve etkili çözümler sunar.'}</p>
+            <p>{cms?.aboutText || t('about.default_text')}</p>
           </div>
         </m.div>
 
@@ -78,29 +80,29 @@ const About = () => {
             </div>
             <div className={styles.memberInfo}>
               <h2>Yaşarhan Pekergin</h2>
-              <h3 className={styles.role}>Grafik Tasarım & Sosyal Medya Yönetimi</h3>
+              <h3 className={styles.role}>{t('about.yasarhan_role')}</h3>
               <a href="mailto:yasarhanpekergin@geidostudio.com" className={styles.memberEmail}>
                 <Mail size={16} /> yasarhanpekergin@geidostudio.com
               </a>
-              <p>Görsel iletişimin gücüne inanarak markaların hikayelerini estetik ve akılda kalıcı tasarımlarla anlatıyoruz.</p>
+              <p>{t('about.yasarhan_desc')}</p>
               
               <div className={styles.skills}>
                 <div className={styles.skillGroup}>
-                  <h4>Grafik Tasarım</h4>
+                  <h4>{t('about.graphic_design')}</h4>
                   <ul>
-                    <li>Logo & Kurumsal Kimlik</li>
-                    <li>Ambalaj Tasarımı</li>
-                    <li>İllüstrasyon & Tipografi</li>
-                    <li>Poster, Broşür & İnfografik</li>
+                    <li>{t('about.gd_1')}</li>
+                    <li>{t('about.gd_2')}</li>
+                    <li>{t('about.gd_3')}</li>
+                    <li>{t('about.gd_4')}</li>
                   </ul>
                 </div>
                 <div className={styles.skillGroup}>
-                  <h4>Sosyal Medya</h4>
+                  <h4>{t('about.social_media')}</h4>
                   <ul>
-                    <li>İçerik Üretimi & Strateji</li>
-                    <li>Görsel & Topluluk Yönetimi</li>
-                    <li>Analiz & Raporlama</li>
-                    <li>Reklam Görselleri</li>
+                    <li>{t('about.sm_1')}</li>
+                    <li>{t('about.sm_2')}</li>
+                    <li>{t('about.sm_3')}</li>
+                    <li>{t('about.sm_4')}</li>
                   </ul>
                 </div>
               </div>
@@ -130,27 +132,27 @@ const About = () => {
             </div>
             <div className={styles.memberInfo}>
               <h2>Caner Karakuş</h2>
-              <h3 className={styles.role}>Yazılım & Teknoloji</h3>
+              <h3 className={styles.role}>{t('about.caner_role')}</h3>
               <a href="mailto:canerkarakus@geidostudio.com" className={styles.memberEmail}>
                 <Mail size={16} /> canerkarakus@geidostudio.com
               </a>
-              <p>Modern teknolojileri kullanarak performanslı, güvenli ve ölçeklenebilir dijital çözümler üretiyoruz.</p>
+              <p>{t('about.caner_desc')}</p>
               
               <div className={styles.skills}>
                 <div className={styles.skillGroup}>
-                  <h4>Geliştirme</h4>
+                  <h4>{t('about.development')}</h4>
                   <ul>
-                    <li>Web & Mobil Tasarım</li>
-                    <li>Web & Mobil Geliştirme</li>
-                    <li>E-ticaret Çözümleri</li>
+                    <li>{t('about.dev_1')}</li>
+                    <li>{t('about.dev_2')}</li>
+                    <li>{t('about.dev_3')}</li>
                   </ul>
                 </div>
                 <div className={styles.skillGroup}>
-                  <h4>Sistem</h4>
+                  <h4>{t('about.system')}</h4>
                   <ul>
-                    <li>Script Hazırlama</li>
-                    <li>Otomasyon</li>
-                    <li>API Entegrasyonu</li>
+                    <li>{t('about.sys_1')}</li>
+                    <li>{t('about.sys_2')}</li>
+                    <li>{t('about.sys_3')}</li>
                   </ul>
                 </div>
               </div>
@@ -186,7 +188,7 @@ const About = () => {
                 </div>
                 <div>
                   <h2>{memberDetails[selectedMember].name}</h2>
-                  <span className={styles.modalRole}>{memberDetails[selectedMember].role}</span>
+                  <span className={styles.modalRole}>{t(`about.${memberDetails[selectedMember].roleKey}`)}</span>
                 </div>
               </div>
               
@@ -195,13 +197,13 @@ const About = () => {
                   <Mail size={18} />
                   <a href={`mailto:${memberDetails[selectedMember].email}`}>{memberDetails[selectedMember].email}</a>
                 </div>
-                <p>{memberDetails[selectedMember].bio}</p>
+                <p>{t(`about.${memberDetails[selectedMember].bioKey}`)}</p>
                 
                 <div className={styles.focusArea}>
-                  <h4>Uzmanlık Alanları</h4>
+                  <h4>{t('about.expertise')}</h4>
                   <div className={styles.tags}>
-                    {memberDetails[selectedMember].focus.map((item, index) => (
-                      <span key={index} className={styles.tag}>{item}</span>
+                    {memberDetails[selectedMember].focusKeys.map((item, index) => (
+                      <span key={index} className={styles.tag}>{t(`about.${item}`)}</span>
                     ))}
                   </div>
                 </div>

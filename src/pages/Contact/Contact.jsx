@@ -2,26 +2,28 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { m, AnimatePresence } from 'framer-motion';
 import { MapPin, Mail, Phone, ChevronDown } from 'lucide-react';
+import { useTranslation } from 'react-hooks-i18next';
 import styles from './Contact.module.scss';
 import Button from '../../components/Button/Button';
 import useCmsStore from '../../store/cmsStore';
 import SEO from '../../components/SEO/SEO';
 
-const services = [
-  { value: 'web', label: 'Web Tasarım & Geliştirme' },
-  { value: 'mobile', label: 'Mobil Uygulama' },
-  { value: 'graphic', label: 'Grafik & Kurumsal Kimlik' },
-  { value: 'social', label: 'Sosyal Medya Yönetimi' },
-  { value: 'other', label: 'Diğer' }
-];
-
 const Contact = () => {
+  const { t } = useTranslation();
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSelectOpen, setIsSelectOpen] = useState(false);
   const dropdownRef = useRef(null);
 
   const cms = useCmsStore(state => state.cms);
   const addMessage = useCmsStore(state => state.addMessage);
+
+  const services = [
+    { value: 'web', label: t('about.dev_2') },
+    { value: 'mobile', label: t('home.service_3_title') },
+    { value: 'graphic', label: t('home.service_1_title') },
+    { value: 'social', label: t('home.service_4_title') },
+    { value: 'other', label: t('projects.filter_all') === 'All' ? 'Other' : 'Diğer' }
+  ];
 
   const {
     register,
@@ -139,8 +141,8 @@ const Contact = () => {
   return (
     <div className={styles.contactPage}>
       <SEO 
-        title="İletişim" 
-        description="Geido Studio ile iletişime geçin. Yeni projeniz için teklif alın, yaratıcı ekibimizle tanışın."
+        title={t('contact.seo_title')} 
+        description={t('contact.seo_desc')}
         keywords="iletişim, geido studio iletişim, web tasarım teklif al, grafik tasarım fiyatları"
       />
 
@@ -152,10 +154,10 @@ const Contact = () => {
             animate={{ opacity: 1, y: 0 }}
             className={styles.headerContent}
           >
-            <span className={styles.subtitle}>İletişim</span>
-            <h1 className={styles.title}>Birlikte mükemmel<br />işler yaratalım.</h1>
+            <span className={styles.subtitle}>{t('contact.subtitle')}</span>
+            <h1 className={styles.title} dangerouslySetInnerHTML={{ __html: t('contact.title') }}></h1>
             <p className={styles.description}>
-              Yeni bir projeniz mi var? Ekibimiz, vizyonunuzu hayata geçirmek için hazır. Bize hemen ulaşın.
+              {t('contact.seo_desc')}
             </p>
           </m.div>
         </div>
@@ -171,14 +173,14 @@ const Contact = () => {
         >
           <div className={styles.contactCard}>
             <div className={styles.iconBox}><Mail /></div>
-            <h3>E-posta</h3>
+            <h3>{t('contact.email_us')}</h3>
             <p>Bize dilediğiniz zaman yazın.</p>
             <a href={`mailto:${cms?.contactEmail || 'info@geidostudio.com'}`}>{cms?.contactEmail || 'info@geidostudio.com'}</a>
           </div>
 
           <div className={styles.contactCard}>
             <div className={styles.iconBox}><Phone /></div>
-            <h3>Telefon</h3>
+            <h3>{t('contact.call_us')}</h3>
             <p>Bizi hemen arayın.</p>
             <a href={`tel:${cms?.contactPhone || '+90 (555) 123 45 67'}`}>{cms?.contactPhone || '+90 (555) 123 45 67'}</a>
           </div>
@@ -193,13 +195,13 @@ const Contact = () => {
           transition={{ delay: 0.4 }}
         >
           <div className={styles.formHeader}>
-            <h2>Mesaj Gönderin</h2>
-            <p>Aşağıdaki formu doldurun, en kısa sürede size dönüş yapalım.</p>
+            <h2>{t('contact.form_title')}</h2>
+            <p>{t('contact.email_us')}</p>
           </div>
 
           {isSubmitted && (
             <div className={styles.successMessage}>
-              Mesajınız başarıyla gönderildi. Teşekkür ederiz!
+              {t('contact.success')}
             </div>
           )}
 
@@ -207,38 +209,33 @@ const Contact = () => {
 
             <div className={styles.row}>
               <div className={styles.formGroup}>
-                <label htmlFor="fullName">Ad Soyad</label>
+                <label htmlFor="fullName">{t('contact.form_name')}</label>
                 <input
                   id="fullName"
                   placeholder="John Doe"
                   className={errors.fullName ? styles.errorInput : ''}
-                  {...register("fullName", { required: "Ad Soyad alanı zorunludur" })}
+                  {...register("fullName", { required: true })}
                 />
-                {errors.fullName && <span className={styles.errorText}>{errors.fullName.message}</span>}
               </div>
 
               <div className={styles.formGroup}>
-                <label htmlFor="email">E-posta</label>
+                <label htmlFor="email">{t('contact.form_email')}</label>
                 <input
                   id="email"
                   type="email"
                   placeholder="ornek@email.com"
                   className={errors.email ? styles.errorInput : ''}
                   {...register("email", {
-                    required: "E-posta alanı zorunludur",
-                    pattern: {
-                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                      message: "Geçerli bir e-posta adresi giriniz"
-                    }
+                    required: true,
+                    pattern: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i
                   })}
                 />
-                {errors.email && <span className={styles.errorText}>{errors.email.message}</span>}
               </div>
             </div>
 
             <div className={styles.row}>
               <div className={styles.formGroup}>
-                <label htmlFor="phone">Telefon</label>
+                <label htmlFor="phone">{t('contact.call_us')}</label>
                 <input
                   id="phone"
                   type="tel"
@@ -249,7 +246,7 @@ const Contact = () => {
               </div>
 
               <div className={styles.formGroup} ref={dropdownRef}>
-                <label>Konu</label>
+                <label>{t('contact.form_subject')}</label>
                 <div
                   className={clsx(styles.customSelect, { [styles.errorInput]: errors.service, [styles.open]: isSelectOpen })}
                   onClick={() => setIsSelectOpen(!isSelectOpen)}
@@ -288,15 +285,14 @@ const Contact = () => {
             </div>
 
             <div className={styles.formGroup}>
-              <label htmlFor="message">Projenizden Bahsedin</label>
+              <label htmlFor="message">{t('contact.form_message')}</label>
               <textarea
                 id="message"
                 rows="4"
-                placeholder="Nasıl yardımcı olabiliriz?"
+                placeholder="..."
                 className={errors.message ? styles.errorInput : ''}
-                {...register("message", { required: "Mesaj alanı zorunludur" })}
+                {...register("message", { required: true })}
               ></textarea>
-              {errors.message && <span className={styles.errorText}>{errors.message.message}</span>}
             </div>
 
             <div className={styles.submitArea}>
@@ -306,7 +302,7 @@ const Contact = () => {
                 className={styles.submitBtn}
                 disabled={isSubmitting}
               >
-                {isSubmitting ? 'Gönderiliyor...' : 'Mesaj Gönder'}
+                {isSubmitting ? t('contact.sending') : t('contact.send_button')}
               </Button>
             </div>
 

@@ -3,16 +3,18 @@ import { useParams, Link } from 'react-router-dom';
 import { api, socket } from '../../api/db';
 import styles from './Ticket.module.scss';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-hooks-i18next';
 import { Send, ArrowLeft, MessageSquare, User } from 'lucide-react';
 
 const Ticket = () => {
   const { id } = useParams();
+  const { t } = useTranslation();
   const [ticket, setTicket] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [replyText, setReplyText] = useState('');
-  const messagesEndRef = useRef(null);
   const textareaRef = useRef(null);
+  const messagesContainerRef = useRef(null);
 
   useEffect(() => {
     const fetchTicket = async () => {
@@ -20,7 +22,7 @@ const Ticket = () => {
         const data = await api.getTicket(id);
         setTicket(data);
       } catch (err) {
-        setError(err.message || 'Bilet bulunamadı veya silinmiş olabilir.');
+        setError(err.message || t('ticket.not_found'));
       } finally {
         setLoading(false);
       }
@@ -47,7 +49,12 @@ const Ticket = () => {
   }, [id]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTo({
+        top: messagesContainerRef.current.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
   }, [ticket]);
 
   // Auto resize textarea
@@ -85,12 +92,12 @@ const Ticket = () => {
         return { ...prev, replies: [...(prev.replies || []), res.reply] };
       });
     } catch (err) {
-      alert(err.message || 'Yanıt gönderilemedi. Lütfen tekrar deneyin.');
+      alert(err.message || t('ticket.error_send'));
       setReplyText(text);
     }
   };
 
-  if (loading) return <div className={styles.loading}>Sohbet yükleniyor...</div>;
+  if (loading) return <div className={styles.loading}>{t('ticket.loading')}</div>;
   if (error) return <div className={styles.error}>{error}</div>;
 
   return (
@@ -98,7 +105,7 @@ const Ticket = () => {
       <div className={styles.ticketContainer}>
         
         <Link to="/" className={styles.backLink}>
-          <ArrowLeft size={16} /> Ana Sayfaya Dön
+          <ArrowLeft size={16} /> {t('ticket.back_home')}
         </Link>
 
         <motion.div 
@@ -109,15 +116,15 @@ const Ticket = () => {
         >
           <header className={styles.header}>
             <div className={styles.headerInfo}>
-              <h2><MessageSquare size={20} color="var(--accent-primary)" /> {ticket.subject || 'Destek Talebi'}</h2>
-              <span className={styles.ticketId}>Bilet No: #{ticket.id}</span>
+              <h2><MessageSquare size={20} color="var(--accent-primary)" /> {ticket.subject || t('ticket.support_request')}</h2>
+              <span className={styles.ticketId}>{t('ticket.ticket_no')}: #{ticket.id}</span>
             </div>
             <div className={styles.statusBadge}>
-              Aktif
+              {t('ticket.active')}
             </div>
           </header>
 
-          <div className={styles.messagesList}>
+          <div className={styles.messagesList} ref={messagesContainerRef}>
             {/* İlk mesaj (Kullanıcının gönderdiği ilk mesaj) */}
             <motion.div 
               initial={{ opacity: 0, x: 20 }}
@@ -129,7 +136,7 @@ const Ticket = () => {
               </div>
               <div className={styles.messageContent}>
                 <div className={styles.meta}>
-                  <span className={styles.name}>Siz</span>
+                  <span className={styles.name}>{t('ticket.you')}</span>
                   <span>{new Date(ticket.date).toLocaleString('tr-TR', { hour: '2-digit', minute:'2-digit', day:'numeric', month:'short' })}</span>
                 </div>
                 <div className={`${styles.bubble} ${styles.userBubble}`}>
@@ -154,7 +161,7 @@ const Ticket = () => {
                   </div>
                   <div className={styles.messageContent}>
                     <div className={styles.meta}>
-                      <span className={styles.name}>{isUser ? 'Siz' : 'Geido Studio'}</span>
+                      <span className={styles.name}>{isUser ? t('ticket.you') : t('ticket.geido')}</span>
                       <span>{new Date(reply.date).toLocaleString('tr-TR', { hour: '2-digit', minute:'2-digit', day:'numeric', month:'short' })}</span>
                     </div>
                     <div className={`${styles.bubble} ${isUser ? styles.userBubble : styles.adminBubble}`}>
@@ -164,14 +171,13 @@ const Ticket = () => {
                 </motion.div>
               );
             })}
-            <div ref={messagesEndRef} />
           </div>
 
           <form onSubmit={handleReply} className={styles.replyForm}>
             <div className={styles.inputWrapper}>
               <textarea 
                 ref={textareaRef}
-                placeholder="Mesajınızı buraya yazın... (Göndermek için Enter)" 
+                placeholder={t('ticket.placeholder')} 
                 value={replyText}
                 onChange={handleInput}
                 onKeyDown={handleKeyDown}
@@ -179,7 +185,7 @@ const Ticket = () => {
               />
             </div>
             <button type="submit" disabled={!replyText.trim()}>
-              <Send size={18} /> <span>Gönder</span>
+              <Send size={18} /> <span>{t('ticket.send')}</span>
             </button>
           </form>
         </motion.div>

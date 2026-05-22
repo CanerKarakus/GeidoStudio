@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Share2, Clock, User } from 'lucide-react';
 import { m } from 'framer-motion';
+import { useTranslation } from 'react-hooks-i18next';
 import useCmsStore from '../../store/cmsStore';
 import Button from '../../components/Button/Button';
 import styles from './BlogPost.module.scss';
@@ -10,6 +11,7 @@ import SEO from '../../components/SEO/SEO';
 const BlogPost = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { cms, subscribeNewsletter } = useCmsStore();
   const [blog, setBlog] = useState(null);
   const [email, setEmail] = useState('');
@@ -28,7 +30,7 @@ const BlogPost = () => {
   }, [slug, cms, navigate]);
 
   if (!blog) {
-    return <div className={styles.loadingState}>Yükleniyor...</div>;
+    return <div className={styles.loadingState}>{t('blogpost.loading')}</div>;
   }
 
   const handleShare = () => {
@@ -39,7 +41,7 @@ const BlogPost = () => {
       }).catch(console.error);
     } else {
       navigator.clipboard.writeText(window.location.href);
-      alert('Bağlantı kopyalandı!');
+      alert(t('blogpost.link_copied'));
     }
   };
 
@@ -50,10 +52,10 @@ const BlogPost = () => {
     setSubStatus({ state: 'loading', message: '' });
     try {
       await subscribeNewsletter(email);
-      setSubStatus({ state: 'success', message: 'Bültene başarıyla abone oldunuz!' });
+      setSubStatus({ state: 'success', message: t('blogpost.subscribe_success') });
       setEmail('');
     } catch (err) {
-      setSubStatus({ state: 'error', message: err.message || 'Bir hata oluştu.' });
+      setSubStatus({ state: 'error', message: err.message || t('blogpost.subscribe_error') });
     }
   };
 
@@ -79,7 +81,7 @@ const BlogPost = () => {
             className={styles.headerContent}
           >
             <Link to="/blog" className={styles.backLink}>
-              <ArrowLeft size={20} /> Blog'a Dön
+              <ArrowLeft size={20} /> {t('blogpost.back_to_blog')}
             </Link>
             
             <h1 className={styles.title}>{blog.title}</h1>
@@ -103,7 +105,7 @@ const BlogPost = () => {
         <div className={styles.contentWrapper}>
           <aside className={styles.sidebar}>
             <div className={styles.stickySidebar}>
-              <span className={styles.shareTitle}>Paylaş</span>
+              <span className={styles.shareTitle}>{t('blogpost.share')}</span>
               <button className={styles.shareBtn} onClick={handleShare}>
                 <Share2 size={20} />
               </button>
@@ -124,19 +126,19 @@ const BlogPost = () => {
       <section className={styles.newsletterSection}>
         <div className={styles.container}>
           <div className={styles.newsletterCard}>
-            <h2>Bültene Abone Olun</h2>
-            <p>Geido Studio'dan en yeni dijital trendler, ipuçları ve güncellemelerden anında haberdar olmak için bültenimize katılın.</p>
+            <h2>{t('blogpost.newsletter_title')}</h2>
+            <p>{t('blogpost.newsletter_desc')}</p>
             
             <form className={styles.newsletterForm} onSubmit={handleSubscribe}>
               <input 
                 type="email" 
-                placeholder="E-posta adresiniz..." 
+                placeholder={t('blogpost.email_placeholder')} 
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
               />
               <button type="submit" disabled={subStatus.state === 'loading'}>
-                {subStatus.state === 'loading' ? 'Abone Olunuyor...' : 'Abone Ol'}
+                {subStatus.state === 'loading' ? t('blogpost.subscribing') : t('blogpost.subscribe')}
               </button>
             </form>
             

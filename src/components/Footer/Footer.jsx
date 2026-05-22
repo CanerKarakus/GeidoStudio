@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Instagram, Linkedin, Github, ArrowUpRight } from 'lucide-react';
+import { useTranslation } from 'react-hooks-i18next';
 import xIcon from '../../assets/social_icons/x.png';
 import behanceIcon from '../../assets/social_icons/behance.png';
 import Button from '../Button/Button';
@@ -8,15 +9,16 @@ import styles from './Footer.module.scss';
 import logoImg from '../../assets/logo/geido_logo.png';
 
 const Footer = () => {
+  const { t } = useTranslation();
   return (
     <footer className={styles.footer}>
       <div className={styles.container}>
 
         {/* Big CTA Section */}
         <div className={styles.ctaSection}>
-          <h2 className={styles.hugeTitle}>Projenizi Hayata<br />Geçirelim.</h2>
+          <h2 className={styles.hugeTitle} dangerouslySetInnerHTML={{ __html: t('footer.cta_title') }}></h2>
           <Button to="/iletisim#contact-form" variant="primary" className={styles.ctaBtn}>
-            Bize Ulaşın
+            {t('footer.contact_us')}
           </Button>
         </div>
 
@@ -27,7 +29,7 @@ const Footer = () => {
               <img src={logoImg} alt="Geido Studio" style={{ height: '32px', filter: 'brightness(0) invert(1)' }} />
             </Link>
             <p className={styles.brandDesc}>
-              Dijital dünyada iz bırakan, yaratıcı ve yenilikçi çözümler üretiyoruz. Markanızı geleceğe taşıyoruz.
+              {t('footer.brand_desc')}
             </p>
             <div className={styles.socials}>
               <a href="https://www.instagram.com/geido.studio/" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><Instagram size={20} /></a>
@@ -43,17 +45,17 @@ const Footer = () => {
           </div>
 
           <div className={styles.linksCol}>
-            <h3>Hızlı Menü</h3>
+            <h3>{t('footer.quick_links')}</h3>
             <ul>
-              <li><Link to="/">Ana Sayfa</Link></li>
-              <li><Link to="/projeler">Projeler</Link></li>
-              <li><Link to="/hakkinda">Hakkımızda</Link></li>
-              <li><Link to="/iletisim">İletişim</Link></li>
+              <li><Link to="/">{t('footer.home')}</Link></li>
+              <li><Link to="/projeler">{t('footer.projects')}</Link></li>
+              <li><Link to="/hakkinda">{t('footer.about')}</Link></li>
+              <li><Link to="/iletisim">{t('footer.contact')}</Link></li>
             </ul>
           </div>
 
           <div className={styles.contactCol}>
-            <h3>İletişim</h3>
+            <h3>{t('footer.contact')}</h3>
             <a href="mailto:info@geidostudio.com" className={styles.contactLink}>hello@geidostudio.com</a>
             <a href="tel:+905530037403" className={styles.contactLink}>+90 (553) 003 74 03</a>
           </div>
@@ -63,12 +65,12 @@ const Footer = () => {
 
         {/* Bottom Section */}
         <div className={styles.bottomSection}>
-          <p>© {new Date().getFullYear()} Geido Studio. Tüm hakları saklıdır.</p>
+          <p>© {new Date().getFullYear()} {t('footer.rights')}</p>
           <div className={styles.legalLinks}>
-            <Link to="/kvkk">KVKK Aydınlatma Metni</Link>
-            <Link to="/gizlilik-politikasi">Gizlilik Politikası</Link>
-            <Link to="/cerez-politikasi">Çerez Politikası</Link>
-            <Link to="/kullanim-kosullari">Kullanım Koşulları</Link>
+            <Link to="/kvkk">{t('footer.kvkk')}</Link>
+            <Link to="/gizlilik-politikasi">{t('footer.privacy')}</Link>
+            <Link to="/cerez-politikasi">{t('footer.cookie')}</Link>
+            <Link to="/kullanim-kosullari">{t('footer.terms')}</Link>
           </div>
         </div>
 

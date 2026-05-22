@@ -2,29 +2,29 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { m, AnimatePresence } from 'framer-motion';
 import { ArrowUpRight } from 'lucide-react';
+import { useTranslation } from 'react-hooks-i18next';
 import useCmsStore from '../../store/cmsStore';
 import styles from './Blog.module.scss';
 import SEO from '../../components/SEO/SEO';
 
 const Blog = () => {
+  const { t } = useTranslation();
   const { cms } = useCmsStore();
   const blogs = cms?.blogs || [];
 
   return (
     <div className={styles.blogPage}>
       <SEO 
-        title="Blog" 
-        description="Dijital dünyadaki en son tasarım trendleri, yazılım yenilikleri ve Geido Studio'dan yaratıcı içgörüler."
+        title={t('blog.seo_title')} 
+        description={t('blog.seo_desc')}
         keywords="blog, web tasarım trendleri, teknoloji makaleleri, grafik tasarım blogu"
       />
       <div className={styles.header}>
         <div className={styles.heroBackground}></div>
         <div className={styles.heroOverlay}></div>
         <div className={styles.container}>
-          <h1 style={{ textAlign: 'center' }} className={styles.title}>Blog</h1>
-          <p style={{ textAlign: 'center' }} className={styles.description}>
-            Dijital dünyadaki en son trendler, yenilikler ve Geido Studio'dan içgörüler.
-          </p>
+          <h1 style={{ textAlign: 'center' }} className={styles.title}>{t('blog.subtitle')}</h1>
+          <p style={{ textAlign: 'center' }} className={styles.description} dangerouslySetInnerHTML={{ __html: t('blog.title') }}></p>
         </div>
       </div>
 
@@ -32,7 +32,7 @@ const Blog = () => {
         <m.div layout className={styles.blogGrid}>
           <AnimatePresence>
             {blogs.length === 0 ? (
-              <p className={styles.emptyText}>Henüz blog yazısı eklenmemiş.</p>
+              <p className={styles.emptyText}>{t('blog.no_blogs')}</p>
             ) : (
               blogs.map((blog, index) => (
                 <m.div
@@ -51,7 +51,7 @@ const Blog = () => {
                       ></div>
                       <div className={styles.overlay}>
                         <div className={styles.viewBtn}>
-                          Oku <ArrowUpRight size={20} />
+                          {t('blog.read_more')} <ArrowUpRight size={20} />
                         </div>
                       </div>
                     </div>

@@ -68,10 +68,12 @@ function ScrollToTop() {
   const { pathname } = useLocation();
 
   useEffect(() => {
-    // Both standard window scroll and specific container scrolls to ensure it works on all devices
-    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-    document.documentElement.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-    document.body.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    try {
+      // Safe, cross-browser scroll to top without 'instant' which causes TypeError in some browsers
+      window.scrollTo(0, 0);
+    } catch (e) {
+      // Ignore
+    }
   }, [pathname]);
 
   return null;

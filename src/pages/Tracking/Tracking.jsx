@@ -39,7 +39,7 @@ const Tracking = () => {
       
       setProject(data);
     } catch (err) {
-      setError('Proje bulunamadı. Kodunuzu kontrol edip tekrar deneyin.');
+      setError(t('tracking.not_found'));
       setProject(null);
     } finally {
       setLoading(false);
@@ -54,28 +54,28 @@ const Tracking = () => {
   };
 
   const steps = [
-    { id: 1, title: 'Değerlendiriliyor', icon: Search },
-    { id: 2, title: 'Hazırlanıyor', icon: PenTool },
-    { id: 3, title: 'Teslim Edildi', icon: CheckCircle }
+    { id: 1, title: t('tracking.pending'), icon: Search },
+    { id: 2, title: t('tracking.in_progress'), icon: PenTool },
+    { id: 3, title: t('tracking.completed'), icon: CheckCircle }
   ];
 
   if (loading) return <div className={styles.loadingWrapper}><Loader className={styles.spinner} size={48} /></div>;
 
   return (
     <div className={styles.trackingPage}>
-      <SEO title="Proje Takip" description="Projenizin güncel durumunu takip edin." />
+      <SEO title={t('tracking.seo_title')} description={t('tracking.seo_desc')} />
       
       <div className={styles.container}>
         {!project ? (
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: "easeOut" }} className={styles.searchBox}>
-            <h2>Proje Durumunu Sorgula</h2>
-            <p>Size iletilen proje kodunu veya adını girerek, projenizin anlık hazırlık aşamasını öğrenebilirsiniz.</p>
+            <h2 dangerouslySetInnerHTML={{ __html: t('tracking.hero_title') }}></h2>
+            <p>{t('tracking.hero_desc')}</p>
             <form onSubmit={handleSearch} className={styles.searchForm}>
               <div className={styles.inputWrapper}>
                 <Search size={20} className={styles.searchIcon} />
                 <input 
                   type="text" 
-                  placeholder="Proje Kodu (Örn: geido-eticaret)" 
+                  placeholder={t('tracking.input_placeholder')} 
                   value={searchSlug} 
                   onChange={(e) => setSearchSlug(e.target.value)}
                   className={styles.input}
@@ -83,7 +83,7 @@ const Tracking = () => {
                 />
               </div>
               <button type="submit" className={styles.btn}>
-                Takip Et <ArrowLeft size={18} style={{ transform: 'rotate(180deg)' }} />
+                {t('tracking.track_button')} <ArrowLeft size={18} style={{ transform: 'rotate(180deg)' }} />
               </button>
             </form>
             {error && (
@@ -102,7 +102,7 @@ const Tracking = () => {
             </div>
             
             <p className={styles.desc}>
-              Projeniz şu anda <strong>{steps.find(s => s.id === project.status)?.title}</strong> aşamasındadır.
+              {t('tracking.project_status')}: <strong>{steps.find(s => s.id === project.status)?.title}</strong>
             </p>
 
             <div className={styles.progressContainer}>
@@ -126,11 +126,11 @@ const Tracking = () => {
             
             <div className={styles.footer}>
               <button onClick={() => { setProject(null); navigate('/takip'); setSearchSlug(''); }} className={`${styles.actionBtn} ${styles.secondary}`}>
-                <ArrowLeft size={18} /> Yeni Sorgu
+                <ArrowLeft size={18} /> {t('tracking.track_button')}
               </button>
               {project.url && (
                 <a href={project.url.startsWith('http') ? project.url : `https://${project.url}`} target="_blank" rel="noopener noreferrer" className={`${styles.actionBtn} ${styles.primary}`}>
-                  Projeye Git <ExternalLink size={18} />
+                  {t('tracking.go_project')} <ExternalLink size={18} />
                 </a>
               )}
             </div>
