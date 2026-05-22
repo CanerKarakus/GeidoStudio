@@ -4,7 +4,7 @@ import styles from './AdminDashboard.module.scss';
 import { useNavigate } from 'react-router-dom';
 import {
   MessageSquare, Image as ImageIcon, Globe, Clock,
-  Layers, Edit3, ChevronRight
+  Layers, Edit3, ChevronRight, Database
 } from 'lucide-react';
 
 const QUICK_LINKS = [
@@ -15,6 +15,7 @@ const QUICK_LINKS = [
   { path: '/admin/contact',    label: 'İletişim Bilgileri', icon: Globe },
   { path: '/admin/messages',   label: 'Gelen Mesajlar',     icon: MessageSquare },
   { path: '/admin/newsletter', label: 'Bülten',   icon: Globe },
+  { path: '/admin/database',   label: 'Veri Tabanı',        icon: Database },
 ];
 
 const StatCard = ({ icon: Icon, label, value, color, delay = 0 }) => (

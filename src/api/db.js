@@ -116,4 +116,14 @@ export const api = {
 
     return data.url;
   },
+
+  // ── Database (Raw JSON Editor) ────────────────────────────────────────────
+  getDatabaseFiles: () =>
+    request('GET', '/api/database/files'),
+
+  getDatabaseFile: (filename) =>
+    request('GET', `/api/database/file/${filename}`),
+
+  updateDatabaseFile: (filename, content) =>
+    request('PUT', `/api/database/file/${filename}`, { content }),
 };

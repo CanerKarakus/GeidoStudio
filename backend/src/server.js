@@ -69,6 +69,7 @@ app.set('trust proxy', 1);
 // ── Routes ───────────────────────────────────────────────────────────────────
 app.use('/api/auth',       require('./routes/auth'));
 app.use('/api/cms',        require('./routes/cms'));
+app.use('/api/database',   require('./routes/database'));
 app.use('/api/messages',   require('./routes/messages'));
 app.use('/api/newsletter', require('./routes/newsletter'));
 app.use('/api/upload',     require('./routes/upload'));

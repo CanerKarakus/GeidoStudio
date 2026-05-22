@@ -5,7 +5,7 @@ import styles from '../../pages/Admin/AdminDashboard.module.scss';
 import {
   LogOut, Image as ImageIcon, MessageSquare,
   LayoutDashboard, Eye, Globe, ChevronRight,
-  Layers, Edit3, ExternalLink, FileText
+  Layers, Edit3, ExternalLink, FileText, Database
 } from 'lucide-react';
 
 const NAV_ITEMS = [
@@ -19,6 +19,7 @@ const NAV_ITEMS = [
   { path: '/admin/contact',  label: 'İletişim Bilgileri', icon: Globe },
   { path: '/admin/messages', label: 'Gelen Mesajlar',    icon: MessageSquare },
   { path: '/admin/newsletter', label: 'Bülten', icon: Globe },
+  { path: '/admin/database', label: 'Veri Tabanı', icon: Database },
 ];
 
 const AdminLayout = () => {

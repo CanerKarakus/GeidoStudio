@@ -1,0 +1,277 @@
+.databaseContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  height: calc(100vh - 120px); // Fill the remaining screen
+}
+
+.header {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 1.5rem;
+
+  .titleInfo {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+
+    .titleIcon {
+      color: #6366f1;
+      background: rgba(99, 102, 241, 0.1);
+      padding: 12px;
+      border-radius: 12px;
+      width: 48px;
+      height: 48px;
+    }
+
+    h2 {
+      margin: 0 0 0.25rem 0;
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    p {
+      margin: 0;
+      font-size: 0.9rem;
+      color: #a0a0b0;
+
+      strong {
+        color: #ef4444;
+      }
+    }
+  }
+}
+
+.contentLayout {
+  display: flex;
+  gap: 1.5rem;
+  flex: 1;
+  min-height: 0; // Important for flex child scrolling
+}
+
+.fileList {
+  width: 250px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+
+  h3 {
+    margin: 0 0 1rem 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #a0a0b0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .loading {
+    color: #888;
+    font-size: 0.9rem;
+  }
+
+  .files {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+
+    li {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      color: #cbd5e1;
+      font-size: 0.95rem;
+      transition: all 0.2s ease;
+      background: transparent;
+
+      svg {
+        color: #64748b;
+        transition: color 0.2s ease;
+      }
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      &.activeFile {
+        background: rgba(99, 102, 241, 0.1);
+        color: #fff;
+        font-weight: 500;
+
+        svg {
+          color: #6366f1;
+        }
+      }
+    }
+  }
+}
+
+.editorArea {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: rgba(10, 10, 15, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.editorToolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+
+  .editorInfo {
+    font-size: 0.95rem;
+    color: #fff;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+
+    .dirtyBadge {
+      font-size: 0.75rem;
+      background: rgba(245, 158, 11, 0.2);
+      color: #fbbf24;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+  }
+
+  .editorActions {
+    display: flex;
+    gap: 0.75rem;
+
+    button {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: none;
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      &.formatBtn {
+        background: rgba(255, 255, 255, 0.05);
+        color: #fff;
+
+        &:not(:disabled):hover {
+          background: rgba(255, 255, 255, 0.1);
+        }
+      }
+
+      &.saveBtn {
+        background: #6366f1;
+        color: white;
+
+        &:not(:disabled):hover {
+          background: #4f46e5;
+          transform: translateY(-1px);
+        }
+      }
+    }
+  }
+}
+
+.alertError, .alertSuccess {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.alertError {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border-bottom: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.alertSuccess {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+  border-bottom: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.textareaWrapper {
+  flex: 1;
+  position: relative;
+  min-height: 0;
+
+  .textareaOverlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(10, 10, 15, 0.5);
+    backdrop-filter: blur(2px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 500;
+    z-index: 10;
+  }
+}
+
+.jsonTextarea {
+  width: 100%;
+  height: 100%;
+  padding: 1.5rem;
+  background: transparent;
+  border: none;
+  color: #a5d6ff; // Monokai-ish light blue for keys
+  font-family: 'Fira Code', 'Consolas', monospace;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  resize: none;
+  outline: none;
+
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.2);
+  }
+
+  // Very basic syntax highlighting simulation via color scheme
+  // Real highlighting would require a library like react-simple-code-editor + prismjs
+  color: #e2e8f0;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+  }
+}

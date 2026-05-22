@@ -39,6 +39,7 @@ const AdminBlog = lazy(() => import('./pages/Admin/AdminBlog'));
 const AdminProjects = lazy(() => import('./pages/Admin/AdminProjects'));
 const AdminNewsletter = lazy(() => import('./pages/Admin/AdminNewsletter'));
 const AdminAbout = lazy(() => import('./pages/Admin/AdminAbout'));
+const AdminDatabase = lazy(() => import('./pages/Admin/AdminDatabase'));
 
 import useCmsStore from './store/cmsStore';
 
@@ -77,6 +78,7 @@ function AnimatedRoutes() {
           <Route path="messages" element={<AdminMessages />} />
           <Route path="newsletter" element={<AdminNewsletter />} />
           <Route path="about" element={<AdminAbout />} />
+          <Route path="database" element={<AdminDatabase />} />
         </Route>
 
         {/* 404 Route */}
