@@ -86,7 +86,7 @@ const Navbar = () => {
           </nav>
 
           <div className={styles.actions}>
-            <button className={styles.langToggle} onClick={toggleLanguage} aria-label="Dil Değiştir" style={{background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', marginRight: '15px', fontWeight: 'bold'}}>
+            <button className={styles.langToggle} onClick={toggleLanguage} aria-label="Dil Değiştir">
               <GlobeIcon size={18} /> {i18n.language.startsWith('tr') ? 'EN' : 'TR'}
             </button>
             <Button to="/iletisim#contact-form" variant="primary" className={styles.contactBtn}>

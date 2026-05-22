@@ -27,6 +27,8 @@ Bu dosya, yapılan geliştirmeler sonrasında hangi dosyaların değiştiğini v
 - `[Yeni]` src/pages/Admin/AdminTracking.jsx
 - `[Yeni]` src/components/MaintenanceScreen/MaintenanceScreen.jsx
 - `[Yeni]` src/components/MaintenanceScreen/MaintenanceScreen.module.scss
+- `[Değişti]` src/pages/Ticket/Ticket.jsx
+- `[Değişti]` src/pages/Ticket/Ticket.module.scss
 
 **Backend (cPanel):**
 - `[Değişti]` backend/src/server.js

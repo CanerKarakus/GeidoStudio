@@ -64,6 +64,19 @@ function AnalyticsTracker() {
   return null;
 }
 
+function ScrollToTop() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    // Both standard window scroll and specific container scrolls to ensure it works on all devices
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    document.documentElement.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    document.body.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [pathname]);
+
+  return null;
+}
+
 function AnimatedRoutes() {
   const location = useLocation();
 
@@ -149,6 +162,7 @@ function App() {
         {!isAdminRoute && <ScrollFeatures />}
         {!isAdminRoute && <Navbar />}
         <main className="main-content">
+          <ScrollToTop />
           <AnalyticsTracker />
           
           {isMaintenanceMode && !isAdminRoute ? (

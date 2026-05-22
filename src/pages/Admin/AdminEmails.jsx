@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import useCmsStore from '../../store/cmsStore';
 import styles from './AdminDashboard.module.scss';
-import { Save } from 'lucide-react';
+import { Save, Mail, Send, UserPlus, Type, AlignLeft } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const AdminEmails = () => {
   const { cms, updateCMS } = useCmsStore();
@@ -21,10 +22,7 @@ const AdminEmails = () => {
   const handleSave = async () => {
     setLoading(true);
     try {
-      await updateCMS({
-        ...cms,
-        emailTemplates: emails
-      });
+      await updateCMS({ ...cms, emailTemplates: emails });
       alert('E-Posta şablonları başarıyla güncellendi!');
     } catch (err) {
       alert('Hata: ' + err.message);
@@ -34,71 +32,111 @@ const AdminEmails = () => {
   };
 
   return (
-    <div className={styles.adminPage}>
-      <div className={styles.pageHeader}>
-        <h2 style={{ color: "#fff" }}>E-Posta Şablonları</h2>
-        <br />
-        <button className={styles.saveBtn} onClick={handleSave} disabled={loading}>
-          <Save size={18} /> {loading ? 'Kaydediliyor...' : 'Kaydet'}
-        </button>
-        <br />
-      </div>
-
-      <p style={{ marginBottom: '2rem', color: '#666', fontSize: '14px' }}>
-        Bu sayfadan, sitenize mesaj bırakanlara veya bültene abone olanlara giden otomatik mesajların içeriklerini düzenleyebilirsiniz.
-      </p>
-
-      <div className={styles.cardSection}>
-        <h3 style={{ marginBottom: '1rem', color: '#fff' }}>İletişim Formu Otomatik Yanıt (Auto-Reply)</h3>
-        <br />
-        <div className={styles.formGroup}>
-          <label>Konu (Subject)</label>
-          <input
-            type="text"
-            name="contactAutoReplySubject"
-            value={emails.contactAutoReplySubject}
-            onChange={handleChange}
-            className={styles.input}
-          />
+    <div className={styles.mainWrapper}>
+      {/* Sticky Top Bar */}
+      <div className={styles.topBar}>
+        <div>
+          <h1 className={styles.pageTitle}>E-Posta Şablonları</h1>
+          <p className={styles.pageGreeting}>Sistemden gönderilen otomatik e-postaların içeriklerini yönetin.</p>
         </div>
-
-        <div className={styles.formGroup}>
-          <label>Mesaj İçeriği</label>
-          <textarea
-            name="contactAutoReplyBody"
-            value={emails.contactAutoReplyBody}
-            onChange={handleChange}
-            className={styles.textarea}
-            rows="5"
-          />
-          <small>Not: İçerikte `{"{username}"}` yazdığınız yerler, formu dolduran kişinin adıyla otomatik değiştirilir.</small>
+        <div className={styles.topBarActions}>
+          <button className={styles.saveBtn} onClick={handleSave} disabled={loading}>
+            <Save size={18} /> {loading ? 'Kaydediliyor...' : 'Şablonları Kaydet'}
+          </button>
         </div>
       </div>
 
-      <div className={styles.cardSection} style={{ marginTop: '2rem' }}>
-        <h3 style={{ marginBottom: '1rem', color: '#fff' }}>Bülten Aboneliği (Hoşgeldin Mesajı)</h3>
-
-        <div className={styles.formGroup}>
-          <label>Konu (Subject)</label>
-          <input
-            type="text"
-            name="newsletterWelcomeSubject"
-            value={emails.newsletterWelcomeSubject}
-            onChange={handleChange}
-            className={styles.input}
-          />
+      <div className={styles.mainContent}>
+        <div className={styles.sectionDesc}>
+          <Mail size={16} /> 
+          Buradaki şablonlar, müşterileriniz form doldurduğunda veya bültene abone olduğunda onlara anında giden profesyonel şirket e-postalarıdır.
         </div>
 
-        <div className={styles.formGroup}>
-          <label>Mesaj İçeriği</label>
-          <textarea
-            name="newsletterWelcomeBody"
-            value={emails.newsletterWelcomeBody}
-            onChange={handleChange}
-            className={styles.textarea}
-            rows="5"
-          />
-        </div>
+        <motion.div 
+          initial={{ opacity: 0, y: 15 }} 
+          animate={{ opacity: 1, y: 0 }} 
+          className={styles.heroEditorGrid}
+        >
+          {/* Card 1: Contact Auto-Reply */}
+          <div className={styles.formCard}>
+            <div className={styles.formCardHeader}>
+              <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                <Send size={18} style={{ color: 'var(--accent)' }} /> 
+                İletişim Formu Otomatik Yanıt (Auto-Reply)
+              </h3>
+            </div>
+
+            <div className={styles.field}>
+              <label className={styles.fieldLabel}>
+                <Type size={14} /> E-Posta Konusu (Subject)
+              </label>
+              <input
+                type="text"
+                name="contactAutoReplySubject"
+                value={emails.contactAutoReplySubject}
+                onChange={handleChange}
+                placeholder="Örn: Mesajınızı Aldık - Geido Studio"
+                className={styles.input}
+              />
+            </div>
+
+            <div className={styles.field}>
+              <label className={styles.fieldLabel}>
+                <AlignLeft size={14} /> Mesaj İçeriği
+              </label>
+              <textarea
+                name="contactAutoReplyBody"
+                value={emails.contactAutoReplyBody}
+                onChange={handleChange}
+                placeholder="Müşterinize iletilecek sıcak bir teşekkür mesajı yazın..."
+                className={styles.textarea}
+                rows="6"
+              />
+              <span className={styles.charCount}>
+                İpucu: İçerikte <strong>{"{username}"}</strong> yazdığınız yerler, formu dolduran müşterinin adıyla otomatik olarak değiştirilir. (Örn: Merhaba {"{username}"}, mesajını aldık!)
+              </span>
+            </div>
+          </div>
+
+          {/* Card 2: Newsletter Welcome */}
+          <div className={styles.formCard}>
+            <div className={styles.formCardHeader}>
+              <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                <UserPlus size={18} style={{ color: '#10b981' }} /> 
+                Bülten Aboneliği (Hoş Geldin Mesajı)
+              </h3>
+            </div>
+
+            <div className={styles.field}>
+              <label className={styles.fieldLabel}>
+                <Type size={14} /> E-Posta Konusu (Subject)
+              </label>
+              <input
+                type="text"
+                name="newsletterWelcomeSubject"
+                value={emails.newsletterWelcomeSubject}
+                onChange={handleChange}
+                placeholder="Örn: Geido Studio Ailesine Hoş Geldiniz!"
+                className={styles.input}
+              />
+            </div>
+
+            <div className={styles.field}>
+              <label className={styles.fieldLabel}>
+                <AlignLeft size={14} /> Mesaj İçeriği
+              </label>
+              <textarea
+                name="newsletterWelcomeBody"
+                value={emails.newsletterWelcomeBody}
+                onChange={handleChange}
+                placeholder="Abone olan kullanıcılara gönderilecek karşılama mesajını yazın..."
+                className={styles.textarea}
+                rows="6"
+              />
+              <span className={styles.charCount}>Bu e-posta sadece yeni bülten abonelerine bir defaya mahsus otomatik olarak gönderilir.</span>
+            </div>
+          </div>
+        </motion.div>
       </div>
     </div>
   );

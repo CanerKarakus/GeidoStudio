@@ -137,6 +137,22 @@
   }
 }
 
+.langToggle {
+  background: transparent;
+  border: none;
+  color: color(white);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-right: 15px;
+  font-weight: bold;
+
+  @include respond-to-max(lg) {
+    display: none !important;
+  }
+}
+
 .mobileToggle {
   display: none;
   color: color(white);
