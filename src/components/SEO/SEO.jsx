@@ -1,21 +1,27 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
+import useCmsStore from '../../store/cmsStore';
 
 const SEO = ({ 
   title, 
   description, 
   keywords, 
-  image = 'https://geidostudio.com/logo_icon.png', 
+  image, 
   url = 'https://geidostudio.com' 
 }) => {
-  const siteTitle = 'Geido Studio — Gelenekten İlham Alan, Geleceğe Yön Veren Tasarımlar';
+  const { cms } = useCmsStore();
+
+  const siteTitle = cms?.seoDefaults?.title || 'Geido Studio — Gelenekten İlham Alan, Geleceğe Yön Veren Tasarımlar';
   const finalTitle = title ? `${title} | Geido Studio` : siteTitle;
   
-  const defaultDesc = "Geido Studio; modern web tasarımı, grafik tasarım, sosyal medya yönetimi ve kurumsal kimlik hizmetleri sunan yenilikçi bir kreatif ajanstır.";
+  const defaultDesc = cms?.seoDefaults?.description || "Geido Studio; modern web tasarımı, grafik tasarım, sosyal medya yönetimi ve kurumsal kimlik hizmetleri sunan yenilikçi bir kreatif ajanstır.";
   const finalDesc = description || defaultDesc;
 
-  const defaultKeywords = "web tasarım, grafik tasarım, geidostudio, sosyal medya yönetimi, kurumsal kimlik, logo tasarımı, UI/UX tasarım, kreatif ajans";
+  const defaultKeywords = cms?.seoDefaults?.keywords || "web tasarım, grafik tasarım, geidostudio, sosyal medya yönetimi, kurumsal kimlik, logo tasarımı, UI/UX tasarım, kreatif ajans";
   const finalKeywords = keywords ? `${keywords}, ${defaultKeywords}` : defaultKeywords;
+  
+  const defaultImage = cms?.seoDefaults?.image || 'https://geidostudio.com/logo_icon.png';
+  const finalImage = image || defaultImage;
 
   return (
     <Helmet>

@@ -10,6 +10,7 @@ import PageTransition from './components/PageTransition/PageTransition';
 import ScrollFeatures from './components/ScrollFeatures/ScrollFeatures';
 import LoadingScreen from './components/LoadingScreen/LoadingScreen';
 import SplashScreen from './components/SplashScreen/SplashScreen';
+import MaintenanceScreen from './components/MaintenanceScreen/MaintenanceScreen';
 
 // Lazy loaded pages
 const Home = lazy(() => import('./pages/Home/Home'));
@@ -25,6 +26,7 @@ const CookiePolicy = lazy(() => import('./pages/Legal/CookiePolicy'));
 const KvkkPolicy = lazy(() => import('./pages/Legal/KvkkPolicy'));
 const Ticket = lazy(() => import('./pages/Ticket/Ticket'));
 const Unsubscribe = lazy(() => import('./pages/Unsubscribe/Unsubscribe'));
+const Tracking = lazy(() => import('./pages/Tracking/Tracking'));
 
 // Admin pages
 const AdminLayout = lazy(() => import('./components/AdminLayout/AdminLayout'));
@@ -40,11 +42,27 @@ const AdminProjects = lazy(() => import('./pages/Admin/AdminProjects'));
 const AdminNewsletter = lazy(() => import('./pages/Admin/AdminNewsletter'));
 const AdminAbout = lazy(() => import('./pages/Admin/AdminAbout'));
 const AdminDatabase = lazy(() => import('./pages/Admin/AdminDatabase'));
+const AdminSEO = lazy(() => import('./pages/Admin/AdminSEO'));
+const AdminEmails = lazy(() => import('./pages/Admin/AdminEmails'));
+const AdminTracking = lazy(() => import('./pages/Admin/AdminTracking'));
 
 import useCmsStore from './store/cmsStore';
+import { api } from './api/db';
 
 // Module-level flag — survives re-renders, resets on full page refresh
 let splashHasShown = false;
+
+function AnalyticsTracker() {
+  const location = useLocation();
+
+  useEffect(() => {
+    if (!location.pathname.startsWith('/admin')) {
+      api.recordAnalyticsHit(location.pathname);
+    }
+  }, [location.pathname]);
+
+  return null;
+}
 
 function AnimatedRoutes() {
   const location = useLocation();
@@ -64,6 +82,8 @@ function AnimatedRoutes() {
         <Route path="/kvkk" element={<PageTransition><KvkkPolicy /></PageTransition>} />
         <Route path="/ticket/:id" element={<PageTransition><Ticket /></PageTransition>} />
         <Route path="/unsubscribe" element={<PageTransition><Unsubscribe /></PageTransition>} />
+        <Route path="/takip" element={<PageTransition><Tracking /></PageTransition>} />
+        <Route path="/takip/:slug" element={<PageTransition><Tracking /></PageTransition>} />
         
         {/* Admin Routes */}
         <Route path="/admin/login" element={<Suspense fallback={<LoadingScreen />}><AdminLogin /></Suspense>} />
@@ -79,6 +99,9 @@ function AnimatedRoutes() {
           <Route path="newsletter" element={<AdminNewsletter />} />
           <Route path="about" element={<AdminAbout />} />
           <Route path="database" element={<AdminDatabase />} />
+          <Route path="seo" element={<AdminSEO />} />
+          <Route path="emails" element={<AdminEmails />} />
+          <Route path="tracking" element={<AdminTracking />} />
         </Route>
 
         {/* 404 Route */}
@@ -89,12 +112,14 @@ function AnimatedRoutes() {
 }
 
 function App() {
-  const init = useCmsStore((state) => state.init);
+  const { init, cms } = useCmsStore();
   const [isNavigating, setIsNavigating] = useState(false);
   const [showSplash, setShowSplash] = useState(!splashHasShown);
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
   const isHomePage = location.pathname === '/';
+  
+  const isMaintenanceMode = cms?.settings?.maintenanceMode;
 
   useEffect(() => {
     init();
@@ -124,9 +149,15 @@ function App() {
         {!isAdminRoute && <ScrollFeatures />}
         {!isAdminRoute && <Navbar />}
         <main className="main-content">
-          <Suspense fallback={<LoadingScreen />}>
-            <AnimatedRoutes />
-          </Suspense>
+          <AnalyticsTracker />
+          
+          {isMaintenanceMode && !isAdminRoute ? (
+            <MaintenanceScreen />
+          ) : (
+            <Suspense fallback={<LoadingScreen />}>
+              <AnimatedRoutes />
+            </Suspense>
+          )}
 
           <AnimatePresence>
             {/* Home page first load: full splash with gradient */}

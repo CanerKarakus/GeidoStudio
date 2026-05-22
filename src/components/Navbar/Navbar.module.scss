@@ -97,6 +97,7 @@
   position: relative;
   padding: 0.25rem 0;
   transition: transition(base);
+  white-space: nowrap;
 
   &:hover {
     color: color(white);

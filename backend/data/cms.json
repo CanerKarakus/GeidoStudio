@@ -24,5 +24,8 @@
   ],
   "heroSliderDuration": 10,
   "projects": [],
-  "aboutTeamYasarhanImage": ""
+  "aboutTeamYasarhanImage": "",
+  "settings": {
+    "maintenanceMode": false
+  }
 }

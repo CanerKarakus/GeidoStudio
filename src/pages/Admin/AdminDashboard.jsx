@@ -1,10 +1,11 @@
 import { motion } from 'framer-motion';
+import { useEffect } from 'react';
 import useCmsStore from '../../store/cmsStore';
 import styles from './AdminDashboard.module.scss';
 import { useNavigate } from 'react-router-dom';
 import {
   MessageSquare, Image as ImageIcon, Globe, Clock,
-  Layers, Edit3, ChevronRight, Database
+  Layers, Edit3, ChevronRight, Database, AlertTriangle
 } from 'lucide-react';
 
 const QUICK_LINKS = [
@@ -14,8 +15,8 @@ const QUICK_LINKS = [
   { path: '/admin/images',     label: 'Görseller',          icon: ImageIcon },
   { path: '/admin/contact',    label: 'İletişim Bilgileri', icon: Globe },
   { path: '/admin/messages',   label: 'Gelen Mesajlar',     icon: MessageSquare },
-  { path: '/admin/newsletter', label: 'Bülten',   icon: Globe },
-  { path: '/admin/database',   label: 'Veri Tabanı',        icon: Database },
+  { path: '/admin/seo',        label: 'SEO Ayarları',       icon: Globe },
+  { path: '/admin/emails',     label: 'E-Posta Şablonları', icon: MessageSquare },
 ];
 
 const StatCard = ({ icon: Icon, label, value, color, delay = 0 }) => (
@@ -31,22 +32,55 @@ const StatCard = ({ icon: Icon, label, value, color, delay = 0 }) => (
 );
 
 const AdminOverview = () => {
-  const { messages, cms } = useCmsStore();
+  const { messages, cms, analytics, fetchAnalytics, updateCMS } = useCmsStore();
   const navigate = useNavigate();
+
+  const toggleMaintenance = async () => {
+    try {
+      await updateCMS({
+        ...cms,
+        settings: {
+          ...cms?.settings,
+          maintenanceMode: !cms?.settings?.maintenanceMode
+        }
+      });
+      alert(`Bakım modu ${!cms?.settings?.maintenanceMode ? 'açıldı' : 'kapatıldı'}!`);
+    } catch (err) {
+      alert('Hata: ' + err.message);
+    }
+  };
+
+  useEffect(() => {
+    fetchAnalytics();
+  }, [fetchAnalytics]);
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
       <div className={styles.statsGrid}>
         <StatCard icon={MessageSquare} label="Toplam Mesaj"   value={messages.length}                    color="#b30000" delay={0.0} />
-        <StatCard icon={ImageIcon}    label="Hero Görseli"    value={cms?.heroImages?.length || 0}       color="#6366f1" delay={0.1} />
-        <StatCard icon={Globe}        label="Aktif Sayfalar"  value="4"                                  color="#0ea5e9" delay={0.2} />
-        <StatCard icon={Clock}        label="Son Güncelleme"  value="Az önce"                            color="#10b981" delay={0.3} />
+        <StatCard icon={Globe}        label="Toplam Ziyaret"  value={analytics?.totalVisits || 0}        color="#0ea5e9" delay={0.1} />
+        <StatCard icon={Clock}        label="Bugünkü Ziyaret" value={analytics?.todayVisits || 0}        color="#10b981" delay={0.2} />
+        <StatCard icon={ImageIcon}    label="Hero Görseli"    value={cms?.heroImages?.length || 0}       color="#6366f1" delay={0.3} />
       </div>
 
       <div className={styles.overviewGrid}>
         <motion.div className={styles.overviewCard}
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-          <h3 className={styles.cardTitle}>Hızlı İşlemler</h3>
+          <div className={styles.cardTitleRow} style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'space-between' }}>
+            <h3 className={styles.cardTitle}>Hızlı İşlemler</h3>
+            <button 
+              onClick={toggleMaintenance}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '0.5rem',
+                background: cms?.settings?.maintenanceMode ? '#ef4444' : '#22c55e',
+                color: 'white', border: 'none', padding: '0.5rem 1rem',
+                borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold'
+              }}
+            >
+              <AlertTriangle size={16} />
+              {cms?.settings?.maintenanceMode ? 'Bakım Modunu Kapat' : 'Bakım Modunu Aç'}
+            </button>
+          </div>
           <div className={styles.quickActions}>
             {QUICK_LINKS.map(item => {
               const Icon = item.icon;

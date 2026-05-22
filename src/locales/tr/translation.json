@@ -1,0 +1,17 @@
+{
+  "nav": {
+    "home": "Ana Sayfa",
+    "projects": "Projeler",
+    "about": "Hakkında",
+    "contact": "İletişim",
+    "blog": "Blog",
+    "tracking": "Proje Takip"
+  },
+  "footer": {
+    "rights": "Tüm Hakları Saklıdır.",
+    "links": "Hızlı Linkler",
+    "privacy": "Gizlilik Politikası",
+    "terms": "Kullanım Koşulları",
+    "cookie": "Çerez Politikası"
+  }
+}

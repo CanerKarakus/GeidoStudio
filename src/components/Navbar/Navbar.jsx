@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, Link, useLocation } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Globe as GlobeIcon } from 'lucide-react';
 import { m, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
+import { useTranslation } from 'react-i18next';
 import Button from '../Button/Button';
 import styles from './Navbar.module.scss';
 import logoImg from '../../assets/logo/geido_logo.png';
@@ -13,6 +14,12 @@ const Navbar = () => {
   const [hidden, setHidden] = useState(false);
   const lastScrollY = React.useRef(0);
   const location = useLocation();
+  const { t, i18n } = useTranslation();
+
+  const toggleLanguage = () => {
+    const nextLang = i18n.language.startsWith('tr') ? 'en' : 'tr';
+    i18n.changeLanguage(nextLang);
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -44,11 +51,11 @@ const Navbar = () => {
   const closeMenu = () => setIsOpen(false);
 
   const navLinks = [
-    { name: 'Ana Sayfa', path: '/' },
-    { name: 'Projeler', path: '/projeler' },
-    { name: 'Hakkında', path: '/hakkinda' },
-    { name: 'Blog', path: '/blog' },
-    { name: 'İletişim', path: '/iletisim' }
+    { name: t('nav.home'), path: '/' },
+    { name: t('nav.projects'), path: '/projeler' },
+    { name: t('nav.about'), path: '/hakkinda' },
+    { name: t('nav.blog'), path: '/blog' },
+    { name: t('nav.contact'), path: '/iletisim' }
   ];
 
   return (
@@ -79,8 +86,11 @@ const Navbar = () => {
           </nav>
 
           <div className={styles.actions}>
+            <button className={styles.langToggle} onClick={toggleLanguage} aria-label="Dil Değiştir" style={{background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', marginRight: '15px', fontWeight: 'bold'}}>
+              <GlobeIcon size={18} /> {i18n.language.startsWith('tr') ? 'EN' : 'TR'}
+            </button>
             <Button to="/iletisim#contact-form" variant="primary" className={styles.contactBtn}>
-              Bize Ulaşın
+              {i18n.language.startsWith('tr') ? 'Bize Ulaşın' : 'Contact Us'}
             </Button>
             <button className={styles.mobileToggle} onClick={toggleMenu} aria-label="Toggle Menu">
               {isOpen ? <X size={24} /> : <Menu size={24} />}
@@ -142,8 +152,11 @@ const Navbar = () => {
               </nav>
 
               <div className={styles.sidebarFooter}>
+                <button onClick={toggleLanguage} style={{background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '10px', borderRadius: '8px', marginBottom: '15px', width: '100%', fontWeight: 'bold'}}>
+                  <GlobeIcon size={18} /> {i18n.language.startsWith('tr') ? 'Switch to English' : 'Türkçe\'ye Geç'}
+                </button>
                 <Button to="/iletisim#contact-form" variant="primary" onClick={closeMenu}>
-                  Bize Ulaşın
+                  {i18n.language.startsWith('tr') ? 'Bize Ulaşın' : 'Contact Us'}
                 </Button>
               </div>
             </m.aside>

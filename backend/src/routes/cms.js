@@ -26,6 +26,21 @@ const DEFAULT_CMS = {
   contactPhone: '+90 (555) 123 45 67',
   contactAddress: 'Levent, Büyükdere Cd., 34330 Beşiktaş/İstanbul',
   blogs: [],
+  seoDefaults: {
+    title: 'Geido Studio — Gelenekten İlham Alan, Geleceğe Yön Veren Tasarımlar',
+    description: 'Modern, estetik ve işlevsel web çözümleri ile markanızı geleceğe taşıyın. Profesyonel tasarım ve yazılım ajansı.',
+    image: '',
+    keywords: 'web tasarım, yazılım ajansı, seo, dijital pazarlama',
+  },
+  emailTemplates: {
+    contactAutoReplySubject: 'Mesajınızı Aldık - Geido Studio',
+    contactAutoReplyBody: 'Merhaba,\n\nİletişim formunuz tarafımıza başarıyla ulaşmıştır. Ekibimiz en kısa sürede sizinle iletişime geçecektir.\n\nİyi günler dileriz,\nGeido Studio Ekibi',
+    newsletterWelcomeSubject: 'Bültenimize Hoş Geldiniz! - Geido Studio',
+    newsletterWelcomeBody: 'Merhaba,\n\nGeido Studio bültenine başarıyla abone oldunuz! Artık en güncel haberler, tasarım trendleri ve özel içeriklerimizden anında haberdar olacaksınız.\n\nAbonelikten çıkmak isterseniz sitemizin alt kısmındaki bağlantıyı kullanabilirsiniz.\n\nİyi günler,\nGeido Studio Ekibi',
+  },
+  settings: {
+    maintenanceMode: false
+  }
 };
 
 const readCMS = () => {
@@ -47,7 +62,12 @@ const ALLOWED_FIELDS = [
   'aboutTitle', 'aboutText', 'projectsHeroImage',
   'aboutTeamYasarhanImage', 'aboutTeamCanerImage',
   'contactEmail', 'contactPhone', 'contactAddress',
-  'blogs', 'projects',
+  'blog',
+  'projects',
+  'contact',
+  'seoDefaults',
+  'emailTemplates',
+  'settings'
 ];
 
 // ── GET /api/cms ─────────────────────────────────────────────────────────────

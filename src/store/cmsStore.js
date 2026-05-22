@@ -5,6 +5,7 @@ const useCmsStore = create((set) => ({
   cms: null,
   messages: [],
   subscribers: [],
+  analytics: null,
   isAdmin: false,
   isLoading: true,
   error: null,
@@ -107,6 +108,16 @@ const useCmsStore = create((set) => ({
       const subs = await api.getSubscribers();
       set({ subscribers: subs });
     } catch { /* silent */ }
+  },
+
+  // Analytics
+  fetchAnalytics: async () => {
+    try {
+      const stats = await api.getAnalyticsStats();
+      set({ analytics: stats });
+    } catch (err) {
+      console.error('Analitik alınamadı:', err);
+    }
   },
 }));
 

@@ -126,4 +126,27 @@ export const api = {
 
   updateDatabaseFile: (filename, content) =>
     request('PUT', `/api/database/file/${filename}`, { content }),
+
+  // ── Analytics ─────────────────────────────────────────────────────────────
+  recordAnalyticsHit: (path) =>
+    request('POST', '/api/analytics/hit', { path }),
+
+  getAnalyticsStats: () =>
+    request('GET', '/api/analytics/stats'),
+
+  // ── Project Tracking ───────────────────────────────────────────────────────
+  getTrackings: () =>
+    request('GET', '/api/tracking'),
+
+  getTrackingBySlug: (slug) =>
+    request('GET', `/api/tracking/public/${slug}?t=${Date.now()}`),
+
+  createTracking: (data) =>
+    request('POST', '/api/tracking', data),
+
+  updateTracking: (id, data) =>
+    request('PUT', `/api/tracking/${id}`, data),
+
+  deleteTracking: (id) =>
+    request('DELETE', `/api/tracking/${id}`),
 };

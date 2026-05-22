@@ -5,21 +5,25 @@ import styles from '../../pages/Admin/AdminDashboard.module.scss';
 import {
   LogOut, Image as ImageIcon, MessageSquare,
   LayoutDashboard, Eye, Globe, ChevronRight,
-  Layers, Edit3, ExternalLink, FileText, Database
+  Layers, Edit3, ExternalLink, FileText, Database,
+  Search, Mail
 } from 'lucide-react';
 
 const NAV_ITEMS = [
-  { path: '/admin',          label: 'Genel Bakış',       icon: LayoutDashboard, exact: true },
-  { path: '/admin/hero',     label: 'Hero / Vitrin',     icon: Layers },
-  { path: '/admin/texts',    label: 'İçerik & Metinler', icon: Edit3 },
-  { path: '/admin/about',    label: 'Hakkımızda',        icon: Globe },
-  { path: '/admin/images',   label: 'Görseller',         icon: ImageIcon },
-  { path: '/admin/blog',     label: 'Blog Yönetimi',     icon: FileText },
-  { path: '/admin/projects', label: 'Projeler',          icon: Layers },
-  { path: '/admin/contact',  label: 'İletişim Bilgileri', icon: Globe },
-  { path: '/admin/messages', label: 'Gelen Mesajlar',    icon: MessageSquare },
-  { path: '/admin/newsletter', label: 'Bülten', icon: Globe },
-  { path: '/admin/database', label: 'Veri Tabanı', icon: Database },
+  { path: '/admin',             label: 'Dashboard',         icon: LayoutDashboard },
+  { path: '/admin/hero',        label: 'Hero / Vitrin',     icon: Layers },
+  { path: '/admin/texts',       label: 'İçerik & Metinler', icon: Edit3 },
+  { path: '/admin/about',       label: 'Hakkımızda',        icon: Globe },
+  { path: '/admin/images',      label: 'Görseller',         icon: ImageIcon },
+  { path: '/admin/blog',        label: 'Blog Yazıları',     icon: FileText },
+  { path: '/admin/projects',    label: 'Projeler',          icon: FileText },
+  { path: '/admin/contact',     label: 'İletişim Bilgileri',icon: Globe },
+  { path: '/admin/messages',    label: 'Gelen Mesajlar',    icon: MessageSquare },
+  { path: '/admin/newsletter',  label: 'Bülten / E-Posta',  icon: Globe },
+  { path: '/admin/tracking',    label: 'Proje Takip',       icon: Layers },
+  { path: '/admin/database',    label: 'Veri Tabanı',       icon: Database },
+  { path: '/admin/seo',         label: 'SEO Ayarları',      icon: Search },
+  { path: '/admin/emails',      label: 'E-Posta Şablonları',icon: Mail },
 ];
 
 const AdminLayout = () => {

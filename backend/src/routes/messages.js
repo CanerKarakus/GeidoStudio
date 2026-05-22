@@ -11,6 +11,18 @@ const rateLimit = require('express-rate-limit');
 const authMiddleware = require('../middleware/auth');
 const { readMessages, writeMessages } = require('../models/messageModel');
 const { sendEmail } = require('../services/emailService');
+const fs = require('fs');
+const path = require('path');
+
+const CMS_FILE = path.join(__dirname, '../../data/cms.json');
+const readCMS = () => {
+  try {
+    if (!fs.existsSync(CMS_FILE)) return {};
+    return JSON.parse(fs.readFileSync(CMS_FILE, 'utf8'));
+  } catch {
+    return {};
+  }
+};
 
 const router = express.Router();
 
@@ -58,12 +70,21 @@ router.post('/', submitLimiter, async (req, res) => {
     writeMessages(messages);
 
     // Send auto-reply to user
+    const cms = readCMS();
+    const defaultSubject = 'Geido Studio - İletişim Formu Geri Dönüşü';
+    const defaultText = `Merhaba ${newMessage.name},\n\nMesajınızı aldık. En kısa sürede size dönüş yapacağız.`;
+    
+    let autoReplySubject = cms.emailTemplates?.contactAutoReplySubject || defaultSubject;
+    let autoReplyText = cms.emailTemplates?.contactAutoReplyBody || defaultText;
+    
+    // Replace dynamic variables if we want
+    autoReplyText = autoReplyText.replace(/{username}/g, newMessage.name);
+
     const ticketUrl = `${process.env.FRONTEND_URL || 'https://geidostudio.com'}/ticket/${newMessage.id}`;
-    const autoReplySubject = 'Geido Studio - İletişim Formu Geri Dönüşü';
-    const autoReplyText = `Merhaba ${newMessage.name},\n\nMesajınızı aldık. En kısa sürede size dönüş yapacağız.\n\nMesajınızı ve yanıtlarımızı takip etmek için tıklayın: ${ticketUrl}\n\nİyi günler dileriz,\nGeido Studio Ekibi`;
+    
     const autoReplyHtml = `<div style="text-align:center;">
       <p style="margin-bottom:10px;">Merhaba <strong>${newMessage.name}</strong>,</p>
-      <p style="margin-bottom:20px;">Mesajınızı aldık. En kısa sürede size dönüş yapacağız.</p>
+      <p style="background-color:#f9f9f9;padding:15px;border-radius:8px;display:inline-block;text-align:left;width:100%;max-width:400px;border:1px solid #eee;margin-bottom:20px;">${autoReplyText.replace(/\n/g, '<br/>')}</p>
       <p style="margin-bottom:25px;">
         <a href="${ticketUrl}" style="display:inline-block;padding:12px 24px;background-color:#b30000;color:#ffffff;text-decoration:none;border-radius:6px;font-weight:bold;">Mesajı Görüntüle ve Yanıtla</a>
       </p>

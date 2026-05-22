@@ -9,6 +9,16 @@ const { sendEmail } = require('../services/emailService');
 const router = express.Router();
 
 const NEWSLETTER_FILE = path.join(__dirname, '../../data/newsletter.json');
+const CMS_FILE = path.join(__dirname, '../../data/cms.json');
+
+const readCMS = () => {
+  try {
+    if (!fs.existsSync(CMS_FILE)) return {};
+    return JSON.parse(fs.readFileSync(CMS_FILE, 'utf8'));
+  } catch {
+    return {};
+  }
+};
 
 const readSubscribers = () => {
   try {
@@ -55,6 +65,22 @@ router.post('/', subscribeLimiter, (req, res) => {
 
     subscribers.unshift(newSubscriber);
     writeSubscribers(subscribers);
+
+    // Send Welcome Email
+    const cms = readCMS();
+    const defaultSubject = 'Bültenimize Hoş Geldiniz! - Geido Studio';
+    const defaultText = 'Merhaba,\n\nGeido Studio bültenine başarıyla abone oldunuz! Artık en güncel haberler, tasarım trendleri ve özel içeriklerimizden anında haberdar olacaksınız.';
+    
+    const subject = cms.emailTemplates?.newsletterWelcomeSubject || defaultSubject;
+    const text = cms.emailTemplates?.newsletterWelcomeBody || defaultText;
+    
+    const htmlMessage = `<div style="text-align:center;">
+      <p style="margin-bottom:20px;">${text.replace(/\n/g, '<br/>')}</p>
+    </div>`;
+    
+    sendEmail(email, subject, text, htmlMessage).catch(err => {
+      console.error('[Newsletter] Welcome email error:', err);
+    });
 
     return res.status(201).json({ success: true, message: 'Bültene başarıyla abone oldunuz.' });
   } catch (err) {
