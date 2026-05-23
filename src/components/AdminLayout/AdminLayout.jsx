@@ -24,6 +24,7 @@ const NAV_ITEMS = [
   { path: '/admin/database',    label: 'Veri Tabanı',       icon: Database },
   { path: '/admin/seo',         label: 'SEO Ayarları',      icon: Search },
   { path: '/admin/emails',      label: 'E-Posta Şablonları',icon: Mail },
+  { path: '/admin/heatmap',     label: 'Isı Haritası',      icon: Eye },
 ];
 
 const AdminLayout = () => {

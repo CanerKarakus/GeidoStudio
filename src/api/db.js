@@ -134,6 +134,12 @@ export const api = {
   getAnalyticsStats: () =>
     request('GET', '/api/analytics/stats'),
 
+  recordHeatmap: (data) =>
+    request('POST', '/api/analytics/heatmap', data),
+
+  getHeatmap: (path) =>
+    request('GET', `/api/analytics/heatmap?path=${encodeURIComponent(path)}`),
+
   // ── Project Tracking ───────────────────────────────────────────────────────
   getTrackings: () =>
     request('GET', '/api/tracking'),

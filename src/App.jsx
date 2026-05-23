@@ -11,6 +11,7 @@ import ScrollFeatures from './components/ScrollFeatures/ScrollFeatures';
 import LoadingScreen from './components/LoadingScreen/LoadingScreen';
 import SplashScreen from './components/SplashScreen/SplashScreen';
 import MaintenanceScreen from './components/MaintenanceScreen/MaintenanceScreen';
+import HeatmapTracker from './components/HeatmapTracker/HeatmapTracker';
 
 // Lazy loaded pages
 const Home = lazy(() => import('./pages/Home/Home'));
@@ -45,6 +46,7 @@ const AdminDatabase = lazy(() => import('./pages/Admin/AdminDatabase'));
 const AdminSEO = lazy(() => import('./pages/Admin/AdminSEO'));
 const AdminEmails = lazy(() => import('./pages/Admin/AdminEmails'));
 const AdminTracking = lazy(() => import('./pages/Admin/AdminTracking'));
+const AdminHeatmap = lazy(() => import('./pages/Admin/AdminHeatmap'));
 
 import useCmsStore from './store/cmsStore';
 import { api } from './api/db';
@@ -117,6 +119,7 @@ function AnimatedRoutes() {
           <Route path="seo" element={<AdminSEO />} />
           <Route path="emails" element={<AdminEmails />} />
           <Route path="tracking" element={<AdminTracking />} />
+          <Route path="heatmap" element={<AdminHeatmap />} />
         </Route>
 
         {/* 404 Route */}
@@ -166,6 +169,7 @@ function App() {
         <main className="main-content">
           <ScrollToTop />
           <AnalyticsTracker />
+          <HeatmapTracker />
           
           {isMaintenanceMode && !isAdminRoute ? (
             <MaintenanceScreen />
