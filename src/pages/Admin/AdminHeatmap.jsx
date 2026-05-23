@@ -114,7 +114,7 @@ const AdminHeatmap = () => {
       <div className={styles.viewer}>
         <iframe 
           ref={iframeRef}
-          src={`http://localhost:5173${selectedPath}${selectedPath.includes('?') ? '&' : '?'}adminPreview=true`} 
+          src={`${window.location.origin}${selectedPath}${selectedPath.includes('?') ? '&' : '?'}adminPreview=true`} 
           className={styles.iframe}
           title="Heatmap Preview"
           onLoad={handleIframeLoad}
