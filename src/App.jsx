@@ -159,7 +159,9 @@ function App() {
   };
 
   const isPreview = window.location.search.includes('adminPreview=true');
-  const shouldShowSplash = isHomePage && showSplash && !isAdminRoute && !isPreview;
+  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+  
+  const shouldShowSplash = isHomePage && showSplash && !isAdminRoute && !isPreview && !isSafari;
   const isLoading = !shouldShowSplash && isNavigating;
 
   return (
