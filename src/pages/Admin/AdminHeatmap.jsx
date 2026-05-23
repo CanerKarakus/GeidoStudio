@@ -64,7 +64,15 @@ const AdminHeatmap = () => {
         heatRef.current = simpleheat(canvas);
       }
 
-      const heatData = points.map(p => [p.x, p.y, p.value]);
+      // x koordinatı ekranın ortasına göre (- / +) kaydedildiği için
+      // canvas genişliğinin yarısını ekleyerek asıl pozisyonunu buluyoruz.
+      const heatData = points.map(p => {
+        // Eski verileri (x > 1000 gibi pozitif büyük sayılar) filtrele veya düzelt 
+        // Ama basitçe her zaman iframe genişliğinin ortasını referans alıyoruz
+        const drawX = p.x > window.innerWidth / 2 ? p.x : p.x + (width / 2);
+        return [drawX, p.y, p.value];
+      });
+
       const maxDensity = Math.max(...points.map(p => p.value), 2);
       
       heatRef.current.data(heatData);

@@ -19,8 +19,8 @@ const HeatmapTracker = () => {
     const points = [...bufferRef.current];
     bufferRef.current = [];
 
-    // Filter out simple noise (e.g. coordinates 0,0)
-    const validPoints = points.filter(p => p.x > 0 || p.y > 0);
+    // Filter out undefined/invalid coordinates
+    const validPoints = points.filter(p => p.x !== undefined && p.y !== undefined);
     
     if (validPoints.length > 0) {
       try {
@@ -41,26 +41,30 @@ const HeatmapTracker = () => {
     }
 
     const handleMouseMove = (e) => {
+      if (window.innerWidth < 768) return; // Sadece masaüstü verilerini al
+
       const now = Date.now();
       if (now - lastMoveRef.current > THROTTLE_MS) {
         lastMoveRef.current = now;
-        // x ve y doküman (scroll dahil) koordinatları alınmalı
-        // window.scrollX ve window.scrollY eklenebilir, fakat event.pageX ve pageY zaten bunu verir.
+        
+        // Ekranın tam ortasını (0) referans alarak X koordinatını kaydet
+        const xOffset = Math.round(e.pageX - (window.innerWidth / 2));
+        
         bufferRef.current.push({
-          x: Math.round(e.pageX),
-          y: Math.round(e.pageY)
+          x: xOffset,
+          y: Math.round(e.pageY),
+          value: 1
         });
       }
     };
 
     const handleClick = (e) => {
-      // Tıklamalar çok daha önemlidir, bu yüzden anında kaydedilir ve değeri daha yüksektir.
-      // Backend'de gruplanırken click olduğu için daha fazla değer eklenebilir. (Burada 3 nokta göndererek simüle ediyoruz)
-      const x = Math.round(e.pageX);
+      if (window.innerWidth < 768) return;
+      
+      const xOffset = Math.round(e.pageX - (window.innerWidth / 2));
       const y = Math.round(e.pageY);
-      bufferRef.current.push({ x, y });
-      bufferRef.current.push({ x, y });
-      bufferRef.current.push({ x, y });
+      
+      bufferRef.current.push({ x: xOffset, y, value: 4 });
     };
 
     window.addEventListener('mousemove', handleMouseMove, { passive: true });
