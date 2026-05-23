@@ -158,7 +158,8 @@ function App() {
     setShowSplash(false);
   };
 
-  const shouldShowSplash = isHomePage && showSplash && !isAdminRoute;
+  const isPreview = window.location.search.includes('adminPreview=true');
+  const shouldShowSplash = isHomePage && showSplash && !isAdminRoute && !isPreview;
   const isLoading = !shouldShowSplash && isNavigating;
 
   return (
