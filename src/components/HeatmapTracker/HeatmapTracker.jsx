@@ -35,8 +35,10 @@ const HeatmapTracker = () => {
   };
 
   useEffect(() => {
-    // Only track if it's not an admin route
-    if (location.pathname.startsWith('/admin')) return;
+    // Sadece admin preview olmayan normal ziyaretçileri takip et
+    if (location.pathname.startsWith('/admin') || window.location.search.includes('adminPreview=true')) {
+      return;
+    }
 
     const handleMouseMove = (e) => {
       const now = Date.now();

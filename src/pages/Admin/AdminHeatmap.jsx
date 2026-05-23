@@ -68,6 +68,21 @@ const AdminHeatmap = () => {
     fetchHeatmap(selectedPath);
   };
 
+  const handleIframeLoad = () => {
+    try {
+      const doc = iframeRef.current?.contentDocument || iframeRef.current?.contentWindow?.document;
+      if (doc) {
+        // Tıklamaları yakalayıp iptal et (Sayfa yönlendirmelerini engelle, ama scroll çalışsın)
+        doc.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        }, true);
+      }
+    } catch (err) {
+      console.error('Cannot access iframe document', err);
+    }
+  };
+
   return (
     <div className={styles.container}>
       <header className={styles.header}>
@@ -99,9 +114,10 @@ const AdminHeatmap = () => {
       <div className={styles.viewer}>
         <iframe 
           ref={iframeRef}
-          src={`http://localhost:5173${selectedPath}`} 
+          src={`http://localhost:5173${selectedPath}${selectedPath.includes('?') ? '&' : '?'}adminPreview=true`} 
           className={styles.iframe}
           title="Heatmap Preview"
+          onLoad={handleIframeLoad}
         />
         <div className={styles.canvasWrapper}>
           <canvas ref={canvasRef} className={styles.canvas} />
