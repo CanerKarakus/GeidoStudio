@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { api } from '../../api/db';
 import styles from './AdminHeatmap.module.scss';
-import { RefreshCw, Monitor, Search } from 'lucide-react';
+import { RefreshCw, Monitor, Search, Trash2 } from 'lucide-react';
 import simpleheat from '../../utils/simpleheat';
 
 const PAGES_TO_TRACK = [
@@ -92,6 +92,25 @@ const AdminHeatmap = () => {
     fetchHeatmap(selectedPath);
   };
 
+  const handleClear = async () => {
+    if (window.confirm('Tüm sayfaların ısı haritası verilerini kalıcı olarak silmek istediğinize emin misiniz?')) {
+      try {
+        setLoading(true);
+        await api.clearHeatmap();
+        setPoints([]);
+        if (heatRef.current) {
+          heatRef.current.clear().draw();
+        }
+        alert('Tüm ısı haritası verileri başarıyla silindi!');
+      } catch (err) {
+        console.error('Failed to clear heatmap:', err);
+        alert('Veriler silinirken bir hata oluştu.');
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
   const handleIframeLoad = () => {
     try {
       const doc = iframeRef.current?.contentDocument || iframeRef.current?.contentWindow?.document;
@@ -125,10 +144,16 @@ const AdminHeatmap = () => {
             </select>
           </div>
           
-          <button onClick={handleRefresh} className={styles.refreshBtn} disabled={loading}>
-            <RefreshCw size={16} className={loading ? styles.spinning : ''} />
-            Yenile
-          </button>
+          <div className={styles.actions}>
+            <button onClick={handleRefresh} className={styles.refreshBtn} disabled={loading}>
+              <RefreshCw size={16} className={loading ? styles.spinning : ''} />
+              Yenile
+            </button>
+            <button onClick={handleClear} className={styles.clearBtn} disabled={loading}>
+              <Trash2 size={16} />
+              Temizle
+            </button>
+          </div>
         </div>
         <div className={styles.info}>
           <Monitor size={16} />

@@ -188,4 +188,15 @@ router.get('/heatmap', authMiddleware, (req, res) => {
   }
 });
 
+// Clear heatmap data
+router.delete('/heatmap', async (req, res) => {
+  try {
+    writeHeatmaps({}); // Reset entirely
+    res.json({ success: true, message: 'Heatmap data cleared' });
+  } catch (error) {
+    console.error('Error clearing heatmap data:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 module.exports = router;

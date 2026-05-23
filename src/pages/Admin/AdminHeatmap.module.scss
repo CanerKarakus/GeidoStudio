@@ -39,6 +39,12 @@
     }
   }
 
+  .actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
   .refreshBtn {
     display: flex;
     align-items: center;
@@ -63,6 +69,29 @@
 
     .spinning {
       animation: spin 1s linear infinite;
+    }
+  }
+
+  .clearBtn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: #fee2e2;
+    color: #dc2626;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      background: #fecaca;
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
     }
   }
 
