@@ -109,9 +109,15 @@
   flex: 1;
   background: #fff;
   border-radius: 12px;
-  overflow: hidden;
+  overflow: auto; /* X ve Y scroll'a izin ver */
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   border: 1px solid #e5e7eb;
+
+  .iframeWrapper {
+    width: 100vw; /* Kullanıcının ekranıyla birebir aynı genişlik */
+    height: 100%;
+    min-height: 100vh;
+  }
 
   .iframe {
     width: 100%;

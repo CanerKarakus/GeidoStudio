@@ -50,8 +50,7 @@ const AdminHeatmap = () => {
         canvas.style.left = '0';
         canvas.style.pointerEvents = 'none';
         canvas.style.zIndex = '99999';
-        canvas.style.opacity = '0.85';
-        canvas.style.mixBlendMode = 'multiply';
+        canvas.style.opacity = '0.65'; // Normal opacity, no multiply blending
         doc.body.appendChild(canvas);
       }
 
@@ -64,12 +63,12 @@ const AdminHeatmap = () => {
         heatRef.current = simpleheat(canvas);
       }
 
-      // x koordinatı ekranın ortasına göre (- / +) kaydedildiği için
-      // canvas genişliğinin yarısını ekleyerek asıl pozisyonunu buluyoruz.
+      // X ekseni direkt olarak kullanılıyor
       const heatData = points.map(p => {
-        // Eski verileri (x > 1000 gibi pozitif büyük sayılar) filtrele veya düzelt 
-        // Ama basitçe her zaman iframe genişliğinin ortasını referans alıyoruz
-        const drawX = p.x > window.innerWidth / 2 ? p.x : p.x + (width / 2);
+        // Eski ofsetli verileri (negatif veya küçük değerli) düzeltmek için
+        // Eğer veri -300 gibi merkez ofsetliyse onu orjinaline çevir
+        const isOffset = p.x < 0 || (p.x > 0 && p.x < window.innerWidth / 2 && points.some(pt => pt.x < 0));
+        const drawX = isOffset ? p.x + (width / 2) : p.x;
         return [drawX, p.y, p.value];
       });
 
@@ -162,13 +161,15 @@ const AdminHeatmap = () => {
       </header>
 
       <div className={styles.viewer}>
-        <iframe 
-          ref={iframeRef}
-          src={`${window.location.origin}${selectedPath}${selectedPath.includes('?') ? '&' : '?'}adminPreview=true`} 
-          className={styles.iframe}
-          title="Heatmap Preview"
-          onLoad={handleIframeLoad}
-        />
+        <div className={styles.iframeWrapper}>
+          <iframe 
+            ref={iframeRef}
+            src={`${window.location.origin}${selectedPath}${selectedPath.includes('?') ? '&' : '?'}adminPreview=true`} 
+            className={styles.iframe}
+            title="Heatmap Preview"
+            onLoad={handleIframeLoad}
+          />
+        </div>
         
         {loading && (
           <div className={styles.loadingOverlay}>

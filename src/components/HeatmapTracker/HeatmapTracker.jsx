@@ -47,11 +47,8 @@ const HeatmapTracker = () => {
       if (now - lastMoveRef.current > THROTTLE_MS) {
         lastMoveRef.current = now;
         
-        // Ekranın tam ortasını (0) referans alarak X koordinatını kaydet
-        const xOffset = Math.round(e.pageX - (window.innerWidth / 2));
-        
         bufferRef.current.push({
-          x: xOffset,
+          x: Math.round(e.pageX),
           y: Math.round(e.pageY),
           value: 1
         });
@@ -61,10 +58,10 @@ const HeatmapTracker = () => {
     const handleClick = (e) => {
       if (window.innerWidth < 768) return;
       
-      const xOffset = Math.round(e.pageX - (window.innerWidth / 2));
+      const x = Math.round(e.pageX);
       const y = Math.round(e.pageY);
       
-      bufferRef.current.push({ x: xOffset, y, value: 4 });
+      bufferRef.current.push({ x, y, value: 4 });
     };
 
     window.addEventListener('mousemove', handleMouseMove, { passive: true });
