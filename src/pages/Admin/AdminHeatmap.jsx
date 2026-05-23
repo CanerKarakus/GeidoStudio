@@ -54,9 +54,12 @@ const AdminHeatmap = () => {
     // simpleheat expects [x, y, value]
     const heatData = points.map(p => [p.x, p.y, p.value]);
     
+    // Find the highest density point to set max value dynamically (minimum 2)
+    const maxDensity = Math.max(...points.map(p => p.value), 2);
+    
     heatRef.current.data(heatData);
-    heatRef.current.max(10); // max density
-    heatRef.current.radius(25, 15);
+    heatRef.current.max(maxDensity); // max density
+    heatRef.current.radius(30, 20); // slightly larger radius for better visibility
     heatRef.current.draw();
 
   }, [points, loading]);

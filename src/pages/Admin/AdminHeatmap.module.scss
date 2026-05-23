@@ -99,19 +99,14 @@
     height: 100%;
     pointer-events: none; /* Let clicks pass through to iframe if we want, or just overlay */
     overflow-y: scroll; /* Match iframe scroll visually if possible */
-    
-    /* We can't easily sync canvas scroll with cross-origin iframe scroll.
-       For a local same-origin iframe, we can, but simpler is just a huge absolute canvas. 
-       Actually, iframe has its own scroll. So the canvas should be inside the iframe, 
-       which is hard. Alternative: pointer-events: none on canvas, and let it just sit there.
-       Wait, if iframe scrolls, canvas won't. This is a common heatmap challenge. */
+    z-index: 5;
   }
 
   .canvas {
     position: absolute;
     top: 0;
     left: 0;
-    opacity: 0.7;
+    opacity: 0.9;
     pointer-events: none;
     mix-blend-mode: multiply;
   }
