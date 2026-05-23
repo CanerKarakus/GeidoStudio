@@ -35,33 +35,49 @@ const AdminHeatmap = () => {
     fetchHeatmap(selectedPath);
   }, [selectedPath]);
 
-  useEffect(() => {
-    if (!canvasRef.current || points.length === 0) return;
+  const drawHeatmap = () => {
+    if (points.length === 0) return;
+    try {
+      const doc = iframeRef.current?.contentDocument || iframeRef.current?.contentWindow?.document;
+      if (!doc || !doc.body) return;
 
-    // Resize canvas to match iframe content if possible, or just window size
-    // In a real scenario, we might want to sync iframe height with canvas height.
-    const canvas = canvasRef.current;
-    
-    // We assume a fixed height for now, or match iframe
-    const height = 3000; // Large enough for typical pages
-    canvas.width = iframeRef.current?.offsetWidth || window.innerWidth;
-    canvas.height = height;
+      let canvas = doc.getElementById('heatmap-canvas');
+      if (!canvas) {
+        canvas = doc.createElement('canvas');
+        canvas.id = 'heatmap-canvas';
+        canvas.style.position = 'absolute';
+        canvas.style.top = '0';
+        canvas.style.left = '0';
+        canvas.style.pointerEvents = 'none';
+        canvas.style.zIndex = '99999';
+        canvas.style.opacity = '0.85';
+        canvas.style.mixBlendMode = 'multiply';
+        doc.body.appendChild(canvas);
+      }
 
-    if (!heatRef.current) {
-      heatRef.current = simpleheat(canvas);
+      const width = doc.documentElement.scrollWidth || window.innerWidth;
+      const height = doc.documentElement.scrollHeight || 3000;
+      canvas.width = width;
+      canvas.height = height;
+
+      if (!heatRef.current || heatRef.current._canvas !== canvas) {
+        heatRef.current = simpleheat(canvas);
+      }
+
+      const heatData = points.map(p => [p.x, p.y, p.value]);
+      const maxDensity = Math.max(...points.map(p => p.value), 2);
+      
+      heatRef.current.data(heatData);
+      heatRef.current.max(maxDensity);
+      heatRef.current.radius(30, 20);
+      heatRef.current.draw();
+    } catch (err) {
+      console.error('Failed to draw heatmap in iframe', err);
     }
+  };
 
-    // simpleheat expects [x, y, value]
-    const heatData = points.map(p => [p.x, p.y, p.value]);
-    
-    // Find the highest density point to set max value dynamically (minimum 2)
-    const maxDensity = Math.max(...points.map(p => p.value), 2);
-    
-    heatRef.current.data(heatData);
-    heatRef.current.max(maxDensity); // max density
-    heatRef.current.radius(30, 20); // slightly larger radius for better visibility
-    heatRef.current.draw();
-
+  useEffect(() => {
+    drawHeatmap();
   }, [points, loading]);
 
   const handleRefresh = () => {
@@ -72,12 +88,13 @@ const AdminHeatmap = () => {
     try {
       const doc = iframeRef.current?.contentDocument || iframeRef.current?.contentWindow?.document;
       if (doc) {
-        // Tıklamaları yakalayıp iptal et (Sayfa yönlendirmelerini engelle, ama scroll çalışsın)
+        // Tıklamaları yakalayıp iptal et
         doc.addEventListener('click', (e) => {
           e.preventDefault();
           e.stopPropagation();
         }, true);
       }
+      drawHeatmap();
     } catch (err) {
       console.error('Cannot access iframe document', err);
     }
@@ -119,9 +136,6 @@ const AdminHeatmap = () => {
           title="Heatmap Preview"
           onLoad={handleIframeLoad}
         />
-        <div className={styles.canvasWrapper}>
-          <canvas ref={canvasRef} className={styles.canvas} />
-        </div>
         
         {loading && (
           <div className={styles.loadingOverlay}>
