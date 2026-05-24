@@ -223,19 +223,36 @@
   pre {
     background: #111;
     border: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 1.5em;
+    padding: 3em 1.5em 1.5em 1.5em;
     border-radius: 8px;
-    overflow-x: auto;
     font-family: 'Courier New', Courier, monospace;
     font-size: 0.95em;
     margin: 2em 0;
-    white-space: pre;
+    white-space: pre-wrap;
+    word-break: break-word;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3) inset;
+    position: relative;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #ff5f56;
+      box-shadow: 
+        20px 0 0 #ffbd2e,
+        40px 0 0 #27c93f;
+    }
     
     code {
       color: #e2e8f0;
       background: transparent;
       padding: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
     }
   }
 

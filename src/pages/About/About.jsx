@@ -10,7 +10,7 @@ const memberDetails = {
   yasarhan: {
     name: 'Yaşarhan Pekergin',
     roleKey: 'yasarhan_role',
-    email: 'yasarhanpekergin@geidostudio.com',
+    email: 'ypekergin@geidostudio.com',
     icon: <Palette size={48} />,
     bioKey: 'yasarhan_desc',
     focusKeys: ['gd_1', 'sm_1', 'sm_2']
@@ -18,7 +18,7 @@ const memberDetails = {
   caner: {
     name: 'Caner Karakuş',
     roleKey: 'caner_role',
-    email: 'canerkarakus@geidostudio.com',
+    email: 'ckarakus@geidostudio.com',
     icon: <Code2 size={48} />,
     bioKey: 'caner_desc',
     focusKeys: ['dev_2', 'sys_3', 'sys_2']
@@ -35,8 +35,8 @@ const About = () => {
 
   return (
     <div className={styles.aboutPage}>
-      <SEO 
-        title={t('about.seo_title')} 
+      <SEO
+        title={t('about.seo_title')}
         description={t('about.seo_desc')}
         keywords="hakkımızda, geido studio kimdir, kreatif ajans ekibi, vizyonumuz"
       />
@@ -46,7 +46,7 @@ const About = () => {
           <h1 className={styles.title}>{!isEn && cms?.aboutTitle ? cms.aboutTitle : t('about.default_title')}</h1>
         </div>
 
-        <m.div 
+        <m.div
           className={styles.introSection}
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -59,19 +59,19 @@ const About = () => {
 
         <div className={styles.teamSection}>
           {/* Team Member 1 */}
-          <m.div 
+          <m.div
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             className={styles.memberCard}
           >
             <div className={styles.memberVisual}>
-              <div 
+              <div
                 className={`${styles.avatarPlaceholder} ${styles.yasarhan}`}
                 style={cms?.aboutTeamYasarhanImage ? { backgroundImage: `url(${cms.aboutTeamYasarhanImage})` } : {}}
               ></div>
-              <div 
-                className={styles.floatingIcon} 
+              <div
+                className={styles.floatingIcon}
                 onClick={() => setSelectedMember('yasarhan')}
                 role="button"
                 tabIndex={0}
@@ -86,7 +86,7 @@ const About = () => {
                 <Mail size={16} /> yasarhanpekergin@geidostudio.com
               </a>
               <p>{t('about.yasarhan_desc')}</p>
-              
+
               <div className={styles.skills}>
                 <div className={styles.skillGroup}>
                   <h4>{t('about.graphic_design')}</h4>
@@ -111,18 +111,18 @@ const About = () => {
           </m.div>
 
           {/* Team Member 2 */}
-          <m.div 
+          <m.div
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             className={`${styles.memberCard} ${styles.reverse}`}
           >
             <div className={styles.memberVisual}>
-              <div 
+              <div
                 className={`${styles.avatarPlaceholder} ${styles.caner}`}
                 style={cms?.aboutTeamCanerImage ? { backgroundImage: `url(${cms.aboutTeamCanerImage})` } : {}}
               ></div>
-              <div 
+              <div
                 className={styles.floatingIcon}
                 onClick={() => setSelectedMember('caner')}
                 role="button"
@@ -138,7 +138,7 @@ const About = () => {
                 <Mail size={16} /> canerkarakus@geidostudio.com
               </a>
               <p>{t('about.caner_desc')}</p>
-              
+
               <div className={styles.skills}>
                 <div className={styles.skillGroup}>
                   <h4>{t('about.development')}</h4>
@@ -165,14 +165,14 @@ const About = () => {
       {/* Modal Popup */}
       <AnimatePresence>
         {selectedMember && (
-          <m.div 
+          <m.div
             className={styles.modalOverlay}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={closeModal}
           >
-            <m.div 
+            <m.div
               className={styles.modalContent}
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -182,7 +182,7 @@ const About = () => {
               <button className={styles.closeBtn} onClick={closeModal}>
                 <X size={24} />
               </button>
-              
+
               <div className={styles.modalHeader}>
                 <div className={styles.modalIcon}>
                   {memberDetails[selectedMember].icon}
@@ -192,14 +192,14 @@ const About = () => {
                   <span className={styles.modalRole}>{t(`about.${memberDetails[selectedMember].roleKey}`)}</span>
                 </div>
               </div>
-              
+
               <div className={styles.modalBody}>
                 <div className={styles.modalEmail}>
                   <Mail size={18} />
                   <a href={`mailto:${memberDetails[selectedMember].email}`}>{memberDetails[selectedMember].email}</a>
                 </div>
                 <p>{t(`about.${memberDetails[selectedMember].bioKey}`)}</p>
-                
+
                 <div className={styles.focusArea}>
                   <h4>{t('about.expertise')}</h4>
                   <div className={styles.tags}>
