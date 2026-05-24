@@ -41,7 +41,7 @@
     "more_projects": "Daha Fazla Proje Gör",
     "no_content": "Şimdilik içerik yok.",
     "blog_subtitle": "Blog",
-    "blog_title": "En Son Haberler &<br/>İçgörüler",
+    "blog_title": "En Son Haberler &<br/>Blog",
     "see_all": "Tümünü Gör",
     "no_blogs": "Henüz blog yazısı eklenmemiş."
   },
@@ -96,7 +96,7 @@
   "blog": {
     "seo_title": "Blog",
     "seo_desc": "Tasarım, yazılım, teknoloji ve dijital pazarlama dünyasından en son haberler, ipuçları ve trendler.",
-    "subtitle": "İçgörüler",
+    "subtitle": "Blog",
     "title": "Dijital Dünyadan<br/>Haberler & Trendler",
     "no_blogs": "Henüz blog yazısı eklenmemiş.",
     "read_more": "Devamını Oku"

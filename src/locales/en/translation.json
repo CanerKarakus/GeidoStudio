@@ -41,7 +41,7 @@
     "more_projects": "See More Projects",
     "no_content": "No content yet.",
     "blog_subtitle": "Blog",
-    "blog_title": "Latest News &<br/>Insights",
+    "blog_title": "Latest News &<br/>Blog",
     "see_all": "See All",
     "no_blogs": "No blog posts added yet."
   },
@@ -96,7 +96,7 @@
   "blog": {
     "seo_title": "Blog",
     "seo_desc": "The latest news, tips, and trends from the world of design, software, technology, and digital marketing.",
-    "subtitle": "Insights",
+    "subtitle": "Blog",
     "title": "News & Trends from<br/>the Digital World",
     "no_blogs": "No blog posts added yet.",
     "read_more": "Read More"
