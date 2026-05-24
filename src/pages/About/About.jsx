@@ -82,8 +82,8 @@ const About = () => {
             <div className={styles.memberInfo}>
               <h2>Yaşarhan Pekergin</h2>
               <h3 className={styles.role}>{t('about.yasarhan_role')}</h3>
-              <a href="mailto:yasarhanpekergin@geidostudio.com" className={styles.memberEmail}>
-                <Mail size={16} /> yasarhanpekergin@geidostudio.com
+              <a href="mailto:ypekergin@geidostudio.com" className={styles.memberEmail}>
+                <Mail size={16} /> ypekergin@geidostudio.com
               </a>
               <p>{t('about.yasarhan_desc')}</p>
 
@@ -134,8 +134,8 @@ const About = () => {
             <div className={styles.memberInfo}>
               <h2>Caner Karakuş</h2>
               <h3 className={styles.role}>{t('about.caner_role')}</h3>
-              <a href="mailto:canerkarakus@geidostudio.com" className={styles.memberEmail}>
-                <Mail size={16} /> canerkarakus@geidostudio.com
+              <a href="mailto:ckarakus@geidostudio.com" className={styles.memberEmail}>
+                <Mail size={16} /> ckarakus@geidostudio.com
               </a>
               <p>{t('about.caner_desc')}</p>
 
