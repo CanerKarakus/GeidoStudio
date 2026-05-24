@@ -167,8 +167,8 @@ function App() {
   return (
     <LazyMotion features={domAnimation}>
       <div className="app">
-        {!isAdminRoute && <ScrollFeatures />}
-        {!isAdminRoute && <Navbar />}
+        {!isAdminRoute && !isMaintenanceMode && <ScrollFeatures />}
+        {!isAdminRoute && !isMaintenanceMode && <Navbar />}
         <main className="main-content">
           <ScrollToTop />
           <AnalyticsTracker />
@@ -193,7 +193,7 @@ function App() {
             )}
           </AnimatePresence>
         </main>
-        {!isAdminRoute && <Footer />}
+        {!isAdminRoute && !isMaintenanceMode && <Footer />}
       </div>
     </LazyMotion>
   );

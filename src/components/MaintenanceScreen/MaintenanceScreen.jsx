@@ -1,9 +1,17 @@
+import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Settings } from 'lucide-react';
 import styles from './MaintenanceScreen.module.scss';
 import SEO from '../SEO/SEO';
 
 const MaintenanceScreen = () => {
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, []);
+
   return (
     <div className={styles.container}>
       <SEO title="Bakım Modu" description="Şu anda bakım çalışması yapıyoruz." />
