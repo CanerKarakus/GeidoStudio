@@ -43,6 +43,33 @@ const SEO = ({
       <meta name="twitter:title" content={finalTitle} />
       <meta name="twitter:description" content={finalDesc} />
       <meta name="twitter:image" content={image} />
+
+      {/* Canonical URL */}
+      <link rel="canonical" href={url} />
+
+      {/* Local Business Schema (JSON-LD) */}
+      <script type="application/ld+json">
+        {JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "LocalBusiness",
+          "name": "Geido Studio",
+          "image": defaultImage,
+          "url": "https://geidostudio.com",
+          "telephone": "+905555555555",
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "Merkez",
+            "addressLocality": "Istanbul",
+            "addressRegion": "TR",
+            "postalCode": "34000",
+            "addressCountry": "TR"
+          },
+          "sameAs": [
+            "https://www.instagram.com/geido.studio",
+            "https://www.linkedin.com/company/geido-studio"
+          ]
+        })}
+      </script>
     </Helmet>
   );
 };
