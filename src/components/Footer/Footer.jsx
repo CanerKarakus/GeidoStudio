@@ -56,7 +56,7 @@ const Footer = () => {
 
           <div className={styles.contactCol}>
             <h3>{t('footer.contact')}</h3>
-            <a href="mailto:info@geidostudio.com" className={styles.contactLink}>hello@geidostudio.com</a>
+            <a href="mailto:info@geidostudio.com" className={styles.contactLink}>info@geidostudio.com</a>
             <a href="tel:+905530037403" className={styles.contactLink}>+90 (553) 003 74 03</a>
           </div>
 

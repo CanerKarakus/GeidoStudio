@@ -120,7 +120,7 @@ const PrivacyPolicy = () => {
           <h2 id="contact">8. Contact Us</h2>
           <p>If you have any questions regarding our privacy policy or your personal data, feel free to contact us:</p>
           <ul>
-            <li><strong>Email:</strong> hello@geidostudio.com</li>
+            <li><strong>Email:</strong> info@geidostudio.com</li>
             <li><strong>Address:</strong> Levent, Büyükdere Cd., 34330 Beşiktaş/İstanbul, Turkey</li>
             <li><strong>Phone:</strong> +90 (553) 003 7403</li>
           </ul>
@@ -220,7 +220,7 @@ const PrivacyPolicy = () => {
           <h2 id="iletisim">8. İletişim</h2>
           <p>Gizlilik politikamız veya kişisel verilerinizle ilgili sorularınız varsa, bizimle iletişime geçmekten çekinmeyin:</p>
           <ul>
-            <li><strong>E-posta:</strong> hello@geidostudio.com</li>
+            <li><strong>E-posta:</strong> info@geidostudio.com</li>
             <li><strong>Adres:</strong> Levent, Büyükdere Cd., 34330 Beşiktaş/İstanbul, Türkiye</li>
             <li><strong>Telefon:</strong> +90 (553) 003 7403</li>
           </ul>

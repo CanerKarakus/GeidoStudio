@@ -121,9 +121,10 @@
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
   transition: all 0.4s ease;
 
+  // Mobile'da da her iki kart (email ve telefon) yan yana veya alt alta görünsün diye display:none kaldırıldı
   &:nth-child(2) {
     @include respond-to-max(md) {
-      display: none;
+      // display: none; 
     }
   }
 

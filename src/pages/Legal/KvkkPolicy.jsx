@@ -96,7 +96,7 @@ const KvkkPolicy = () => {
 
           <h2 id="contact">6. Contact Us</h2>
           <p>
-            You can send your requests regarding the exercise of the above-mentioned rights in writing to <strong>hello@geidostudio.com</strong> with identifying documents or via mail.
+            You can send your requests regarding the exercise of the above-mentioned rights in writing to <strong>info@geidostudio.com</strong> with identifying documents or via mail.
           </p>
           <p>Your requests will be concluded free of charge as soon as possible and within thirty (30) days at the latest depending on their nature.</p>
 
@@ -176,7 +176,7 @@ const KvkkPolicy = () => {
           <h2 id="basvuru">6. Bize Başvuru</h2>
           <p>
             Yukarıda belirtilen haklarınızı kullanmakla ilgili taleplerinizi, kimliğinizi tespit edici belgelerle 
-            birlikte yazılı olarak <strong>hello@geidostudio.com</strong> adresine e-posta göndererek 
+            birlikte yazılı olarak <strong>info@geidostudio.com</strong> adresine e-posta göndererek 
             veya posta yoluyla iletebilirsiniz. 
           </p>
           <p>Talepleriniz, niteliğine göre en kısa sürede ve en geç otuz (30) gün içinde ücretsiz olarak sonuçlandırılacaktır.</p>
