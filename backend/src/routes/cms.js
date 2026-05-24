@@ -62,7 +62,7 @@ const ALLOWED_FIELDS = [
   'aboutTitle', 'aboutText', 'projectsHeroImage',
   'aboutTeamYasarhanImage', 'aboutTeamCanerImage',
   'contactEmail', 'contactPhone', 'contactAddress',
-  'blog',
+  'blogs',
   'projects',
   'contact',
   'seoDefaults',

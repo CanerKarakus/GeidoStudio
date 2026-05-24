@@ -168,6 +168,7 @@
   font-size: 1.15rem;
   line-height: 1.8;
   color: #d0d0d0;
+  white-space: pre-wrap; /* Preserve newlines from textarea */
 
   h2, h3, h4 {
     color: #fff;
@@ -217,6 +218,34 @@
     height: auto;
     border-radius: 12px;
     margin: 2em 0;
+  }
+
+  pre {
+    background: #111;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 1.5em;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.95em;
+    margin: 2em 0;
+    white-space: pre;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3) inset;
+    
+    code {
+      color: #e2e8f0;
+      background: transparent;
+      padding: 0;
+    }
+  }
+
+  code {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ff6b6b;
+    padding: 0.2em 0.4em;
+    border-radius: 4px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.9em;
   }
 }
 
