@@ -132,7 +132,8 @@ router.post('/end-session', async (req, res) => {
         userContext.email,
         subject,
         `Merhaba ${userContext.name},\n\nCanlı destek sohbet geçmişiniz aşağıda yer almaktadır:\n\n${transcriptText}\n\nİyi günler dileriz,\nGeido Studio Ekibi`,
-        transcriptHtml
+        transcriptHtml,
+        process.env.SMTP_USER
       ).catch(e => console.error('[Email Error] User:', e.message));
     }
 

@@ -5,7 +5,6 @@ import clsx from 'clsx';
 import useChatStore from '../../store/chatStore';
 import styles from './LiveSupport.module.scss';
 
-// A simple typewriter effect for new AI messages
 const Typewriter = ({ text, onComplete, onTyping }) => {
   const [displayedText, setDisplayedText] = useState('');
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -16,14 +15,13 @@ const Typewriter = ({ text, onComplete, onTyping }) => {
         setDisplayedText(prev => prev + text[currentIndex]);
         setCurrentIndex(prev => prev + 1);
         if (onTyping) onTyping();
-      }, 15); // Orta hız (15ms per char)
+      }, 15);
       return () => clearTimeout(timeout);
     } else if (onComplete) {
       onComplete();
     }
   }, [currentIndex, text, onComplete, onTyping]);
 
-  // Support markdown-like line breaks
   return <span dangerouslySetInnerHTML={{ __html: displayedText.replace(/\n/g, '<br/>') }} />;
 };
 
@@ -40,6 +38,7 @@ const LiveSupport = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [inputValue, setInputValue] = useState('');
   const [endStep, setEndStep] = useState(0); // 0: no, 1: confirm close, 2: ask email
+  const [showToast, setShowToast] = useState(false);
   const [sendEmailCopy, setSendEmailCopy] = useState(false);
   const messagesEndRef = useRef(null);
 
@@ -128,6 +127,11 @@ const LiveSupport = () => {
           wantsEmail 
         })
       });
+      
+      if (wantsEmail) {
+        setShowToast(true);
+        setTimeout(() => setShowToast(false), 4000);
+      }
     } catch (e) {
       console.error('Failed to send transcript', e);
     }
@@ -315,6 +319,20 @@ const LiveSupport = () => {
                 </div>
               )}
             </div>
+          </m.div>
+        )}
+      </AnimatePresence>
+
+      {/* Toast Notification */}
+      <AnimatePresence>
+        {showToast && (
+          <m.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 50 }}
+            className={styles.toast}
+          >
+            Sohbet geçmişi e-posta adresinize gönderildi!
           </m.div>
         )}
       </AnimatePresence>
