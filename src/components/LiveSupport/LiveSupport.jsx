@@ -1,26 +1,38 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
-import { MessageSquare, X, Send, User, ChevronDown, Minus } from 'lucide-react';
+import { MessageSquare, X, Send, User, ChevronDown, Minus, Square } from 'lucide-react';
 import clsx from 'clsx';
 import useChatStore from '../../store/chatStore';
 import styles from './LiveSupport.module.scss';
 
-const Typewriter = ({ text, onComplete, onTyping }) => {
+const Typewriter = ({ text, onComplete, onTyping, forceStop }) => {
   const [displayedText, setDisplayedText] = useState('');
   const [currentIndex, setCurrentIndex] = useState(0);
 
+  const onCompleteRef = useRef(onComplete);
+  const onTypingRef = useRef(onTyping);
+
   useEffect(() => {
+    onCompleteRef.current = onComplete;
+    onTypingRef.current = onTyping;
+  }, [onComplete, onTyping]);
+
+  useEffect(() => {
+    if (forceStop) {
+      if (onCompleteRef.current) onCompleteRef.current(displayedText);
+      return;
+    }
     if (currentIndex < text.length) {
       const timeout = setTimeout(() => {
         setDisplayedText(prev => prev + text[currentIndex]);
         setCurrentIndex(prev => prev + 1);
-        if (onTyping) onTyping();
+        if (onTypingRef.current) onTypingRef.current();
       }, 15);
       return () => clearTimeout(timeout);
-    } else if (onComplete) {
-      onComplete();
+    } else {
+      if (onCompleteRef.current) onCompleteRef.current(text);
     }
-  }, [currentIndex, text, onComplete, onTyping]);
+  }, [currentIndex, text, forceStop]);
 
   return <span dangerouslySetInnerHTML={{ __html: displayedText.replace(/\n/g, '<br/>') }} />;
 };
@@ -35,7 +47,10 @@ const LiveSupport = () => {
   } = useChatStore();
   
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
-  const [isTyping, setIsTyping] = useState(false);
+  const [isWaitingForAPI, setIsWaitingForAPI] = useState(false);
+  const [activeTypingId, setActiveTypingId] = useState(null);
+  const [forceStopTyping, setForceStopTyping] = useState(false);
+  const abortControllerRef = useRef(null);
   const [inputValue, setInputValue] = useState('');
   const [endStep, setEndStep] = useState(0); // 0: no, 1: confirm close, 2: ask email
   const [showToast, setShowToast] = useState(false);
@@ -48,7 +63,7 @@ const LiveSupport = () => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, isTyping, endStep, isMinimized, isOpen]);
+  }, [messages, isWaitingForAPI, endStep, isMinimized, isOpen]);
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
@@ -56,25 +71,26 @@ const LiveSupport = () => {
 
     setUserContext({ name: formData.name, email: formData.email });
     
-    addMessage({ text: formData.message, sender: 'user', isNew: false });
+    addMessage({ id: Date.now().toString(), text: formData.message, sender: 'user', isNew: false });
     
     await sendToAI([{ text: formData.message, sender: 'user' }], { name: formData.name, email: formData.email });
   };
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (!inputValue.trim()) return;
+    if (!inputValue.trim() || isWaitingForAPI || activeTypingId) return;
 
     const userMsg = inputValue.trim();
     setInputValue('');
     
-    addMessage({ text: userMsg, sender: 'user', isNew: false });
+    addMessage({ id: Date.now().toString(), text: userMsg, sender: 'user', isNew: false });
     
     await sendToAI([...messages, { text: userMsg, sender: 'user' }], userContext);
   };
 
   const sendToAI = async (history, context) => {
-    setIsTyping(true);
+    setIsWaitingForAPI(true);
+    abortControllerRef.current = new AbortController();
     try {
       // In production, point to the actual backend URL
       // If the backend runs on port 3001, we use localhost:3001
@@ -83,20 +99,43 @@ const LiveSupport = () => {
       const res = await fetch(`${API_URL}/api/ai-chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: history, userContext: context })
+        body: JSON.stringify({ messages: history, userContext: context }),
+        signal: abortControllerRef.current.signal
       });
 
       const data = await res.json();
       
       if (res.ok && data.reply) {
-        addMessage({ text: data.reply, sender: 'ai', isNew: true });
+        const aiMsgId = Date.now().toString() + '-ai';
+        addMessage({ id: aiMsgId, text: data.reply, sender: 'ai', isNew: true });
+        setActiveTypingId(aiMsgId);
       } else {
-        addMessage({ text: 'Üzgünüm, şu an bağlantı sorunu yaşıyorum. Lütfen daha sonra tekrar deneyin.', sender: 'ai', isNew: true });
+        const aiMsgId = Date.now().toString() + '-ai';
+        addMessage({ id: aiMsgId, text: 'Üzgünüm, şu an bağlantı sorunu yaşıyorum. Lütfen daha sonra tekrar deneyin.', sender: 'ai', isNew: true });
+        setActiveTypingId(aiMsgId);
       }
     } catch (err) {
-      addMessage({ text: 'Üzgünüm, teknik bir hata oluştu.', sender: 'ai', isNew: true });
+      if (err.name === 'AbortError') {
+        const aiMsgId = Date.now().toString() + '-ai';
+        addMessage({ id: aiMsgId, text: 'Yanıt durduruldu.', sender: 'ai', isNew: false });
+      } else {
+        const aiMsgId = Date.now().toString() + '-ai';
+        addMessage({ id: aiMsgId, text: 'Üzgünüm, teknik bir hata oluştu.', sender: 'ai', isNew: true });
+        setActiveTypingId(aiMsgId);
+      }
     } finally {
-      setIsTyping(false);
+      setIsWaitingForAPI(false);
+    }
+  };
+
+  const handleStop = () => {
+    if (isWaitingForAPI) {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+      setIsWaitingForAPI(false);
+    } else if (activeTypingId) {
+      setForceStopTyping(true);
     }
   };
 
@@ -152,11 +191,12 @@ const LiveSupport = () => {
     setIsMinimized(false);
   };
 
-  // Mark message as not new so typing effect doesn't run again
-  const markMessageOld = (id) => {
+  const handleTypingComplete = (id, finalDisplayedText) => {
     useChatStore.setState(state => ({
-      messages: state.messages.map(m => m.id === id ? { ...m, isNew: false } : m)
+      messages: state.messages.map(m => m.id === id ? { ...m, text: finalDisplayedText, isNew: false } : m)
     }));
+    setActiveTypingId(null);
+    setForceStopTyping(false);
   };
 
   return (
@@ -278,7 +318,8 @@ const LiveSupport = () => {
                           {(msg.sender === 'ai' && msg.isNew) ? (
                             <Typewriter 
                               text={msg.text} 
-                              onComplete={() => markMessageOld(msg.id)} 
+                              forceStop={forceStopTyping && activeTypingId === msg.id}
+                              onComplete={(finalText) => handleTypingComplete(msg.id, finalText)} 
                               onTyping={scrollToBottom} 
                             />
                           ) : (
@@ -288,7 +329,7 @@ const LiveSupport = () => {
                       </div>
                     ))}
                     
-                    {isTyping && (
+                    {isWaitingForAPI && (
                       <div className={clsx(styles.messageWrapper, styles.ai)}>
                         <div className={styles.msgAvatar}>
                           <img src="/logo.svg" alt="AI" />
@@ -326,10 +367,17 @@ const LiveSupport = () => {
                       placeholder="Mesajınızı yazın..."
                       value={inputValue}
                       onChange={e => setInputValue(e.target.value)}
+                      disabled={isWaitingForAPI || activeTypingId}
                     />
-                    <button type="submit" disabled={!inputValue.trim()}>
-                      <Send size={18} />
-                    </button>
+                    {(isWaitingForAPI || activeTypingId) ? (
+                      <button type="button" onClick={handleStop} className={styles.stopBtn} aria-label="Durdur">
+                        <Square size={18} fill="currentColor" />
+                      </button>
+                    ) : (
+                      <button type="submit" disabled={!inputValue.trim()}>
+                        <Send size={18} />
+                      </button>
+                    )}
                   </form>
                 </div>
               )}

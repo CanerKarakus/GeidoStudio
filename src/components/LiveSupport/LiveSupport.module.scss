@@ -449,6 +449,14 @@
         transform: scale(1.05);
       }
     }
+
+    .stopBtn {
+      background: #222;
+      
+      &:hover {
+        background: #444;
+      }
+    }
   }
 }
 
