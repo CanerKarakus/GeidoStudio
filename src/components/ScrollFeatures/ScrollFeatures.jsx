@@ -3,10 +3,12 @@ import { m, useScroll, useTransform } from 'framer-motion';
 import { ArrowUp } from 'lucide-react';
 import styles from './ScrollFeatures.module.scss';
 import clsx from 'clsx';
+import useChatStore from '../../store/chatStore';
 
 const ScrollFeatures = () => {
   const { scrollYProgress } = useScroll();
   const [isVisible, setIsVisible] = useState(false);
+  const { isMinimized } = useChatStore();
 
   // Map scroll progress (0 to 1) to shades of neon green
   const barColor = useTransform(
@@ -49,7 +51,10 @@ const ScrollFeatures = () => {
       {/* Scroll To Top Button */}
       <button 
         onClick={scrollToTop} 
-        className={clsx(styles.scrollTopBtn, { [styles.visible]: isVisible })}
+        className={clsx(styles.scrollTopBtn, { 
+          [styles.visible]: isVisible,
+          [styles.aboveChat]: isMinimized
+        })}
         aria-label="En üste çık"
       >
         <ArrowUp size={24} />
