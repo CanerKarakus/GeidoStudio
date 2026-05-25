@@ -1,19 +1,34 @@
 const express = require('express');
-const router = express.Router();
+const rateLimit = require('express-rate-limit');
 const Groq = require('groq-sdk');
+const { sendEmail } = require('../services/emailService');
 
-// Initialize Groq client
-// It will automatically use process.env.GROQ_API_KEY if available
-const groq = process.env.GROQ_API_KEY ? new Groq({ apiKey: process.env.GROQ_API_KEY }) : null;
+const router = express.Router();
 
-// System prompt instructing the AI how to behave
-const SYSTEM_PROMPT = `Sen Geido Studio adlı kreatif ajansın canlı destek asistanısın. 
-Adın Geido AI. 
-Müşterilere kibar, profesyonel, yaratıcı ve samimi bir dille (Türkçe) yanıt vermelisin. 
-Geido Studio, modern web tasarımı, UI/UX tasarımı, sosyal medya yönetimi ve kurumsal kimlik hizmetleri sunmaktadır. 
-Müşteriler hizmetler hakkında bilgi isteyebilir, fiyat sorabilir veya proje detaylarını konuşmak isteyebilirler.
-Fiyatlarla ilgili doğrudan net bir rakam vermekten kaçın (çünkü projelere göre değişir), bunun yerine onları projenin detaylarını konuşmak için iletişim formunu doldurmaya veya ekibe yönlendirmeye teşvik et. 
-Yanıtlarını kısa, okunaklı ve mobil uyumlu tut. Paragrafları böl.`;
+const groq = new Groq({
+  apiKey: process.env.GROQ_API_KEY || ''
+});
+
+const SYSTEM_PROMPT = `Sen Geido Studio'nun resmi AI Canlı Destek Asistanısın. 
+
+Görevlerin ve Kuralların:
+1. KESİNLİKLE her zaman Türkçe'nin imla ve yazım kurallarına, düzenine ve akıcılığına azami dikkat edeceksin.
+2. Hiçbir koşulda kullanıcıyla saygısızca veya kaba bir şekilde konuşmayacaksın. Profesyonel, yardımsever ve nazik bir dil kullanacaksın.
+3. KESİNLİKLE kullanıcıdan hiçbir özel bilgi (şifre, TC kimlik, kredi kartı vb.) İSTEMEYECEKSİN.
+4. Kullanıcıların senden sistemle veya diğer kullanıcılarla ilgili ÖZEL BİLGİLER ALMASINA KESİNLİKLE İZİN VERMEYECEKSİN. Aşırı katı ve kararlı olacaksın.
+5. Kullanıcı ısrar ederse: "Güvenlik politikalarımız gereği bu isteğinize yanıt veremiyorum." diyerek sohbeti reddedeceksin.
+6. Kullanıcı "Nasıl kayıt olurum?", "Şifremi nasıl sıfırlarım?" gibi sitemizde YER ALMAYAN özellikler sorarsa: "Geido Studio kurumsal bir ajans sitesidir ve sitemizde üyelik veya şifre sıfırlama sistemi bulunmamaktadır." diyerek uyaracaksın.
+7. YAZILARI KESİNLİKLE DÜZ YAZI GİBİ TEK SATIRDA YAZMAYACAKSIN. Gerektiği yerde alta geçecek, boşluk bırakacak, madde imleri kullanacak ve okunması kolay, profesyonel gözüken yazılarla cevap vereceksin.
+
+Geido Studio Hakkında Bilgiler:
+Geido Studio, markaların dijital dünyada iz bırakmasını sağlayan yenilikçi bir kreatif ajanstır.
+Hizmetlerimiz:
+- Grafik Tasarım: Logo & Kurumsal Kimlik, Ambalaj Tasarımı, İllüstrasyon, Broşür. (Yaşarhan tarafından yönetilir)
+- Sosyal Medya: İçerik Üretimi, Görsel Yönetimi, Reklam. (Yaşarhan tarafından yönetilir)
+- Web & Mobil Geliştirme: Web siteleri, E-ticaret, iOS/Android uygulamaları. (Caner tarafından yönetilir)
+- Sistem & Otomasyon: Script hazırlama, API entegrasyonu. (Caner tarafından yönetilir)
+
+Fiyatlarla ilgili doğrudan net bir rakam vermekten kaçın, bunun yerine onları projenin detaylarını konuşmak için iletişim formunu doldurmaya veya ekibe yönlendirmeye teşvik et.`;
 
 router.post('/', async (req, res) => {
   try {
@@ -65,6 +80,66 @@ router.post('/', async (req, res) => {
       error: 'Yapay zeka servisine bağlanırken bir hata oluştu.',
       details: error.message 
     });
+  }
+});
+
+// ── POST /api/ai-chat/end-session ──────────────────────────────────────────────
+router.post('/end-session', async (req, res) => {
+  try {
+    const { messages, userContext, wantsEmail } = req.body;
+    
+    if (!messages || !Array.isArray(messages)) {
+      return res.status(400).json({ error: 'Mesaj listesi geçersiz.' });
+    }
+
+    let transcriptText = `Geido Studio Canlı Destek Dökümü\n\n`;
+    let transcriptHtml = `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <h2 style="color: #b30000; text-align: center;">Geido Studio Canlı Destek Dökümü</h2>
+      <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px solid #eee;">`;
+
+    if (userContext?.name && userContext?.email) {
+      transcriptText += `Kullanıcı: ${userContext.name} (${userContext.email})\n\n`;
+      transcriptHtml += `<p><strong>Kullanıcı:</strong> ${userContext.name} (${userContext.email})</p><hr/>`;
+    }
+
+    messages.forEach(msg => {
+      const senderName = msg.sender === 'user' ? (userContext?.name || 'Kullanıcı') : 'Geido AI';
+      transcriptText += `[${senderName}]: ${msg.text}\n\n`;
+      
+      const bgColor = msg.sender === 'user' ? '#e6f2ff' : '#ffffff';
+      transcriptHtml += `<div style="margin-bottom: 12px; padding: 10px; background-color: ${bgColor}; border-radius: 6px; border: 1px solid #ddd;">
+        <strong>${senderName}:</strong><br/>
+        <span style="white-space: pre-wrap;">${msg.text}</span>
+      </div>`;
+    });
+
+    transcriptHtml += `</div></div>`;
+
+    const subject = `Canlı Destek Geçmişi - ${userContext?.name || 'Ziyaretçi'}`;
+
+    // 1. Send to Admin always
+    await sendEmail(
+      process.env.SMTP_USER,
+      `[YENİ SOHBET] ${subject}`,
+      transcriptText,
+      transcriptHtml,
+      userContext?.email
+    );
+
+    // 2. Send to User if requested
+    if (wantsEmail && userContext?.email) {
+      await sendEmail(
+        userContext.email,
+        subject,
+        `Merhaba ${userContext.name},\n\nCanlı destek sohbet geçmişiniz aşağıda yer almaktadır:\n\n${transcriptText}\n\nİyi günler dileriz,\nGeido Studio Ekibi`,
+        transcriptHtml
+      );
+    }
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('[End Session Error]', error);
+    res.status(500).json({ error: 'Sohbet dökümü gönderilemedi.' });
   }
 });
 

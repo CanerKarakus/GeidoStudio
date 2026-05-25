@@ -1,15 +1,45 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
-import { MessageSquare, X, Send, User, ChevronDown } from 'lucide-react';
+import { MessageSquare, X, Send, User, ChevronDown, Minus } from 'lucide-react';
 import clsx from 'clsx';
 import useChatStore from '../../store/chatStore';
 import styles from './LiveSupport.module.scss';
 
+// A simple typewriter effect for new AI messages
+const Typewriter = ({ text, onComplete }) => {
+  const [displayedText, setDisplayedText] = useState('');
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    if (currentIndex < text.length) {
+      const timeout = setTimeout(() => {
+        setDisplayedText(prev => prev + text[currentIndex]);
+        setCurrentIndex(prev => prev + 1);
+      }, 15); // Orta hız (15ms per char)
+      return () => clearTimeout(timeout);
+    } else if (onComplete) {
+      onComplete();
+    }
+  }, [currentIndex, text, onComplete]);
+
+  // Support markdown-like line breaks
+  return <span dangerouslySetInnerHTML={{ __html: displayedText.replace(/\n/g, '<br/>') }} />;
+};
+
 const LiveSupport = () => {
-  const { isOpen, setIsOpen, userContext, setUserContext, messages, addMessage } = useChatStore();
+  const { 
+    isOpen, setIsOpen, 
+    isMinimized, setIsMinimized,
+    isEnding, setIsEnding,
+    userContext, setUserContext, 
+    messages, addMessage, clearChat 
+  } = useChatStore();
+  
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
   const [isTyping, setIsTyping] = useState(false);
   const [inputValue, setInputValue] = useState('');
+  const [endStep, setEndStep] = useState(0); // 0: no, 1: confirm close, 2: ask email
+  const [sendEmailCopy, setSendEmailCopy] = useState(false);
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -18,7 +48,7 @@ const LiveSupport = () => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, isTyping]);
+  }, [messages, isTyping, endStep, isMinimized, isOpen]);
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
@@ -26,10 +56,8 @@ const LiveSupport = () => {
 
     setUserContext({ name: formData.name, email: formData.email });
     
-    // Add initial user message
-    addMessage({ text: formData.message, sender: 'user' });
+    addMessage({ text: formData.message, sender: 'user', isNew: false });
     
-    // Call AI API
     await sendToAI([{ text: formData.message, sender: 'user' }], { name: formData.name, email: formData.email });
   };
 
@@ -40,9 +68,8 @@ const LiveSupport = () => {
     const userMsg = inputValue.trim();
     setInputValue('');
     
-    addMessage({ text: userMsg, sender: 'user' });
+    addMessage({ text: userMsg, sender: 'user', isNew: false });
     
-    // Send updated history to AI
     await sendToAI([...messages, { text: userMsg, sender: 'user' }], userContext);
   };
 
@@ -62,22 +89,85 @@ const LiveSupport = () => {
       const data = await res.json();
       
       if (res.ok && data.reply) {
-        addMessage({ text: data.reply, sender: 'ai' });
+        addMessage({ text: data.reply, sender: 'ai', isNew: true });
       } else {
-        addMessage({ text: 'Üzgünüm, şu an bağlantı sorunu yaşıyorum. Lütfen daha sonra tekrar deneyin.', sender: 'ai' });
+        addMessage({ text: 'Üzgünüm, şu an bağlantı sorunu yaşıyorum. Lütfen daha sonra tekrar deneyin.', sender: 'ai', isNew: true });
       }
     } catch (err) {
-      addMessage({ text: 'Üzgünüm, teknik bir hata oluştu.', sender: 'ai' });
+      addMessage({ text: 'Üzgünüm, teknik bir hata oluştu.', sender: 'ai', isNew: true });
     } finally {
       setIsTyping(false);
     }
   };
 
+  const handleCloseRequest = () => {
+    setIsEnding(true);
+    setEndStep(1);
+  };
+
+  const handleConfirmClose = (confirm) => {
+    if (confirm) {
+      setEndStep(2); // ask for email
+    } else {
+      setIsEnding(false);
+      setEndStep(0);
+    }
+  };
+
+  const handleFinalEnd = async (wantsEmail) => {
+    // Send to backend to email transcript
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      await fetch(`${API_URL}/api/ai-chat/end-session`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          messages, 
+          userContext,
+          wantsEmail 
+        })
+      });
+    } catch (e) {
+      console.error('Failed to send transcript', e);
+    }
+    
+    clearChat();
+    setIsEnding(false);
+    setEndStep(0);
+  };
+
+  // Mark message as not new so typing effect doesn't run again
+  const markMessageOld = (id) => {
+    useChatStore.setState(state => ({
+      messages: state.messages.map(m => m.id === id ? { ...m, isNew: false } : m)
+    }));
+  };
+
   return (
     <>
+      {/* Floating Button */}
+      <AnimatePresence>
+        {(!isOpen || isMinimized) && (
+          <m.button
+            className={styles.floatingButton}
+            onClick={() => {
+              setIsOpen(true);
+              setIsMinimized(false);
+            }}
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0, opacity: 0 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <MessageSquare size={24} />
+          </m.button>
+        )}
+      </AnimatePresence>
+
       {/* Chat Window */}
       <AnimatePresence>
-        {isOpen && (
+        {(isOpen && !isMinimized) && (
           <m.div
             className={styles.chatWindow}
             initial={{ opacity: 0, y: 50, scale: 0.9, rotateX: 10 }}
@@ -97,9 +187,14 @@ const LiveSupport = () => {
                   <p>Çevrimiçi</p>
                 </div>
               </div>
-              <button className={styles.closeBtn} onClick={() => setIsOpen(false)}>
-                <ChevronDown size={24} />
-              </button>
+              <div className={styles.headerControls}>
+                <button className={styles.iconBtn} onClick={() => setIsMinimized(true)}>
+                  <Minus size={20} />
+                </button>
+                <button className={styles.iconBtn} onClick={handleCloseRequest}>
+                  <X size={20} />
+                </button>
+              </div>
             </div>
 
             {/* Content Area */}
@@ -147,7 +242,11 @@ const LiveSupport = () => {
                           </div>
                         )}
                         <div className={styles.messageBubble}>
-                          {msg.text}
+                          {(msg.sender === 'ai' && msg.isNew) ? (
+                            <Typewriter text={msg.text} onComplete={() => markMessageOld(msg.id)} />
+                          ) : (
+                            <span dangerouslySetInnerHTML={{ __html: msg.text.replace(/\n/g, '<br/>') }} />
+                          )}
                         </div>
                       </div>
                     ))}
@@ -165,6 +264,37 @@ const LiveSupport = () => {
                     <div ref={messagesEndRef} />
                   </div>
                   
+                  {/* Overlay for Ending Session */}
+                  <AnimatePresence>
+                    {isEnding && (
+                      <m.div 
+                        className={styles.endOverlay}
+                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                      >
+                        <div className={styles.endDialog}>
+                          {endStep === 1 && (
+                            <>
+                              <p>Sohbeti bitirmek istediğinize emin misiniz?</p>
+                              <div className={styles.dialogBtns}>
+                                <button className={styles.noBtn} onClick={() => handleConfirmClose(false)}>Hayır, Devam Et</button>
+                                <button className={styles.yesBtn} onClick={() => handleConfirmClose(true)}>Evet, Bitir</button>
+                              </div>
+                            </>
+                          )}
+                          {endStep === 2 && (
+                            <>
+                              <p>Sohbet geçmişinin bir kopyasını e-posta adresinize göndermemizi ister misiniz?</p>
+                              <div className={styles.dialogBtns}>
+                                <button className={styles.noBtn} onClick={() => handleFinalEnd(false)}>Hayır, İstemiyorum</button>
+                                <button className={styles.yesBtn} onClick={() => handleFinalEnd(true)}>Evet, Gönder</button>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      </m.div>
+                    )}
+                  </AnimatePresence>
+
                   {/* Input Area */}
                   <form className={styles.inputArea} onSubmit={handleSendMessage}>
                     <input
