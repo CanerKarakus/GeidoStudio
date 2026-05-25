@@ -75,6 +75,7 @@ app.use('/api/messages',   require('./routes/messages'));
 app.use('/api/newsletter', require('./routes/newsletter'));
 app.use('/api/upload',     require('./routes/upload'));
 app.use('/api/tracking',   require('./routes/tracking'));
+app.use('/api/ai-chat',    require('./routes/ai-chat'));
 
 // ── Health Check ─────────────────────────────────────────────────────────────
 app.get('/api/health', (req, res) => {

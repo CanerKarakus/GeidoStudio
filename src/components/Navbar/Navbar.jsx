@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import Button from '../Button/Button';
 import styles from './Navbar.module.scss';
 import logoImg from '../../assets/logo/geido_logo.png';
+import useChatStore from '../../store/chatStore';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -15,6 +16,7 @@ const Navbar = () => {
   const lastScrollY = React.useRef(0);
   const location = useLocation();
   const { t, i18n } = useTranslation();
+  const { setIsOpen: setChatOpen } = useChatStore();
 
   const toggleLanguage = () => {
     const nextLang = i18n.language.startsWith('tr') ? 'en' : 'tr';
@@ -89,7 +91,7 @@ const Navbar = () => {
             <button className={styles.langToggle} onClick={toggleLanguage} aria-label="Dil Değiştir">
               <GlobeIcon size={18} /> {i18n.language.startsWith('tr') ? 'EN' : 'TR'}
             </button>
-            <Button to="/iletisim#contact-form" variant="primary" className={styles.contactBtn}>
+            <Button as="button" variant="primary" className={styles.contactBtn} onClick={() => setChatOpen(true)}>
               {i18n.language.startsWith('tr') ? 'Bize Ulaşın' : 'Contact Us'}
             </Button>
             <button className={styles.mobileToggle} onClick={toggleMenu} aria-label="Toggle Menu">
@@ -155,7 +157,7 @@ const Navbar = () => {
                 <button onClick={toggleLanguage} style={{background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '10px', borderRadius: '8px', marginBottom: '15px', width: '100%', fontWeight: 'bold'}}>
                   <GlobeIcon size={18} /> {i18n.language.startsWith('tr') ? 'Switch to English' : 'Türkçe\'ye Geç'}
                 </button>
-                <Button to="/iletisim#contact-form" variant="primary" onClick={closeMenu}>
+                <Button as="button" variant="primary" onClick={() => { closeMenu(); setChatOpen(true); }}>
                   {i18n.language.startsWith('tr') ? 'Bize Ulaşın' : 'Contact Us'}
                 </Button>
               </div>

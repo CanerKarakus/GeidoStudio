@@ -12,6 +12,7 @@ import LoadingScreen from './components/LoadingScreen/LoadingScreen';
 import SplashScreen from './components/SplashScreen/SplashScreen';
 import MaintenanceScreen from './components/MaintenanceScreen/MaintenanceScreen';
 import HeatmapTracker from './components/HeatmapTracker/HeatmapTracker';
+import LiveSupport from './components/LiveSupport/LiveSupport';
 
 // Lazy loaded pages
 const Home = lazy(() => import('./pages/Home/Home'));
@@ -194,6 +195,7 @@ function App() {
           </AnimatePresence>
         </main>
         {!isAdminRoute && !isMaintenanceMode && <Footer />}
+        {!isAdminRoute && !isMaintenanceMode && <LiveSupport />}
       </div>
     </LazyMotion>
   );
