@@ -262,7 +262,7 @@ const wrapHtmlTemplate = (contentHtml, toEmail = '') => {
 
 // sendEmail: threadMessageId is used as the Message-ID header so replies can be
 // matched back to the correct thread via the In-Reply-To header.
-const sendEmail = async (to, subject, text, html, replyTo, threadMessageId) => {
+const sendEmail = async (to, subject, text, html, replyTo, threadMessageId, attachments = []) => {
   try {
     const finalHtml = wrapHtmlTemplate(html, to);
     const mailOptions = {
@@ -272,6 +272,9 @@ const sendEmail = async (to, subject, text, html, replyTo, threadMessageId) => {
       text,
       html: finalHtml,
     };
+    if (attachments && attachments.length > 0) {
+      mailOptions.attachments = attachments;
+    }
     if (replyTo) {
       mailOptions.replyTo = replyTo;
     }

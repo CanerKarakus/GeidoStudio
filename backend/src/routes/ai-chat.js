@@ -92,28 +92,62 @@ router.post('/end-session', async (req, res) => {
       return res.status(400).json({ error: 'Mesaj listesi geçersiz.' });
     }
 
-    let transcriptText = `Geido Studio Canlı Destek Dökümü\n\n`;
-    let transcriptHtml = `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+    const PREVIEW_LIMIT = 3;
+    const previewMessages = messages.slice(0, PREVIEW_LIMIT);
+    
+    // Create preview text and HTML for the email body
+    let previewText = `Geido Studio Canlı Destek Dökümü (Özet)\n\n`;
+    let previewHtml = `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
       <h2 style="color: #b30000; text-align: center;">Geido Studio Canlı Destek Dökümü</h2>
+      <p style="text-align: center; color: #555;">Sohbetin tamamı e-postanın ekindeki <strong>sohbet_gecmisi.txt</strong> dosyasında yer almaktadır.</p>
       <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px solid #eee;">`;
 
     if (userContext?.name && userContext?.email) {
-      transcriptText += `Kullanıcı: ${userContext.name} (${userContext.email})\n\n`;
-      transcriptHtml += `<p><strong>Kullanıcı:</strong> ${userContext.name} (${userContext.email})</p><hr/>`;
+      previewText += `Kullanıcı: ${userContext.name} (${userContext.email})\n\n`;
+      previewHtml += `<p><strong>Kullanıcı:</strong> ${userContext.name} (${userContext.email})</p><hr/>`;
     }
 
-    messages.forEach(msg => {
+    previewMessages.forEach(msg => {
       const senderName = msg.sender === 'user' ? (userContext?.name || 'Kullanıcı') : 'Geido AI';
-      transcriptText += `[${senderName}]: ${msg.text}\n\n`;
+      previewText += `[${senderName}]: ${msg.text}\n\n`;
       
       const bgColor = msg.sender === 'user' ? '#e6f2ff' : '#ffffff';
-      transcriptHtml += `<div style="margin-bottom: 12px; padding: 10px; background-color: ${bgColor}; border-radius: 6px; border: 1px solid #ddd;">
+      previewHtml += `<div style="margin-bottom: 12px; padding: 10px; background-color: ${bgColor}; border-radius: 6px; border: 1px solid #ddd;">
         <strong>${senderName}:</strong><br/>
         <span style="white-space: pre-wrap;">${msg.text}</span>
       </div>`;
     });
 
-    transcriptHtml += `</div></div>`;
+    if (messages.length > PREVIEW_LIMIT) {
+      previewHtml += `<div style="text-align: center; margin-top: 15px; font-style: italic; color: #888;">...Sohbetin devamı ekteki dosyada mevcuttur...</div>`;
+      previewText += `...Sohbetin devamı ekteki dosyada mevcuttur...\n\n`;
+    }
+
+    previewHtml += `</div></div>`;
+
+    // Create full transcript for the .txt attachment
+    let fullTextContent = `====================================================\n`;
+    fullTextContent += `           GEIDO STUDIO CANLI DESTEK GEÇMİŞİ\n`;
+    fullTextContent += `====================================================\n`;
+    fullTextContent += `Tarih: ${new Date().toLocaleString('tr-TR')}\n`;
+    if (userContext?.name && userContext?.email) {
+      fullTextContent += `Kullanıcı: ${userContext.name} (${userContext.email})\n`;
+    }
+    fullTextContent += `----------------------------------------------------\n\n`;
+    
+    messages.forEach(msg => {
+      const senderName = msg.sender === 'user' ? (userContext?.name || 'Kullanıcı') : 'Geido AI';
+      const timeStr = msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) : '';
+      fullTextContent += `[${senderName}] ${timeStr ? '(' + timeStr + ')' : ''}:\n${msg.text}\n\n`;
+    });
+
+    const attachments = [
+      {
+        filename: 'sohbet_gecmisi.txt',
+        content: fullTextContent,
+        contentType: 'text/plain; charset=UTF-8'
+      }
+    ];
 
     const subject = `Canlı Destek Geçmişi - ${userContext?.name || 'Ziyaretçi'}`;
 
@@ -121,9 +155,11 @@ router.post('/end-session', async (req, res) => {
     sendEmail(
       process.env.SMTP_USER,
       `[YENİ SOHBET] ${subject}`,
-      transcriptText,
-      transcriptHtml,
-      userContext?.email
+      previewText,
+      previewHtml,
+      userContext?.email,
+      null, // threadMessageId
+      attachments
     ).catch(e => console.error('[Email Error] Admin:', e.message));
 
     // 2. Send to User if requested
@@ -131,9 +167,11 @@ router.post('/end-session', async (req, res) => {
       sendEmail(
         userContext.email,
         subject,
-        `Merhaba ${userContext.name},\n\nCanlı destek sohbet geçmişiniz aşağıda yer almaktadır:\n\n${transcriptText}\n\nİyi günler dileriz,\nGeido Studio Ekibi`,
-        transcriptHtml,
-        process.env.SMTP_USER
+        `Merhaba ${userContext.name},\n\nCanlı destek sohbet geçmişinizin özeti aşağıdadır. Sohbetin tamamını ekteki dosyada bulabilirsiniz.\n\n${previewText}\n\nİyi günler dileriz,\nGeido Studio Ekibi`,
+        previewHtml,
+        process.env.SMTP_USER,
+        null, // threadMessageId
+        attachments
       ).catch(e => console.error('[Email Error] User:', e.message));
     }
 
