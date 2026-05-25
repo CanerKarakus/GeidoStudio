@@ -17,7 +17,7 @@ const useChatStore = create(
       
       messages: [], // { id, text, sender: 'user' | 'ai', timestamp }
       addMessage: (msg) => set((state) => ({ 
-        messages: [...state.messages, { ...msg, id: Date.now(), timestamp: new Date().toISOString() }] 
+        messages: [...state.messages, { ...msg, id: msg.id || Date.now(), timestamp: new Date().toISOString() }] 
       })),
       
       clearChat: () => set({ 
