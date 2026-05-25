@@ -14,13 +14,17 @@ Groq API anahtarının güvenli bir şekilde saklanabilmesi için `.env.example`
 - **Yapmanız Gereken:** Gerçek backend sunucunuzun (cPanel/VPS) içindeki `.env` dosyasına Groq API anahtarınızı `GROQ_API_KEY=...` şeklinde eklemelisiniz.
 
 ## 3. Yeni Route (API Endpoint) Oluşturuldu
-Yapay zeka ile konuşmayı sağlayacak olan ve prompt yönergelerini içeren `ai-chat.js` adında yeni bir backend dosyası oluşturulmuştur.
+Yapay zeka ile konuşmayı sağlayacak olan ve prompt yönergelerini içeren `ai-chat.js` adında yeni bir backend dosyası oluşturulmuştur. Sonrasında Sistem Promptu detaylı şirket verisi ile güncellenmiş ve konuşmayı sonlandırıp mail atan `/end-session` rotası eklenmiştir.
 - **Dosya:** `backend/src/routes/ai-chat.js`
-- **İşlevi:** Frontend tarafından gelen sohbet geçmişini alır, asistan promptu ile birleştirerek Groq (Llama3-70b-8192) modeline iletir ve yanıtı döner.
+- **İşlevi:** Frontend tarafından gelen sohbet geçmişini alır, asistan promptu ile birleştirerek Groq modeline (llama-3.3-70b-versatile) iletir ve yanıtı döner. `/end-session` rotası e-posta bildirimleri atar.
 
-## 4. Ana Sunucuya (Server.js) Yeni Rotanın Eklenmesi
+## 4. E-posta Servisi
+- **Dosya:** `backend/src/services/emailService.js`
+- **Kullanım:** Yeni eklenen `/end-session` rotası içerisinde, konuşma dökümlerinin (`admin@geidostudio.com` ve kullanıcı mailine) gönderilmesi için kullanıldı.
+
+## 5. Ana Sunucuya (Server.js) Yeni Rotanın Eklenmesi
 Oluşturulan `ai-chat.js` rotasının aktif edilebilmesi için `server.js` içerisine yönlendirme eklenmiştir.
 - **Dosya:** `backend/src/server.js`
 - **Eklenen Kod:** `app.use('/api/ai-chat', require('./routes/ai-chat'));`
 
-> Bu değişiklikler sonrası sunucu baştan başlatıldığında (`npm start` veya PM2 restart) yeni AI Chat endpoint'i kullanıma hazır olacaktır.
+> Bu değişiklikler sonrası sunucu baştan başlatıldığında (`npm start` veya PM2 restart) yeni AI Chat endpoint'i tam fonksiyonlu bir şekilde kullanıma hazır olacaktır.
