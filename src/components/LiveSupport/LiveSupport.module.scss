@@ -33,7 +33,7 @@
 .chatWindow {
   position: fixed;
   bottom: 24px;
-  left: 24px; // Sol alt
+  right: 24px; // Sağ alt
   width: 380px;
   height: 600px;
   max-height: calc(100vh - 48px);
@@ -51,7 +51,7 @@
 
   @media (max-width: 480px) {
     width: calc(100vw - 32px);
-    left: 16px;
+    right: 16px;
     bottom: 16px;
     height: calc(100vh - 32px);
   }

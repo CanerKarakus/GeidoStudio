@@ -92,7 +92,7 @@ const Navbar = () => {
               <GlobeIcon size={18} /> {i18n.language.startsWith('tr') ? 'EN' : 'TR'}
             </button>
             <Button as="button" variant="primary" className={styles.contactBtn} onClick={() => setChatOpen(true)}>
-              {i18n.language.startsWith('tr') ? 'Bize Ulaşın' : 'Contact Us'}
+              {i18n.language.startsWith('tr') ? 'Canlı Destek' : 'Live Support'}
             </Button>
             <button className={styles.mobileToggle} onClick={toggleMenu} aria-label="Toggle Menu">
               {isOpen ? <X size={24} /> : <Menu size={24} />}
@@ -158,7 +158,7 @@ const Navbar = () => {
                   <GlobeIcon size={18} /> {i18n.language.startsWith('tr') ? 'Switch to English' : 'Türkçe\'ye Geç'}
                 </button>
                 <Button as="button" variant="primary" onClick={() => { closeMenu(); setChatOpen(true); }}>
-                  {i18n.language.startsWith('tr') ? 'Bize Ulaşın' : 'Contact Us'}
+                  {i18n.language.startsWith('tr') ? 'Canlı Destek' : 'Live Support'}
                 </Button>
               </div>
             </m.aside>
