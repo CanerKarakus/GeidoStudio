@@ -1,1 +1,24 @@
-[]
+[
+  {
+    "id": "eb7ca43c-fc49-417d-a62e-2c05022a35b7",
+    "name": "casdadsads",
+    "email": "canerdsgn789@gmail.com",
+    "phone": "+90 (590) 231 3213",
+    "subject": "Web & Mobil Geliştirme",
+    "message": "asdasdasd",
+    "date": "2026-05-25T02:26:16.041Z",
+    "replies": [],
+    "threadMessageId": "<geido-thread-7ee5912c-0fab-42be-853c-f2ab58185e6e@geidostudio.com>"
+  },
+  {
+    "id": "f8dadd70-b05d-4c99-8176-9c918aa03b12",
+    "name": "asdasdc",
+    "email": "canerdsgn789@gmail.com",
+    "phone": "+90 (523) 132 3121",
+    "subject": "Mobil Uygulama",
+    "message": "saasdasdasd",
+    "date": "2026-05-25T02:22:54.157Z",
+    "replies": [],
+    "threadMessageId": "<geido-thread-27222ac7-77cb-4fe2-ba3e-ed856ca5563b@geidostudio.com>"
+  }
+]
