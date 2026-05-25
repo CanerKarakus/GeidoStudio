@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import styles from './NotFound.module.scss';
+import SEO from '../../components/SEO/SEO';
 
 const NotFound = () => {
   const navigate = useNavigate();
@@ -9,6 +10,11 @@ const NotFound = () => {
 
   return (
     <section className={styles.notFoundSection}>
+      <SEO 
+        title="404 | Sayfa Bulunamadı"
+        description="Aradığınız sayfa bulunamadı."
+        themeColor="#ffffff"
+      />
       <div className={styles.container}>
         <div className={styles.contentWrapper}>
           <div
