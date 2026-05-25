@@ -90,10 +90,10 @@ const LiveSupport = () => {
             <div className={styles.header}>
               <div className={styles.headerInfo}>
                 <div className={styles.avatar}>
-                  <img src="/logo_icon.png" alt="Geido AI" />
+                  <img src="/logo.svg" alt="Geido AI" />
                 </div>
                 <div>
-                  <h3>Geido Asistan</h3>
+                  <h3>Geido AI Asistan</h3>
                   <p>Çevrimiçi</p>
                 </div>
               </div>
@@ -143,7 +143,7 @@ const LiveSupport = () => {
                       <div key={msg.id || idx} className={clsx(styles.messageWrapper, styles[msg.sender])}>
                         {msg.sender === 'ai' && (
                           <div className={styles.msgAvatar}>
-                            <img src="/logo_icon.png" alt="AI" />
+                            <img src="/logo.svg" alt="AI" />
                           </div>
                         )}
                         <div className={styles.messageBubble}>
@@ -155,7 +155,7 @@ const LiveSupport = () => {
                     {isTyping && (
                       <div className={clsx(styles.messageWrapper, styles.ai)}>
                         <div className={styles.msgAvatar}>
-                          <img src="/logo_icon.png" alt="AI" />
+                          <img src="/logo.svg" alt="AI" />
                         </div>
                         <div className={clsx(styles.messageBubble, styles.typingIndicator)}>
                           <span></span><span></span><span></span>
