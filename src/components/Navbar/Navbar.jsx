@@ -16,7 +16,7 @@ const Navbar = () => {
   const lastScrollY = React.useRef(0);
   const location = useLocation();
   const { t, i18n } = useTranslation();
-  const { setIsOpen: setChatOpen } = useChatStore();
+  const { setIsOpen: setChatOpen, setIsMinimized: setChatMinimized } = useChatStore();
 
   const toggleLanguage = () => {
     const nextLang = i18n.language.startsWith('tr') ? 'en' : 'tr';
@@ -91,7 +91,7 @@ const Navbar = () => {
             <button className={styles.langToggle} onClick={toggleLanguage} aria-label="Dil Değiştir">
               <GlobeIcon size={18} /> {i18n.language.startsWith('tr') ? 'EN' : 'TR'}
             </button>
-            <Button as="button" variant="primary" className={styles.contactBtn} onClick={() => setChatOpen(true)}>
+            <Button as="button" variant="primary" className={styles.contactBtn} onClick={() => { setChatOpen(true); setChatMinimized(false); }}>
               {i18n.language.startsWith('tr') ? 'Canlı Destek' : 'Live Support'}
             </Button>
             <button className={styles.mobileToggle} onClick={toggleMenu} aria-label="Toggle Menu">
@@ -157,7 +157,7 @@ const Navbar = () => {
                 <button onClick={toggleLanguage} style={{background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '10px', borderRadius: '8px', marginBottom: '15px', width: '100%', fontWeight: 'bold'}}>
                   <GlobeIcon size={18} /> {i18n.language.startsWith('tr') ? 'Switch to English' : 'Türkçe\'ye Geç'}
                 </button>
-                <Button as="button" variant="primary" onClick={() => { closeMenu(); setChatOpen(true); }}>
+                <Button as="button" variant="primary" onClick={() => { closeMenu(); setChatOpen(true); setChatMinimized(false); }}>
                   {i18n.language.startsWith('tr') ? 'Canlı Destek' : 'Live Support'}
                 </Button>
               </div>
