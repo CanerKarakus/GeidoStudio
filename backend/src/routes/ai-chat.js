@@ -153,7 +153,7 @@ router.post('/end-session', async (req, res) => {
 
     // 1. Send to Admin always
     sendEmail(
-      process.env.SMTP_USER,
+      'info@geidostudio.com',
       `[YENİ SOHBET] ${subject}`,
       previewText,
       previewHtml,
