@@ -1,12 +1,4 @@
-# Backend Güncellemeleri - AI Canlı Destek
-
-Canlı destek sisteminin Groq AI API entegrasyonu için backend tarafında yapılan değişikliklerin TAMAMI aşağıdadır. Hiçbir yeri eksik bırakmadan dosyalarınızı bu içeriklerle güncelleyebilirsiniz. Yeni paket olan `groq-sdk` kurulumu için backend dizininde `npm install groq-sdk` çalıştırmayı unutmayın.
-
----
-
-### 1. Yeni Dosya: `backend/src/routes/ai-chat.js`
-Bu dosyayı yoksa oluşturup, varsa içeriğini tamamen aşağıdaki ile değiştirin:
-
+**backend/src/routes/ai-chat.js**
 ```javascript
 const express = require('express');
 const rateLimit = require('express-rate-limit');
@@ -54,14 +46,11 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ error: 'Geçersiz mesaj formatı.' });
     }
 
-    // Optional: userContext might contain { name, email } so AI knows who it is talking to
     let systemInstruction = SYSTEM_PROMPT;
     if (userContext && userContext.name) {
       systemInstruction += `\nŞu an konuştuğun müşterinin adı: ${userContext.name}. Ona adıyla hitap edebilirsin.`;
     }
 
-    // Format messages for Groq API
-    // Ensure we only pass role and content to the API
     const formattedMessages = [
       { role: 'system', content: systemInstruction },
       ...messages.map(m => ({
@@ -93,7 +82,6 @@ router.post('/', async (req, res) => {
   }
 });
 
-// ── POST /api/ai-chat/end-session ──────────────────────────────────────────────
 router.post('/end-session', async (req, res) => {
   try {
     const { messages, userContext, wantsEmail } = req.body;
@@ -127,7 +115,6 @@ router.post('/end-session', async (req, res) => {
 
     const subject = `Canlı Destek Geçmişi - ${userContext?.name || 'Ziyaretçi'}`;
 
-    // 1. Send to Admin always
     sendEmail(
       process.env.SMTP_USER,
       `[YENİ SOHBET] ${subject}`,
@@ -136,7 +123,6 @@ router.post('/end-session', async (req, res) => {
       userContext?.email
     ).catch(e => console.error('[Email Error] Admin:', e.message));
 
-    // 2. Send to User if requested
     if (wantsEmail && userContext?.email) {
       sendEmail(
         userContext.email,
@@ -157,16 +143,8 @@ router.post('/end-session', async (req, res) => {
 module.exports = router;
 ```
 
----
-
-### 2. Değişen Dosya: `backend/src/server.js`
-Dosyanın en güncel tam halini aşağıdan kopyalayıp eskisinin yerine yapıştırın. (78. satırda `/api/ai-chat` route'u eklenmiştir)
-
+**backend/src/server.js**
 ```javascript
-/**
- * Geido Studio Backend — Main Server
- * Express + Helmet + CORS + Cookie-based JWT Auth
- */
 require('dotenv').config({ path: require('path').join(__dirname, '../.env') });
 
 const express = require('express');
@@ -175,7 +153,6 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const path = require('path');
 
-// ── Env validation ───────────────────────────────────────────────────────────
 const required = ['JWT_SECRET', 'ADMIN_EMAIL', 'ADMIN_PASSWORD_HASH'];
 for (const key of required) {
   if (!process.env[key] || process.env[key].startsWith('CHANGE_THIS')) {
@@ -187,7 +164,6 @@ for (const key of required) {
 
 const app = express();
 
-// ── Security Headers (Helmet) ────────────────────────────────────────────────
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
@@ -201,18 +177,16 @@ app.use(helmet({
   crossOriginResourcePolicy: false,
 }));
 
-// ── CORS ─────────────────────────────────────────────────────────────────────
 const FRONTEND_URLS = process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',').map(s => s.trim()) : [];
 
 const ALLOWED_ORIGINS = [
   ...FRONTEND_URLS,
-  'http://localhost:5173',  // Local dev
-  'http://localhost:4173',  // Vite preview
+  'http://localhost:5173',
+  'http://localhost:4173',
 ].filter(Boolean);
 
 app.use(cors({
   origin: function(origin, callback) {
-    // Dinamik olarak gelen tüm adresleri kabul et (Wildcard gibi ama credentials ile uyumlu)
     callback(null, origin || true);
   },
   credentials: true,
@@ -220,18 +194,13 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
 }));
 
-// ── Body Parsers ─────────────────────────────────────────────────────────────
-app.use(express.json({ limit: '5mb' }));  // CMS data can be large (blogs, images)
+app.use(express.json({ limit: '5mb' }));
 app.use(express.urlencoded({ extended: true, limit: '5mb' }));
 app.use(cookieParser());
 
-// ── Static Files (Uploads) ──────────────────────────────────────────────────
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
-
-// ── Trust proxy (needed if behind Nginx/cPanel proxy) ───────────────────────
 app.set('trust proxy', 1);
 
-// ── Routes ───────────────────────────────────────────────────────────────────
 app.use('/api/auth',       require('./routes/auth'));
 app.use('/api/cms',        require('./routes/cms'));
 app.use('/api/database',   require('./routes/database'));
@@ -242,17 +211,14 @@ app.use('/api/upload',     require('./routes/upload'));
 app.use('/api/tracking',   require('./routes/tracking'));
 app.use('/api/ai-chat',    require('./routes/ai-chat'));
 
-// ── Health Check ─────────────────────────────────────────────────────────────
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// ── 404 Handler ──────────────────────────────────────────────────────────────
 app.use((req, res) => {
   res.status(404).json({ error: 'Endpoint bulunamadı.' });
 });
 
-// ── Global Error Handler ─────────────────────────────────────────────────────
 app.use((err, req, res, next) => {
   if (err.message && err.message.startsWith('CORS')) {
     return res.status(403).json({ error: 'CORS: Erişim reddedildi.' });
@@ -261,7 +227,6 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Sunucu hatası.' });
 });
 
-// ── Start ─────────────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 3001;
 const http = require('http');
 const { Server } = require('socket.io');
@@ -282,19 +247,16 @@ io.on('connection', (socket) => {
   console.log('Admin connected to socket:', socket.id);
 });
 
-// Initialize IMAP listener
 initImap((newMsg) => {
   const messages = readMessages();
 
   let targetIndex = -1;
 
-  // 1) Best: match by In-Reply-To or References header → threadMessageId
   if (newMsg.inReplyTo) {
     targetIndex = messages.findIndex(m =>
       m.threadMessageId && m.threadMessageId === newMsg.inReplyTo
     );
     if (targetIndex === -1 && newMsg.references) {
-      // References can be a space-separated list; check any match
       const refIds = newMsg.references.split(/\s+/);
       targetIndex = messages.findIndex(m =>
         m.threadMessageId && refIds.includes(m.threadMessageId)
@@ -302,7 +264,6 @@ initImap((newMsg) => {
     }
   }
 
-  // 2) Fallback: match by sender email (only if 1 thread with that email exists)
   if (targetIndex === -1) {
     const matchingByEmail = messages
       .map((m, i) => ({ m, i }))
@@ -316,7 +277,6 @@ initImap((newMsg) => {
     const thread = messages[targetIndex];
     thread.replies = thread.replies || [];
 
-    // Deduplicate by incoming Message-ID
     const isDuplicate = thread.replies.some(r => r.messageId === newMsg.messageId);
     if (!isDuplicate) {
       const newReply = {
@@ -328,7 +288,6 @@ initImap((newMsg) => {
       };
       thread.replies.push(newReply);
 
-      // Move to top
       messages.splice(targetIndex, 1);
       messages.unshift(thread);
       writeMessages(messages);
@@ -354,11 +313,7 @@ server.listen(PORT, () => {
 module.exports = server;
 ```
 
----
-
-### 3. Değişen Dosya: `backend/package.json`
-`groq-sdk` bağımlılığı eklendi. Aşağıdaki içeriği tamamen kopyalayabilirsiniz.
-
+**backend/package.json**
 ```json
 {
   "name": "geido-studio-backend",
@@ -396,11 +351,7 @@ module.exports = server;
 }
 ```
 
----
-
-### 4. Değişen Dosya: `backend/.env.example`
-API anahtarlarının sunucuda tutulması gereken şablon dosyası güncellendi. `GROQ_API_KEY` değişkenini gerçek sunucunuzda kendi `.env` dosyanıza yazmayı unutmayın.
-
+**backend/.env.example**
 ```env
 # Environment Variables - NEVER commit this file to git!
 
