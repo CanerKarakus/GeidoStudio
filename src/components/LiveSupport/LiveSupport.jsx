@@ -115,11 +115,11 @@ const LiveSupport = () => {
     }
   };
 
-  const handleFinalEnd = async (wantsEmail) => {
+  const handleFinalEnd = (wantsEmail) => {
     // Send to backend to email transcript
     try {
       const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-      await fetch(`${API_URL}/api/ai-chat/end-session`, {
+      fetch(`${API_URL}/api/ai-chat/end-session`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -148,7 +148,7 @@ const LiveSupport = () => {
     <>
       {/* Floating Button */}
       <AnimatePresence>
-        {(!isOpen || isMinimized) && (
+        {isMinimized && (
           <m.button
             className={styles.floatingButton}
             onClick={() => {

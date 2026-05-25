@@ -118,22 +118,22 @@ router.post('/end-session', async (req, res) => {
     const subject = `Canlı Destek Geçmişi - ${userContext?.name || 'Ziyaretçi'}`;
 
     // 1. Send to Admin always
-    await sendEmail(
+    sendEmail(
       process.env.SMTP_USER,
       `[YENİ SOHBET] ${subject}`,
       transcriptText,
       transcriptHtml,
       userContext?.email
-    );
+    ).catch(e => console.error('[Email Error] Admin:', e.message));
 
     // 2. Send to User if requested
     if (wantsEmail && userContext?.email) {
-      await sendEmail(
+      sendEmail(
         userContext.email,
         subject,
         `Merhaba ${userContext.name},\n\nCanlı destek sohbet geçmişiniz aşağıda yer almaktadır:\n\n${transcriptText}\n\nİyi günler dileriz,\nGeido Studio Ekibi`,
         transcriptHtml
-      );
+      ).catch(e => console.error('[Email Error] User:', e.message));
     }
 
     res.json({ success: true });
