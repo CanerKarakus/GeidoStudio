@@ -222,6 +222,89 @@
   }
 }
 
+// EMAIL REQUEST SCREEN
+.emailRequestContainer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  text-align: center;
+  
+  .emailIconWrapper {
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+
+    .emailIcon {
+      color: color(primary);
+    }
+  }
+
+  h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #fff;
+    margin: 0 0 12px;
+  }
+
+  p {
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1.5;
+    margin: 0 0 32px;
+
+    strong {
+      color: #fff;
+    }
+  }
+
+  .emailBtns {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+
+    button {
+      width: 100%;
+      padding: 16px;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+    }
+
+    .sendBtn {
+      background: color(primary);
+      color: #fff;
+
+      &:hover {
+        filter: brightness(1.1);
+        transform: translateY(-2px);
+      }
+    }
+
+    .skipBtn {
+      background: rgba(255, 255, 255, 0.05);
+      color: rgba(255, 255, 255, 0.8);
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: #fff;
+      }
+    }
+  }
+}
+
 // CHAT INTERFACE
 .chatContainer {
   display: flex;

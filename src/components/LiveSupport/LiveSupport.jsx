@@ -240,6 +240,23 @@ const LiveSupport = () => {
                     </button>
                   </form>
                 </div>
+              ) : endStep === 2 ? (
+                // Email Request Screen
+                <div className={styles.emailRequestContainer}>
+                  <div className={styles.emailIconWrapper}>
+                    <MessageSquare size={48} className={styles.emailIcon} />
+                  </div>
+                  <h3>Sohbet Geçmişi</h3>
+                  <p>Bu sohbetin bir kopyasını <strong>{userContext.email}</strong> adresine göndermemizi ister misiniz?</p>
+                  <div className={styles.emailBtns}>
+                    <button className={styles.sendBtn} onClick={() => handleFinalEnd(true)}>
+                      Evet, Gönder
+                    </button>
+                    <button className={styles.skipBtn} onClick={() => handleFinalEnd(false)}>
+                      Hayır, İstemiyorum
+                    </button>
+                  </div>
+                </div>
               ) : (
                 // Chat Interface
                 <div className={styles.chatContainer}>
@@ -280,30 +297,17 @@ const LiveSupport = () => {
                   
                   {/* Overlay for Ending Session */}
                   <AnimatePresence>
-                    {isEnding && (
+                    {(isEnding && endStep === 1) && (
                       <m.div 
                         className={styles.endOverlay}
                         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                       >
                         <div className={styles.endDialog}>
-                          {endStep === 1 && (
-                            <>
-                              <p>Sohbeti bitirmek istediğinize emin misiniz?</p>
-                              <div className={styles.dialogBtns}>
-                                <button className={styles.noBtn} onClick={() => handleConfirmClose(false)}>Hayır, Devam Et</button>
-                                <button className={styles.yesBtn} onClick={() => handleConfirmClose(true)}>Evet, Bitir</button>
-                              </div>
-                            </>
-                          )}
-                          {endStep === 2 && (
-                            <>
-                              <p>Sohbet geçmişinin bir kopyasını e-posta adresinize göndermemizi ister misiniz?</p>
-                              <div className={styles.dialogBtns}>
-                                <button className={styles.noBtn} onClick={() => handleFinalEnd(false)}>Hayır, İstemiyorum</button>
-                                <button className={styles.yesBtn} onClick={() => handleFinalEnd(true)}>Evet, Gönder</button>
-                              </div>
-                            </>
-                          )}
+                          <p>Sohbeti bitirmek istediğinize emin misiniz?</p>
+                          <div className={styles.dialogBtns}>
+                            <button className={styles.noBtn} onClick={() => handleConfirmClose(false)}>Hayır, Devam Et</button>
+                            <button className={styles.yesBtn} onClick={() => handleConfirmClose(true)}>Evet, Bitir</button>
+                          </div>
                         </div>
                       </m.div>
                     )}
