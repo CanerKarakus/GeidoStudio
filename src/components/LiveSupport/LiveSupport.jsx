@@ -106,6 +106,10 @@ const LiveSupport = () => {
       setIsMinimized(false);
       return;
     }
+    if (endStep === 2) {
+      handleFinalEnd(false);
+      return;
+    }
     setIsEnding(true);
     setEndStep(1);
   };
@@ -144,6 +148,8 @@ const LiveSupport = () => {
     clearChat();
     setIsEnding(false);
     setEndStep(0);
+    setIsOpen(false);
+    setIsMinimized(false);
   };
 
   // Mark message as not new so typing effect doesn't run again
