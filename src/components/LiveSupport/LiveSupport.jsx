@@ -101,6 +101,11 @@ const LiveSupport = () => {
   };
 
   const handleCloseRequest = () => {
+    if (!userContext) {
+      setIsOpen(false);
+      setIsMinimized(false);
+      return;
+    }
     setIsEnding(true);
     setEndStep(1);
   };
