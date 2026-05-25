@@ -18,6 +18,7 @@ const Blog = () => {
         title={t('blog.seo_title')} 
         description={t('blog.seo_desc')}
         keywords="blog, web tasarım trendleri, teknoloji makaleleri, grafik tasarım blogu"
+        themeColor="#ffffff"
       />
       <div className={styles.header}>
         <div className={styles.heroBackground}></div>

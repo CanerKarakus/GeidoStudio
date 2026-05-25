@@ -39,6 +39,7 @@ const About = () => {
         title={t('about.seo_title')}
         description={t('about.seo_desc')}
         keywords="hakkımızda, geido studio kimdir, kreatif ajans ekibi, vizyonumuz"
+        themeColor="#ffffff"
       />
       <div className={styles.container}>
         <div className={styles.header}>

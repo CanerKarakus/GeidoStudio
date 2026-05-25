@@ -7,6 +7,7 @@ const SEO = ({
   description, 
   keywords, 
   image, 
+  themeColor,
   url = 'https://geidostudio.com' 
 }) => {
   const { cms } = useCmsStore();
@@ -29,6 +30,7 @@ const SEO = ({
       <title>{finalTitle}</title>
       <meta name="description" content={finalDesc} />
       <meta name="keywords" content={finalKeywords} />
+      {themeColor && <meta name="theme-color" content={themeColor} />}
 
       {/* Open Graph / Facebook (Sosyal medyada paylaşınca çıkacak olanlar) */}
       <meta property="og:type" content="website" />

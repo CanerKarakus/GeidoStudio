@@ -143,7 +143,8 @@ const Contact = () => {
       <SEO 
         title={t('contact.seo_title')} 
         description={t('contact.seo_desc')}
-        keywords="iletişim, geido studio iletişim, web tasarım teklif al, grafik tasarım fiyatları"
+        keywords="iletişim, geido studio iletişim, web tasarım teklif al, kreatif ajans istanbul"
+        themeColor="#ffffff"
       />
 
       {/* Huge Header */}
