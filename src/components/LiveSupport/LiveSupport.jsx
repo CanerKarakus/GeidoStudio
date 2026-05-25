@@ -6,7 +6,7 @@ import useChatStore from '../../store/chatStore';
 import styles from './LiveSupport.module.scss';
 
 // A simple typewriter effect for new AI messages
-const Typewriter = ({ text, onComplete }) => {
+const Typewriter = ({ text, onComplete, onTyping }) => {
   const [displayedText, setDisplayedText] = useState('');
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -15,12 +15,13 @@ const Typewriter = ({ text, onComplete }) => {
       const timeout = setTimeout(() => {
         setDisplayedText(prev => prev + text[currentIndex]);
         setCurrentIndex(prev => prev + 1);
+        if (onTyping) onTyping();
       }, 15); // Orta hız (15ms per char)
       return () => clearTimeout(timeout);
     } else if (onComplete) {
       onComplete();
     }
-  }, [currentIndex, text, onComplete]);
+  }, [currentIndex, text, onComplete, onTyping]);
 
   // Support markdown-like line breaks
   return <span dangerouslySetInnerHTML={{ __html: displayedText.replace(/\n/g, '<br/>') }} />;
@@ -243,7 +244,11 @@ const LiveSupport = () => {
                         )}
                         <div className={styles.messageBubble}>
                           {(msg.sender === 'ai' && msg.isNew) ? (
-                            <Typewriter text={msg.text} onComplete={() => markMessageOld(msg.id)} />
+                            <Typewriter 
+                              text={msg.text} 
+                              onComplete={() => markMessageOld(msg.id)} 
+                              onTyping={scrollToBottom} 
+                            />
                           ) : (
                             <span dangerouslySetInnerHTML={{ __html: msg.text.replace(/\n/g, '<br/>') }} />
                           )}
