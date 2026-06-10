@@ -599,6 +599,56 @@
   border: 1px solid rgba(239, 68, 68, 0.2);
 }
 
+.aiControls {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.aiControlItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  
+  label {
+    font-size: 0.85rem;
+    color: #9ca3af;
+  }
+  
+  select {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    padding: 0.4rem 0.8rem;
+    color: #fff;
+    font-family: inherit;
+    font-size: 0.85rem;
+    cursor: pointer;
+    
+    &:focus {
+      outline: none;
+      border-color: #b30000;
+    }
+  }
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  user-select: none;
+  
+  input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: #b30000;
+    cursor: pointer;
+  }
+}
+
 .aiGenerateBtn {
   display: flex;
   align-items: center;

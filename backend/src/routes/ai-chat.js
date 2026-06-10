@@ -195,13 +195,25 @@ router.post('/generate-blog', authMiddleware, async (req, res) => {
       return res.status(503).json({ error: 'Groq API anahtarı yapılandırılmamış.' });
     }
 
-    const { prompt } = req.body;
+    const { prompt, length, useCodeBlocks } = req.body;
     if (!prompt) {
       return res.status(400).json({ error: 'Lütfen bir konu veya ipucu (prompt) girin.' });
     }
 
+    let lengthInstruction = 'Yaklaşık 600-800 kelimelik standart uzunlukta detaylı bir makale yaz.';
+    if (length === 'short') lengthInstruction = 'Yaklaşık 300-400 kelimelik kısa ve öz bir makale yaz.';
+    if (length === 'long') lengthInstruction = 'Yaklaşık 1000-1500 kelimelik, çok kapsamlı ve uzun bir makale yaz.';
+
+    let codeBlockInstruction = '';
+    if (useCodeBlocks) {
+      codeBlockInstruction = 'Önemli gördüğün teknik terimleri, örnekleri veya kod parçacıklarını vurgulamak için <pre><code> ... </code></pre> yapısını KULLAN. Bu makalenin okunabilirliğini artıracaktır.';
+    }
+
     const systemPrompt = `Sen profesyonel bir metin yazarı ve SEO uzmanısın. Kullanıcının verdiği konuya göre Geido Studio (dijital ajans) blogu için yayınlanmaya hazır, akıcı, okunması kolay ve ilgi çekici bir makale yazacaksın. 
 Geido Studio'nun dili profesyonel ama aynı zamanda yenilikçi, samimi ve vizyonerdir.
+
+${lengthInstruction}
+${codeBlockInstruction}
 
 Çıktın KESİNLİKLE VE SADECE geçerli bir JSON objesi olmak zorundadır. Hiçbir Markdown formatı, backtick (\`\`\`) veya ekstra açıklama ekleme! Yalnızca JSON döndür.
 

@@ -42,6 +42,8 @@ const AdminBlog = () => {
 
   const [showAIPrompt, setShowAIPrompt] = useState(false);
   const [aiPrompt, setAIPrompt] = useState('');
+  const [aiLength, setAiLength] = useState('medium');
+  const [useCodeBlocks, setUseCodeBlocks] = useState(false);
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   const [aiError, setAiError] = useState('');
 
@@ -50,7 +52,11 @@ const AdminBlog = () => {
     setIsGeneratingAI(true);
     setAiError('');
     try {
-      const response = await api.generateBlogAI(aiPrompt);
+      const response = await api.generateBlogAI({ 
+        prompt: aiPrompt, 
+        length: aiLength, 
+        useCodeBlocks 
+      });
       if (response.success && response.data) {
         setFormData(prev => ({
           ...prev,
@@ -210,6 +216,31 @@ const AdminBlog = () => {
                   disabled={isGeneratingAI}
                   rows={3}
                 />
+                <div className={styles.aiControls}>
+                  <div className={styles.aiControlItem}>
+                    <label>Uzunluk:</label>
+                    <select 
+                      value={aiLength} 
+                      onChange={e => setAiLength(e.target.value)}
+                      disabled={isGeneratingAI}
+                    >
+                      <option value="short">Kısa (300-400 kelime)</option>
+                      <option value="medium">Orta (600-800 kelime)</option>
+                      <option value="long">Uzun (1000-1500 kelime)</option>
+                    </select>
+                  </div>
+                  <div className={styles.aiControlItem}>
+                    <label className={styles.checkboxLabel}>
+                      <input 
+                        type="checkbox" 
+                        checked={useCodeBlocks} 
+                        onChange={e => setUseCodeBlocks(e.target.checked)}
+                        disabled={isGeneratingAI}
+                      />
+                      Önemli yerlerde &lt;pre&gt;&lt;code&gt; bloğu kullan
+                    </label>
+                  </div>
+                </div>
                 {aiError && <p className={styles.aiErrorText}>{aiError}</p>}
                 <button 
                   type="button" 
