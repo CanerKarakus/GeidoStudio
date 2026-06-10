@@ -25,7 +25,7 @@ export default defineConfig({
     Sitemap({
       hostname: 'https://geidostudio.com',
       dynamicRoutes: [
-        '/hakkimizda',
+        '/hakkinda',
         '/projeler',
         '/blog',
         '/iletisim',
