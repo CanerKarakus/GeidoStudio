@@ -2,6 +2,7 @@ const express = require('express');
 const rateLimit = require('express-rate-limit');
 const Groq = require('groq-sdk');
 const { sendEmail } = require('../services/emailService');
+const authMiddleware = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -183,6 +184,64 @@ router.post('/end-session', async (req, res) => {
   } catch (error) {
     console.error('[End Session Error]', error);
     res.status(500).json({ error: 'Sohbet dökümü gönderilemedi.' });
+  }
+});
+
+// ── POST /api/ai-chat/generate-blog ────────────────────────────────────────────
+// Admin only: Generates an SEO optimized blog post using Groq
+router.post('/generate-blog', authMiddleware, async (req, res) => {
+  try {
+    if (!groq) {
+      return res.status(503).json({ error: 'Groq API anahtarı yapılandırılmamış.' });
+    }
+
+    const { prompt } = req.body;
+    if (!prompt) {
+      return res.status(400).json({ error: 'Lütfen bir konu veya ipucu (prompt) girin.' });
+    }
+
+    const systemPrompt = `Sen profesyonel bir metin yazarı ve SEO uzmanısın. Kullanıcının verdiği konuya göre Geido Studio (dijital ajans) blogu için yayınlanmaya hazır, akıcı, okunması kolay ve ilgi çekici bir makale yazacaksın. 
+Geido Studio'nun dili profesyonel ama aynı zamanda yenilikçi, samimi ve vizyonerdir.
+
+Çıktın KESİNLİKLE VE SADECE geçerli bir JSON objesi olmak zorundadır. Hiçbir Markdown formatı, backtick (\`\`\`) veya ekstra açıklama ekleme! Yalnızca JSON döndür.
+
+JSON formatı şu şekilde olmalıdır:
+{
+  "title": "İlgi Çekici ve SEO Uyumlu Başlık",
+  "content": "<p>Makale içeriği HTML formatında burada olmalı. Alt başlıklar için <h3> kullan. Paragrafları <p> ile ayır. Vurgulanacak yerleri <strong> ile kalınlaştır.</p>",
+  "keywords": ["seo", "anahtar kelime 1", "anahtar kelime 2"]
+}`;
+
+    const chatCompletion = await groq.chat.completions.create({
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: `Konu/İpucu: ${prompt}\nLütfen JSON çıktısını ver.` }
+      ],
+      model: 'llama-3.3-70b-versatile',
+      temperature: 0.7,
+      max_tokens: 2048,
+      response_format: { type: 'json_object' }
+    });
+
+    const aiResponse = chatCompletion.choices[0]?.message?.content;
+    
+    if (!aiResponse) {
+      return res.status(500).json({ error: 'Yapay zeka boş yanıt döndürdü.' });
+    }
+
+    const parsedResponse = JSON.parse(aiResponse);
+
+    res.json({
+      success: true,
+      data: parsedResponse
+    });
+
+  } catch (error) {
+    console.error('[Groq Generate Blog Error]', error);
+    res.status(500).json({ 
+      error: 'Blog yazısı oluşturulurken bir hata oluştu.',
+      details: error.message 
+    });
   }
 });
 

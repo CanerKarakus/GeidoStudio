@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import useCmsStore from '../../store/cmsStore';
 import styles from './AdminBlog.module.scss';
-import { Plus, Trash2, Edit2, Save, X, GripVertical, AlertCircle, Check } from 'lucide-react';
+import { Plus, Trash2, Edit2, Save, X, GripVertical, AlertCircle, Check, Bot, Loader } from 'lucide-react';
 import ImageUploader from '../../components/ImageUploader/ImageUploader';
+import { api } from '../../api/db';
 
 const createSlug = (title) => {
   return title.toLowerCase().trim()
@@ -38,6 +39,39 @@ const AdminBlog = () => {
 
   const [tags, setTags] = useState([]);
   const [tagInput, setTagInput] = useState('');
+
+  const [showAIPrompt, setShowAIPrompt] = useState(false);
+  const [aiPrompt, setAIPrompt] = useState('');
+  const [isGeneratingAI, setIsGeneratingAI] = useState(false);
+  const [aiError, setAiError] = useState('');
+
+  const handleGenerateAI = async () => {
+    if (!aiPrompt.trim()) return;
+    setIsGeneratingAI(true);
+    setAiError('');
+    try {
+      const response = await api.generateBlogAI(aiPrompt);
+      if (response.success && response.data) {
+        setFormData(prev => ({
+          ...prev,
+          title: response.data.title || prev.title,
+          content: response.data.content || prev.content,
+        }));
+        if (response.data.keywords && Array.isArray(response.data.keywords)) {
+          setTags(response.data.keywords);
+        }
+        setShowAIPrompt(false);
+        setAIPrompt('');
+      } else {
+        setAiError('Geçersiz yanıt alındı.');
+      }
+    } catch (err) {
+      console.error(err);
+      setAiError(err.message || 'Yapay zeka ile üretilirken hata oluştu.');
+    } finally {
+      setIsGeneratingAI(false);
+    }
+  };
 
   const handleAddNew = () => {
     setCurrentBlog(null);
@@ -149,6 +183,45 @@ const AdminBlog = () => {
         </div>
         
         <form onSubmit={handleSave} className={styles.formGroup}>
+          <div className={styles.aiSection}>
+            {!showAIPrompt ? (
+              <button 
+                type="button" 
+                className={styles.aiToggleBtn} 
+                onClick={() => setShowAIPrompt(true)}
+              >
+                <Bot size={18} /> Yapay Zeka ile Blog Üret
+              </button>
+            ) : (
+              <div className={styles.aiPromptContainer}>
+                <div className={styles.aiPromptHeader}>
+                  <div className={styles.aiTitle}>
+                    <Bot size={18} className={styles.aiIcon} />
+                    <span>AI ile İçerik Üretici</span>
+                  </div>
+                  <button type="button" onClick={() => setShowAIPrompt(false)} className={styles.aiCloseBtn}><X size={16}/></button>
+                </div>
+                <p className={styles.aiHelperText}>Blogunuzun konusunu, ana fikrini veya odaklanmak istediğiniz anahtar kelimeleri yazın.</p>
+                <textarea
+                  value={aiPrompt}
+                  onChange={e => setAIPrompt(e.target.value)}
+                  placeholder="Örn: 2026 yılında dijital pazarlamada öne çıkacak trendler hakkında SEO uyumlu bir yazı yaz..."
+                  className={styles.aiPromptInput}
+                  disabled={isGeneratingAI}
+                  rows={3}
+                />
+                {aiError && <p className={styles.aiErrorText}>{aiError}</p>}
+                <button 
+                  type="button" 
+                  className={styles.aiGenerateBtn} 
+                  onClick={handleGenerateAI}
+                  disabled={isGeneratingAI || !aiPrompt.trim()}
+                >
+                  {isGeneratingAI ? <><Loader size={16} className={styles.spin} /> Üretiliyor (Bu işlem 10-20 saniye sürebilir)...</> : 'Hemen Üret'}
+                </button>
+              </div>
+            )}
+          </div>
           <div className={styles.inputGroup}>
             <label>Başlık</label>
             <input 

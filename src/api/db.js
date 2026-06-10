@@ -57,6 +57,9 @@ export const api = {
   updateCMS: (data) =>
     request('PUT', '/api/cms', data),
 
+  generateBlogAI: (prompt) =>
+    request('POST', '/api/ai-chat/generate-blog', { prompt }),
+
   // ── Messages ──────────────────────────────────────────────────────────────
   getMessages: () =>
     request('GET', '/api/messages'),
