@@ -210,7 +210,7 @@ router.post('/generate-blog', authMiddleware, async (req, res) => {
     }
     
     if (useArtBlocks) {
-      codeBlockInstruction += 'Tasarım, sanat, konsept, görsel vurgu veya çok kritik manifesto niteliğindeki cümleleri vurgulamak için kesinlikle <pre><art> ... </art></pre> etiketi kullan. (Bu tıpkı pre code gibi çalışır ama farklı bir tasarım sunar). ';
+      codeBlockInstruction += 'ÇOK ÖNEMLİ: <pre><art> ... </art></pre> yapısını tüm makalede EN FAZLA 1 VEYA 2 KERE kullan. Asla bir cümlenin ortasında kelimeleri vurgulamak için kullanma! Sadece tam, bağımsız ve çok vurucu bir paragrafı veya bir tasarım mottosunu tek başına büyük bir blok olarak göstermek için kullan. ';
     }
 
     const systemPrompt = `Sen profesyonel bir metin yazarı ve SEO uzmanısın. Kullanıcının verdiği konuya göre Geido Studio (dijital ajans) blogu için yayınlanmaya hazır, akıcı, okunması kolay ve ilgi çekici bir makale yazacaksın. 
