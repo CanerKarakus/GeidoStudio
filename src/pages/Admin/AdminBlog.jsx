@@ -46,6 +46,15 @@ const AdminBlog = () => {
   const [useCodeBlocks, setUseCodeBlocks] = useState(false);
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   const [aiError, setAiError] = useState('');
+  const [isAIGeneratorOpen, setIsAIGeneratorOpen] = useState(false);
+
+  const handleOpenAIGenerator = () => {
+    setIsAIGeneratorOpen(true);
+    setAIPrompt('');
+    setAiError('');
+    setAiLength('medium');
+    setUseCodeBlocks(false);
+  };
 
   const handleGenerateAI = async () => {
     if (!aiPrompt.trim()) return;
@@ -66,8 +75,9 @@ const AdminBlog = () => {
         if (response.data.keywords && Array.isArray(response.data.keywords)) {
           setTags(response.data.keywords);
         }
-        setShowAIPrompt(false);
+        setIsAIGeneratorOpen(false);
         setAIPrompt('');
+        setIsEditing(true);
       } else {
         setAiError('Geçersiz yanıt alındı.');
       }
@@ -189,70 +199,6 @@ const AdminBlog = () => {
         </div>
         
         <form onSubmit={handleSave} className={styles.formGroup}>
-          <div className={styles.aiSection}>
-            {!showAIPrompt ? (
-              <button 
-                type="button" 
-                className={styles.aiToggleBtn} 
-                onClick={() => setShowAIPrompt(true)}
-              >
-                <Bot size={18} /> Yapay Zeka ile Blog Üret
-              </button>
-            ) : (
-              <div className={styles.aiPromptContainer}>
-                <div className={styles.aiPromptHeader}>
-                  <div className={styles.aiTitle}>
-                    <Bot size={18} className={styles.aiIcon} />
-                    <span>AI ile İçerik Üretici</span>
-                  </div>
-                  <button type="button" onClick={() => setShowAIPrompt(false)} className={styles.aiCloseBtn}><X size={16}/></button>
-                </div>
-                <p className={styles.aiHelperText}>Blogunuzun konusunu, ana fikrini veya odaklanmak istediğiniz anahtar kelimeleri yazın.</p>
-                <textarea
-                  value={aiPrompt}
-                  onChange={e => setAIPrompt(e.target.value)}
-                  placeholder="Örn: 2026 yılında dijital pazarlamada öne çıkacak trendler hakkında SEO uyumlu bir yazı yaz..."
-                  className={styles.aiPromptInput}
-                  disabled={isGeneratingAI}
-                  rows={3}
-                />
-                <div className={styles.aiControls}>
-                  <div className={styles.aiControlItem}>
-                    <label>Uzunluk:</label>
-                    <select 
-                      value={aiLength} 
-                      onChange={e => setAiLength(e.target.value)}
-                      disabled={isGeneratingAI}
-                    >
-                      <option value="short">Kısa (300-400 kelime)</option>
-                      <option value="medium">Orta (600-800 kelime)</option>
-                      <option value="long">Uzun (1000-1500 kelime)</option>
-                    </select>
-                  </div>
-                  <div className={styles.aiControlItem}>
-                    <label className={styles.checkboxLabel}>
-                      <input 
-                        type="checkbox" 
-                        checked={useCodeBlocks} 
-                        onChange={e => setUseCodeBlocks(e.target.checked)}
-                        disabled={isGeneratingAI}
-                      />
-                      Önemli yerlerde &lt;pre&gt;&lt;code&gt; bloğu kullan
-                    </label>
-                  </div>
-                </div>
-                {aiError && <p className={styles.aiErrorText}>{aiError}</p>}
-                <button 
-                  type="button" 
-                  className={styles.aiGenerateBtn} 
-                  onClick={handleGenerateAI}
-                  disabled={isGeneratingAI || !aiPrompt.trim()}
-                >
-                  {isGeneratingAI ? <><Loader size={16} className={styles.spin} /> Üretiliyor (Bu işlem 10-20 saniye sürebilir)...</> : 'Hemen Üret'}
-                </button>
-              </div>
-            )}
-          </div>
           <div className={styles.inputGroup}>
             <label>Başlık</label>
             <input 
@@ -322,13 +268,103 @@ const AdminBlog = () => {
     );
   }
 
+  if (isAIGeneratorOpen) {
+    return (
+      <div className={styles.adminSection}>
+        <div className={styles.aiGenHeader}>
+          <div className={styles.aiGenTitle}>
+            <div className={styles.aiGenIconWrap}><Bot size={24} /></div>
+            <h2>AI Blog Jeneratör</h2>
+          </div>
+          <button className={styles.iconBtn} onClick={() => setIsAIGeneratorOpen(false)}>
+            <X size={20} />
+          </button>
+        </div>
+
+        <div className={styles.aiGenContainer}>
+          <div className={styles.aiGenInputWrapper}>
+            <label>Konu & Odak</label>
+            <textarea
+              value={aiPrompt}
+              onChange={e => setAIPrompt(e.target.value)}
+              placeholder="Makalenin konusunu, anahtar kelimelerini veya vurgulamak istediğiniz vizyonu yazın..."
+              className={styles.aiGenTextarea}
+              disabled={isGeneratingAI}
+            />
+          </div>
+
+          <div className={styles.aiGenOptions}>
+            <div className={styles.aiGenOptionGroup}>
+              <label>Uzunluk Seçimi</label>
+              <div className={styles.aiGenLengthCards}>
+                <div 
+                  className={`${styles.aiGenCard} ${aiLength === 'short' ? styles.active : ''}`}
+                  onClick={() => !isGeneratingAI && setAiLength('short')}
+                >
+                  <h4>Kısa</h4>
+                  <p>300-400 kelime</p>
+                </div>
+                <div 
+                  className={`${styles.aiGenCard} ${aiLength === 'medium' ? styles.active : ''}`}
+                  onClick={() => !isGeneratingAI && setAiLength('medium')}
+                >
+                  <h4>Orta</h4>
+                  <p>600-800 kelime</p>
+                </div>
+                <div 
+                  className={`${styles.aiGenCard} ${aiLength === 'long' ? styles.active : ''}`}
+                  onClick={() => !isGeneratingAI && setAiLength('long')}
+                >
+                  <h4>Uzun</h4>
+                  <p>1000-1500 kelime</p>
+                </div>
+              </div>
+            </div>
+
+            <div className={styles.aiGenOptionGroup}>
+              <label>Ekstra Formatlama</label>
+              <div className={styles.modernToggleWrapper} onClick={() => !isGeneratingAI && setUseCodeBlocks(!useCodeBlocks)}>
+                <div className={`${styles.modernToggle} ${useCodeBlocks ? styles.toggled : ''}`}>
+                  <div className={styles.toggleKnob}></div>
+                </div>
+                <span>Önemli yerlerde &lt;pre&gt;&lt;code&gt; bloğu kullan</span>
+              </div>
+            </div>
+          </div>
+
+          {aiError && <div className={styles.aiGenError}><AlertCircle size={16}/> {aiError}</div>}
+
+          <div className={styles.aiGenFooter}>
+            <button 
+              className={`${styles.aiGenSubmitBtn} ${isGeneratingAI ? styles.loading : ''}`} 
+              onClick={handleGenerateAI}
+              disabled={isGeneratingAI || !aiPrompt.trim()}
+            >
+              {isGeneratingAI ? (
+                <><Loader size={20} className={styles.spin} /> Yaratılıyor, lütfen bekleyin...</>
+              ) : (
+                <><Bot size={20} /> ✨ Sihri Başlat</>
+              )}
+            </button>
+            <p className={styles.aiGenHint}>İşlem tamamlandığında otomatik olarak blog düzenleyiciye aktarılacaksınız.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.adminSection}>
       <div className={styles.sectionHeader}>
         <h2 className={styles.sectionTitle}>Blog Yazıları</h2>
-        <button className={styles.addBtn} onClick={handleAddNew}>
-          <Plus size={16} /> Yeni Yazı
-        </button>
+        <div className={styles.headerActions}>
+          <button className={styles.aiBtn} onClick={handleOpenAIGenerator}>
+            <Bot size={16} /> ✨ Yapay Zeka İle Üret
+          </button>
+          <button className={styles.addBtn} onClick={handleAddNew}>
+            <Plus size={16} /> Yeni Yazı
+          </button>
+        </div>
       </div>
       
       {isOrderDirty && (
