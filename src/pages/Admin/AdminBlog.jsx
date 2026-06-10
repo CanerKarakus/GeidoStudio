@@ -341,9 +341,9 @@ const AdminBlog = () => {
               disabled={isGeneratingAI || !aiPrompt.trim()}
             >
               {isGeneratingAI ? (
-                <><Loader size={20} className={styles.spin} /> Yaratılıyor, lütfen bekleyin...</>
+                <><Loader size={20} className={styles.spin} /> Oluşturuluyor, lütfen bekleyin...</>
               ) : (
-                <><Bot size={20} /> ✨ Sihri Başlat</>
+                <><Bot size={20} /> ✨ Oluşturmaya Başla</>
               )}
             </button>
             <p className={styles.aiGenHint}>İşlem tamamlandığında otomatik olarak blog düzenleyiciye aktarılacaksınız.</p>
