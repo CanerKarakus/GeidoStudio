@@ -195,7 +195,7 @@ router.post('/generate-blog', authMiddleware, async (req, res) => {
       return res.status(503).json({ error: 'Groq API anahtarı yapılandırılmamış.' });
     }
 
-    const { prompt, length, useCodeBlocks } = req.body;
+    const { prompt, length, useCodeBlocks, useArtBlocks } = req.body;
     if (!prompt) {
       return res.status(400).json({ error: 'Lütfen bir konu veya ipucu (prompt) girin.' });
     }
@@ -206,11 +206,20 @@ router.post('/generate-blog', authMiddleware, async (req, res) => {
 
     let codeBlockInstruction = '';
     if (useCodeBlocks) {
-      codeBlockInstruction = 'Önemli gördüğün teknik terimleri, örnekleri veya kod parçacıklarını vurgulamak için <pre><code> ... </code></pre> yapısını KULLAN. Bu makalenin okunabilirliğini artıracaktır.';
+      codeBlockInstruction += 'Önemli gördüğün teknik terimleri, kod parçacıklarını veya verileri vurgulamak için <pre><code> ... </code></pre> yapısını KULLAN. ';
+    }
+    
+    if (useArtBlocks) {
+      codeBlockInstruction += 'Tasarım, sanat, konsept, görsel vurgu veya çok kritik manifesto niteliğindeki cümleleri vurgulamak için kesinlikle <pre><art> ... </art></pre> etiketi kullan. (Bu tıpkı pre code gibi çalışır ama farklı bir tasarım sunar). ';
     }
 
     const systemPrompt = `Sen profesyonel bir metin yazarı ve SEO uzmanısın. Kullanıcının verdiği konuya göre Geido Studio (dijital ajans) blogu için yayınlanmaya hazır, akıcı, okunması kolay ve ilgi çekici bir makale yazacaksın. 
 Geido Studio'nun dili profesyonel ama aynı zamanda yenilikçi, samimi ve vizyonerdir.
+
+ÖNEMLİ YAZIM KURALLARI:
+1. Gereğinden fazla alt başlık (h3 vb.) kullanmaktan kaçın. Sadece konuyu ayırmak için gerçekten gerektiğinde başlık at.
+2. Satırlar ve paragraflar arasında asla gereksiz çift boşluk bırakma (<br><br> gibi yorucu boşluklar yapma). Paragraflar bitişik ve akıcı olsun.
+3. İçeriğin okunabilirliğini artırmak için çok uzun paragraflar yerine 3-4 cümlelik ideal paragraflar kur.
 
 ${lengthInstruction}
 ${codeBlockInstruction}

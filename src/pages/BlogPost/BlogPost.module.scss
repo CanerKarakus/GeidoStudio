@@ -256,6 +256,69 @@
     }
   }
 
+  pre:has(art) {
+    background: #323232; /* Photoshop CC UI background */
+    border: 1px solid #1a1a1a;
+    border-radius: 8px;
+    padding: 3.5em 2em 2em 2em;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+      /* PS Header */
+      content: 'Ps';
+      position: absolute;
+      font-family: system-ui, -apple-system, sans-serif;
+      font-weight: 700;
+      color: #31a8ff;
+      background: transparent;
+      box-shadow: none;
+      font-size: 16px;
+      left: 20px;
+      top: 12px;
+      letter-spacing: 0;
+      width: auto;
+      height: auto;
+      border-radius: 0;
+    }
+
+    &::after {
+      content: 'Untitled-1 @ 100% (RGB/8)';
+      position: absolute;
+      top: 15px;
+      left: 55px;
+      color: #a0a0a0;
+      font-family: system-ui, -apple-system, sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+    }
+    
+    art {
+      display: block;
+      position: relative;
+      background-color: #1a1a1a;
+      background-image: 
+        linear-gradient(45deg, rgba(255,255,255,0.03) 25%, transparent 25%),
+        linear-gradient(-45deg, rgba(255,255,255,0.03) 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, rgba(255,255,255,0.03) 75%),
+        linear-gradient(-45deg, transparent 75%, rgba(255,255,255,0.03) 75%);
+      background-size: 20px 20px;
+      background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+      padding: 3em 2em;
+      border: 1px solid #000;
+      box-shadow: 0 0 20px rgba(0,0,0,0.8) inset;
+      color: #f3f4f6;
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 1.15em;
+      line-height: 1.8;
+      text-align: center;
+      font-weight: 500;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    }
+  }
+
   code {
     background: rgba(255, 255, 255, 0.1);
     color: #ff6b6b;

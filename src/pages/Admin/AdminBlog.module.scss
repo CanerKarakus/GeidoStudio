@@ -47,6 +47,27 @@
   }
 }
 
+.aiBtnSecondary {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: transparent;
+  color: #ff8a8a;
+  border: 1px solid rgba(179, 0, 0, 0.4);
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: rgba(179, 0, 0, 0.1);
+    border-color: rgba(179, 0, 0, 0.8);
+    color: #fff;
+  }
+}
+
 .addBtn {
   display: flex;
   align-items: center;
@@ -683,6 +704,7 @@
   border: 1px solid rgba(255, 255, 255, 0.05);
   border-radius: 12px;
   transition: background 0.2s;
+  width: 100%;
 
   &:hover {
     background: rgba(0, 0, 0, 0.5);
@@ -694,6 +716,12 @@
   }
 }
 
+.aiTogglesContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
 .modernToggle {
   width: 50px;
   height: 26px;
@@ -701,9 +729,19 @@
   border-radius: 13px;
   position: relative;
   transition: background 0.3s ease;
+  flex-shrink: 0;
 
   &.toggled {
     background: #b30000;
+
+    .toggleKnob {
+      transform: translateX(24px);
+      box-shadow: -2px 0 5px rgba(0,0,0,0.2);
+    }
+  }
+
+  &.toggledArt {
+    background: #6366f1; /* Indigo color for art blocks */
 
     .toggleKnob {
       transform: translateX(24px);

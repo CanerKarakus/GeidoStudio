@@ -44,16 +44,18 @@ const AdminBlog = () => {
   const [aiPrompt, setAIPrompt] = useState('');
   const [aiLength, setAiLength] = useState('medium');
   const [useCodeBlocks, setUseCodeBlocks] = useState(false);
+  const [useArtBlocks, setUseArtBlocks] = useState(false);
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   const [aiError, setAiError] = useState('');
   const [isAIGeneratorOpen, setIsAIGeneratorOpen] = useState(false);
 
   const handleOpenAIGenerator = () => {
     setIsAIGeneratorOpen(true);
-    setAIPrompt('');
+    if (!aiPrompt) setAIPrompt(''); // Don't clear prompt if already set
     setAiError('');
     setAiLength('medium');
     setUseCodeBlocks(false);
+    setUseArtBlocks(false);
   };
 
   const handleGenerateAI = async () => {
@@ -64,7 +66,8 @@ const AdminBlog = () => {
       const response = await api.generateBlogAI({ 
         prompt: aiPrompt, 
         length: aiLength, 
-        useCodeBlocks 
+        useCodeBlocks,
+        useArtBlocks
       });
       if (response.success && response.data) {
         setFormData(prev => ({
@@ -193,9 +196,14 @@ const AdminBlog = () => {
       <div className={styles.adminSection}>
         <div className={styles.sectionHeader}>
           <h2 className={styles.sectionTitle}>{currentBlog ? 'Blog Yazısını Düzenle' : 'Yeni Blog Yazısı'}</h2>
-          <button className={styles.iconBtn} onClick={() => setIsEditing(false)}>
-            <X size={20} />
-          </button>
+          <div className={styles.headerActions}>
+            <button className={styles.aiBtnSecondary} onClick={handleOpenAIGenerator}>
+              <Bot size={16} /> ✨ Yapay Zeka ile Yeniden Düzenle
+            </button>
+            <button className={styles.iconBtn} onClick={() => setIsEditing(false)}>
+              <X size={20} />
+            </button>
+          </div>
         </div>
         
         <form onSubmit={handleSave} className={styles.formGroup}>
@@ -323,11 +331,20 @@ const AdminBlog = () => {
 
             <div className={styles.aiGenOptionGroup}>
               <label>Ekstra Formatlama</label>
-              <div className={styles.modernToggleWrapper} onClick={() => !isGeneratingAI && setUseCodeBlocks(!useCodeBlocks)}>
-                <div className={`${styles.modernToggle} ${useCodeBlocks ? styles.toggled : ''}`}>
-                  <div className={styles.toggleKnob}></div>
+              <div className={styles.aiTogglesContainer}>
+                <div className={styles.modernToggleWrapper} onClick={() => !isGeneratingAI && setUseCodeBlocks(!useCodeBlocks)}>
+                  <div className={`${styles.modernToggle} ${useCodeBlocks ? styles.toggled : ''}`}>
+                    <div className={styles.toggleKnob}></div>
+                  </div>
+                  <span>Önemli yerlerde &lt;pre&gt;&lt;code&gt; bloğu kullan</span>
                 </div>
-                <span>Önemli yerlerde &lt;pre&gt;&lt;code&gt; bloğu kullan</span>
+                
+                <div className={styles.modernToggleWrapper} onClick={() => !isGeneratingAI && setUseArtBlocks(!useArtBlocks)}>
+                  <div className={`${styles.modernToggle} ${useArtBlocks ? styles.toggledArt : ''}`}>
+                    <div className={styles.toggleKnob}></div>
+                  </div>
+                  <span>Photoshop (Art) Tasarımı kullan &lt;pre&gt;&lt;art&gt;</span>
+                </div>
               </div>
             </div>
           </div>
