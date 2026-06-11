@@ -260,35 +260,39 @@ function initTelegramBot(app, io) {
         const file = await bot.getFile(fileId);
         const fileUrl = `https://api.telegram.org/file/bot${process.env.TELEGRAM_BOT_TOKEN}/${file.file_path}`;
         
-        const tmpId = crypto.randomBytes(8).toString('hex');
-        const inputPath = path.join(os.tmpdir(), `input_${tmpId}.jpg`);
-        const outputPath = path.join(os.tmpdir(), `output_${tmpId}.png`);
-        
-        // Download image
-        await new Promise((resolve, reject) => {
-          https.get(fileUrl, (res) => {
-            const stream = fs.createWriteStream(inputPath);
-            res.pipe(stream);
-            stream.on('finish', resolve);
-            stream.on('error', reject);
-          }).on('error', reject);
+        const apiKey = process.env.REMOVE_BG_API_KEY;
+        if (!apiKey) {
+           bot.sendMessage(chatId, `❌ Hata: Sunucuda Remove.bg API anahtarı (.env dosyasında REMOVE_BG_API_KEY) bulunamadı. Lütfen ekleyin.`);
+           return;
+        }
+
+        const formData = new URLSearchParams();
+        formData.append('image_url', fileUrl);
+        formData.append('size', 'auto');
+
+        const response = await fetch('https://api.remove.bg/v1.0/removebg', {
+          method: 'POST',
+          headers: {
+            'X-Api-Key': apiKey,
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          body: formData.toString()
         });
 
-        // Run rembg
-        const venvPython = path.join(__dirname, '../../venv/bin/rembg');
-        exec(`"${venvPython}" i "${inputPath}" "${outputPath}"`, (error, stdout, stderr) => {
-          if (error) {
-            bot.sendMessage(chatId, `❌ Arka plan silinirken bir hata oluştu: ${error.message}`);
-          } else {
-            bot.sendDocument(chatId, outputPath, {
-              caption: `✅ <b>İşte Şeffaf (PNG) Formatındaki Görseliniz!</b>\n<i>Not: Şeffaflığın bozulmaması için Telegram kuralı gereği Dosya olarak gönderildi.</i>`,
-              parse_mode: 'HTML'
-            }).finally(() => {
-              if (fs.existsSync(inputPath)) fs.unlinkSync(inputPath);
-              if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
-            });
-          }
-        });
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Remove.bg Hatası: ${response.status} - ${errorText}`);
+        }
+
+        const arrayBuffer = await response.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+        
+        bot.sendDocument(chatId, buffer, {
+          caption: `✅ <b>İşte Şeffaf (PNG) Formatındaki Görseliniz!</b>\n<i>Not: Şeffaflığın bozulmaması için Dosya olarak gönderildi.</i>`,
+          parse_mode: 'HTML'
+        }, { filename: 'dekupe.png', contentType: 'image/png' });
+        
+
       } catch (err) {
         bot.sendMessage(chatId, `❌ Fotoğraf işlenemedi: ${err.message}`);
       }
