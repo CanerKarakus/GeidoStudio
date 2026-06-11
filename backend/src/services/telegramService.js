@@ -426,6 +426,99 @@ function initTelegramBot(app, io) {
     });
   });
 
+  // Command: /domain [site]
+  bot.onText(/^\/domain(?:\s+(.+))?/, (msg, match) => {
+    if (!isAuthorized(msg)) return;
+    
+    let domain = match[1];
+    if (!domain) {
+      bot.sendMessage(chatId, `❌ Hata: Domain adresi girmelisiniz.\nKullanım: <code>/domain geidostudio.com</code>`, { parse_mode: 'HTML' });
+      return;
+    }
+
+    domain = domain.replace(/^https?:\/\//, '').split('/')[0];
+    bot.sendMessage(chatId, `⏳ <b>${domain}</b> için WHOIS (Domain Sahipliği) bilgileri sorgulanıyor...`, { parse_mode: 'HTML' });
+
+    https.get(`https://networkcalc.com/api/dns/whois/${domain}`, (res) => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => {
+        try {
+          const result = JSON.parse(data);
+          if (result.status !== 'OK' || !result.whois || !result.whois.registry_expiration_date) {
+            bot.sendMessage(chatId, `❌ Hata: Domain bilgisi bulunamadı. (Sadece .com, .net, .org vb. genel uzantılar desteklenir)`);
+            return;
+          }
+
+          const expiryDate = new Date(result.whois.registry_expiration_date);
+          const now = new Date();
+          const diffDays = Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24));
+          const formattedDate = expiryDate.toLocaleDateString('tr-TR');
+
+          const report = `🌍 <b>Domain Raporu: ${domain}</b>\n\n` +
+            `🏢 <b>Kayıt Firması:</b> ${result.whois.registrar || 'Bilinmiyor'}\n` +
+            `📅 <b>Bitiş Tarihi:</b> ${formattedDate}\n` +
+            `⏳ <b>Kalan Süre:</b> ${diffDays} gün\n\n` +
+            (diffDays < 30 ? `🚨 <b>DİKKAT:</b> Domain'in süresi dolmak üzere! Müşteriye hemen teklif götürün!` : `✅ Domain süresi güvende.`);
+
+          bot.sendMessage(chatId, report, { parse_mode: 'HTML' });
+        } catch (e) {
+          bot.sendMessage(chatId, `❌ Sorgu işlenirken hata oluştu.`);
+        }
+      });
+    }).on('error', () => {
+      bot.sendMessage(chatId, `❌ API bağlantı hatası.`);
+    });
+  });
+
+  // Command: /teknoloji [site]
+  bot.onText(/^\/teknoloji(?:\s+(.+))?/, (msg, match) => {
+    if (!isAuthorized(msg)) return;
+    
+    let url = match[1];
+    if (!url) {
+      bot.sendMessage(chatId, `❌ Hata: Site adresi girmelisiniz.\nKullanım: <code>/teknoloji geidostudio.com</code>`, { parse_mode: 'HTML' });
+      return;
+    }
+
+    if (!url.startsWith('http')) {
+      url = 'https://' + url;
+    }
+
+    bot.sendMessage(chatId, `🕵️‍♂️ <b>${url}</b> kodları gizlice taranıyor, altyapı tespit ediliyor...`, { parse_mode: 'HTML' });
+
+    https.get(url, (res) => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => {
+        try {
+          const html = data.toLowerCase();
+          const techs = [];
+
+          if (html.includes('wp-content') || html.includes('wordpress')) techs.push('🟢 WordPress');
+          if (html.includes('woocommerce')) techs.push('🛒 WooCommerce (E-Ticaret)');
+          if (html.includes('shopify')) techs.push('🛍️ Shopify');
+          if (html.includes('id="__next"') || html.includes('/_next/')) techs.push('⚡ Next.js (Modern & Hızlı)');
+          if (html.includes('data-reactroot') || html.includes('react')) techs.push('⚛️ React.js');
+          if (html.includes('nuxt')) techs.push('🏔️ Nuxt.js / Vue.js');
+          if (html.includes('laravel')) techs.push('🐘 Laravel (PHP)');
+          if (html.includes('wix.com')) techs.push('🏗️ Wix (Hazır Site)');
+          if (res.headers['x-powered-by']) techs.push(`⚙️ Sunucu Altyapısı: ${res.headers['x-powered-by']}`);
+
+          if (techs.length === 0) {
+            bot.sendMessage(chatId, `❓ <b>${url}</b>\n\nBu sitenin altyapısı çok iyi gizlenmiş veya özel (custom) yazılım kullanılmış. Piyasada bilinen hazır sistemlere benzemiyor.`, { parse_mode: 'HTML' });
+          } else {
+            bot.sendMessage(chatId, `🕵️‍♂️ <b>İstihbarat Raporu: ${url}</b>\n\nSitenin kodlarında şu teknolojilerin izine rastlandı:\n\n${techs.join('\n')}\n\n<i>Patron, eğer site WordPress veya eski bir altyapıdaysa, Geido Studio'nun modern özel yazılımlarını satmak için harika bir fırsat!</i>`, { parse_mode: 'HTML' });
+          }
+        } catch (e) {
+          bot.sendMessage(chatId, `❌ Analiz sırasında hata oluştu.`);
+        }
+      });
+    }).on('error', () => {
+      bot.sendMessage(chatId, `❌ Siteye bağlanılamadı. Koruma altında olabilir veya kapalı.`);
+    });
+  });
+
   const commandsList = `
 🛠️ /bakim - Siteyi bakıma al
 📊 /rapor - Ziyaretçi & mesaj istatistikleri
@@ -436,6 +529,8 @@ function initTelegramBot(app, io) {
 📢 /duyuru [mesaj] - Tüm müşterilere e-posta (bülten) at
 🔎 /seo [site_adresi] - Sitenin Google Hız/SEO puanını ölç
 📱 /qr [metin_veya_link] - Yüksek çözünürlüklü QR kod oluştur
+🌍 /domain [site_adresi] - Domainin ne zaman biteceğini öğren
+🕵️‍♂️ /teknoloji [site_adresi] - Sitenin hangi yazılımla yapıldığını bul
 ℹ️ /help - Komutların detaylı açıklamalarını gör`;
 
   bot.onText(/^\/help/, (msg) => {
@@ -449,7 +544,9 @@ function initTelegramBot(app, io) {
 <b>/build</b>: Sitenizin kaynak kodlarını Netlify'da zorla yeniden derler (günceller).
 <b>/duyuru [metin]</b>: Site üzerinden daha önce iletişim formu doldurmuş tüm müşterilerin e-posta adreslerine tek seferde Geido Studio imzalı bir kurumsal duyuru maili gönderir.
 <b>/seo [site_adresi]</b>: İstediğiniz bir web sitesini Google sunucularında analiz eder. Müşterilerin sitelerindeki SEO, Performans ve Hız sorunlarını tespit edip size raporlar. Satış kapatmak için birebirdir!
-<b>/qr [metin]</b>: Yazdığınız metin veya link için hızlıca QR kod oluşturur.`;
+<b>/qr [metin]</b>: Yazdığınız metin veya link için hızlıca QR kod oluşturur.
+<b>/domain [site]</b>: Bir domainin bitiş tarihini ve kime kayıtlı olduğunu söyler. (Sadece jenerik uzantılar)
+<b>/teknoloji [site]</b>: Bir sitenin kaynak kodlarına sızarak hangi altyapıyla (WordPress, React, Shopify vb.) yapıldığını bulur.`;
     bot.sendMessage(chatId, helpMsg, { parse_mode: 'HTML' });
   });
 
