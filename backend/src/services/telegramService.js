@@ -307,6 +307,78 @@ function initTelegramBot(io) {
     }
   });
 
+  // Command: /seo [url]
+  bot.onText(/^\/seo(?:\s+(.+))?/, (msg, match) => {
+    if (!isAuthorized(msg)) return;
+    
+    let url = match[1];
+    if (!url) {
+      bot.sendMessage(chatId, `❌ Hata: Bir site adresi girmelisiniz.\nKullanım: <code>/seo geidostudio.com</code>`, { parse_mode: 'HTML' });
+      return;
+    }
+
+    if (!url.startsWith('http')) {
+      url = 'https://' + url;
+    }
+
+    bot.sendMessage(chatId, `⏳ <b>${url}</b> Google PageSpeed sunucularında analiz ediliyor...\n(Bu işlem ortalama 10-15 saniye sürebilir, lütfen bekleyin)`, { parse_mode: 'HTML' });
+
+    const apiUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&category=performance&category=seo&category=accessibility&category=best-practices&strategy=mobile`;
+
+    https.get(apiUrl, (res) => {
+      let data = '';
+
+      res.on('data', (chunk) => {
+        data += chunk;
+      });
+
+      res.on('end', () => {
+        try {
+          const result = JSON.parse(data);
+          
+          if (result.error) {
+            bot.sendMessage(chatId, `❌ Hata: Analiz yapılamadı. URL'nin doğru olduğundan emin olun.\nDetay: ${result.error.message}`);
+            return;
+          }
+
+          const categories = result.lighthouseResult?.categories;
+          if (!categories) {
+            bot.sendMessage(chatId, `❌ Beklenmeyen bir Google API yanıtı alındı.`);
+            return;
+          }
+
+          const getScore = (cat) => categories[cat] ? Math.round(categories[cat].score * 100) : '?';
+          const perfScore = getScore('performance');
+          const seoScore = getScore('seo');
+          const a11yScore = getScore('accessibility');
+          const bpScore = getScore('best-practices');
+
+          const getEmoji = (score) => {
+            if (score === '?') return '⚪';
+            if (score >= 90) return '🟢';
+            if (score >= 50) return '🟠';
+            return '🔴';
+          };
+
+          const report = `🚀 <b>Google Lighthouse Analizi (Mobil)</b>\n🌐 <b>Site:</b> ${url}\n\n` +
+            `${getEmoji(perfScore)} <b>Performans/Hız:</b> %${perfScore}\n` +
+            `${getEmoji(seoScore)} <b>SEO Skoru:</b> %${seoScore}\n` +
+            `${getEmoji(a11yScore)} <b>Erişilebilirlik:</b> %${a11yScore}\n` +
+            `${getEmoji(bpScore)} <b>En İyi Uygulamalar:</b> %${bpScore}\n\n` +
+            `<i>Not: 🟢 90-100 (Harika) | 🟠 50-89 (Geliştirilmeli) | 🔴 0-49 (Kötü)</i>`;
+
+          bot.sendMessage(chatId, report, { parse_mode: 'HTML' });
+
+        } catch (e) {
+          bot.sendMessage(chatId, `❌ Veri işlenirken bir hata oluştu.`);
+        }
+      });
+
+    }).on('error', (err) => {
+      bot.sendMessage(chatId, `❌ Bağlantı hatası: ${err.message}`);
+    });
+  });
+
   const commandsList = `
 🛠️ /bakim - Siteyi bakıma al
 📊 /rapor - Ziyaretçi & mesaj istatistikleri
@@ -315,6 +387,7 @@ function initTelegramBot(io) {
 ⏰ /not [dakika] [mesaj] - Hatırlatma kur
 🚀 /build - Siteyi Netlify'da derle
 📢 /duyuru [mesaj] - Tüm müşterilere e-posta (bülten) at
+🔎 /seo [site_adresi] - Sitenin Google Hız/SEO puanını ölç
 ℹ️ /help - Komutların detaylı açıklamalarını gör`;
 
   bot.onText(/^\/help/, (msg) => {
@@ -326,7 +399,8 @@ function initTelegramBot(io) {
 <b>/gunluk</b>: Bunu açtığınızda her sabah tam 09:00'da dünün özeti otomatik gönderilir.
 <b>/not [dakika] [metin]</b>: Belirttiğiniz dakika sonra size mesajı hatırlatır.
 <b>/build</b>: Sitenizin kaynak kodlarını Netlify'da zorla yeniden derler (günceller).
-<b>/duyuru [metin]</b>: Site üzerinden daha önce iletişim formu doldurmuş tüm müşterilerin e-posta adreslerine tek seferde Geido Studio imzalı bir kurumsal duyuru maili gönderir.`;
+<b>/duyuru [metin]</b>: Site üzerinden daha önce iletişim formu doldurmuş tüm müşterilerin e-posta adreslerine tek seferde Geido Studio imzalı bir kurumsal duyuru maili gönderir.
+<b>/seo [site_adresi]</b>: İstediğiniz bir web sitesini Google sunucularında analiz eder. Müşterilerin sitelerindeki SEO, Performans ve Hız sorunlarını tespit edip size raporlar. Satış kapatmak için birebirdir!`;
     bot.sendMessage(chatId, helpMsg, { parse_mode: 'HTML' });
   });
 
