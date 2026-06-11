@@ -39,7 +39,7 @@ async function transcribeVoiceMsg(botClient, groqCli, voiceFileId) {
   const uploadDir = path.join(__dirname, '../../uploads');
   if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
   const filePath = path.join(uploadDir, `voice_${Date.now()}.ogg`);
-  
+
   await new Promise((resolve, reject) => {
     https.get(fileLink, (res) => {
       const stream = fs.createWriteStream(filePath);
@@ -88,7 +88,7 @@ const readAnalytics = () => {
 };
 
 // Isolated AI Prompt for Admin Assistant
-const ADMIN_AI_SYSTEM_PROMPT = `Sen Geido Studio'nun yöneticisinin/patronunun kişisel yapay zeka asistanısın. Müşterilerle veya site ziyaretçileriyle KONUŞMUYORSUN. Sadece yöneticiye hizmet ediyorsun. 
+const ADMIN_AI_SYSTEM_PROMPT = `Geido Studio'nun yöneticisinin/patronunun kişisel yapay zeka asistanısın. Müşterilerle veya site ziyaretçileriyle KONUŞMUYORSUN. Sadece yöneticiye hizmet ediyorsun. 
 Amacın yöneticiye e-posta taslakları hazırlamak, projelerde fikir üretmek, yazılım/tasarım konseptlerinde beyin fırtınası yapmak ve yöneticinin sorduğu her türlü soruya kısa, net, saygılı ve profesyonel (ajans jargonuyla) yanıtlar vermektir. 
 Zaman tasarrufu önemlidir, lafı uzatma, doğrudan çözümü veya metni sun.`;
 
@@ -96,20 +96,20 @@ function sendDailyReport(chatId) {
   const cms = readCMS();
   const messages = readMessages();
   const analytics = readAnalytics();
-  
+
   // Dünün tarihi
   const yesterdayDate = new Date(Date.now() - 86400000);
   const yesterdayStr = yesterdayDate.toISOString().split('T')[0];
   const yesterdayVisits = analytics[yesterdayStr]?.total || 0;
-  
+
   const unreadMessages = messages.filter(m => !m.read).length;
   const newMessages = messages.filter(m => {
     const msgDate = new Date(m.date || m.createdAt);
     return msgDate >= yesterdayDate;
   }).length;
-  
+
   const maintenanceText = cms.settings?.maintenanceMode ? 'AÇIK 🚨 (Müşteriler siteyi göremiyor)' : 'KAPALI ✅';
-  
+
   const report = `🌅 <b>GÜNAYDIN PATRON!</b>\nİşte sistemin sabah özeti:\n\n` +
     `👁️ <b>Dünkü Ziyaretçi:</b> ${yesterdayVisits}\n` +
     `📩 <b>Son 24 Saatte Gelen Mesaj:</b> ${newMessages}\n` +
@@ -117,22 +117,22 @@ function sendDailyReport(chatId) {
     `🛠️ <b>Bakım Modu:</b> ${maintenanceText}\n` +
     `⚙️ <b>Sistem Durumu:</b> %100 Sağlıklı Çalışıyor ✅\n\n` +
     `<i>Harika ve bol kazançlı bir gün dilerim! ☕</i>`;
-    
+
   if (bot) bot.sendMessage(chatId, report, { parse_mode: 'HTML' });
   scheduleDailyReport(chatId); // schedule for tomorrow
 }
 
 function scheduleDailyReport(chatId) {
   if (dailyReportTimeout) clearTimeout(dailyReportTimeout);
-  
+
   const now = new Date();
   const target = new Date();
   target.setHours(9, 0, 0, 0); // Sabah 09:00
-  
+
   if (now > target) {
     target.setDate(target.getDate() + 1);
   }
-  
+
   const delay = target.getTime() - now.getTime();
   dailyReportTimeout = setTimeout(() => sendDailyReport(chatId), delay);
 }
@@ -147,11 +147,11 @@ function initTelegramBot(app, io) {
   }
 
   bot = new TelegramBot(token); // Polling kapatıldı
-  
+
   // Webhook Ayarı
   const backendUrl = process.env.BACKEND_URL || 'https://api.geidostudio.com';
   const webhookUrl = `${backendUrl}/api/webhooks/telegram`;
-  
+
   bot.setWebHook(webhookUrl).then(() => {
     console.log(`[TelegramService] Webhook başarıyla kuruldu: ${webhookUrl}`);
   }).catch((err) => {
@@ -172,12 +172,12 @@ function initTelegramBot(app, io) {
     console.log('[TelegramService] Groq AI connected for Admin Assistant.');
   }
 
-  const isAuthorized = (msg) => msg.chat.id.toString() === chatId;
+  const isAuthorized = (msg) => allowedChatIds.includes(msg.chat.id.toString());
 
   // Başlangıçta günlük rapor açıksa zamanla
   const cms = readCMS();
   if (cms.settings && cms.settings.dailyReport) {
-    scheduleDailyReport(chatId);
+    allowedChatIds.forEach(id => scheduleDailyReport(id));
   }
 
   const triggerNetlifyBuild = (chatId, successMsg) => {
@@ -200,18 +200,19 @@ function initTelegramBot(app, io) {
   };
 
   // Command: /bakim
-  bot.onText(/^\/bakim/, (msg) => {
+  bot.onText(/^\/bakim/, (msg, match) => {
+    const chatId = msg.chat.id;
     if (!isAuthorized(msg)) return;
     const cms = readCMS();
     if (!cms.settings) cms.settings = {};
-    
+
     cms.settings.maintenanceMode = !cms.settings.maintenanceMode;
     writeCMS(cms);
-    
+
     if (io) io.emit('cms_updated', cms);
 
-    const statusText = cms.settings.maintenanceMode 
-      ? '🚨 <b>Bakım Modu: AÇIK</b>\nSite kapalı. Müşteriler bakım sayfasını görüyor.' 
+    const statusText = cms.settings.maintenanceMode
+      ? '🚨 <b>Bakım Modu: AÇIK</b>\nSite kapalı. Müşteriler bakım sayfasını görüyor.'
       : '✅ <b>Bakım Modu: KAPALI</b>\nSite herkese açık.';
     bot.sendMessage(chatId, statusText, { parse_mode: 'HTML' });
 
@@ -220,13 +221,14 @@ function initTelegramBot(app, io) {
   });
 
   // Command: /rapor
-  bot.onText(/^\/rapor/, (msg) => {
+  bot.onText(/^\/rapor/, (msg, match) => {
+    const chatId = msg.chat.id;
     if (!isAuthorized(msg)) return;
     const messages = readMessages();
     const analytics = readAnalytics();
     const today = new Date().toISOString().split('T')[0];
     const todayVisits = analytics[today]?.total || 0;
-    
+
     let totalVisits = 0;
     for (const date in analytics) {
       totalVisits += analytics[date].total || 0;
@@ -237,32 +239,34 @@ function initTelegramBot(app, io) {
   });
 
   // Command: /sistem
-  bot.onText(/^\/sistem/, (msg) => {
+  bot.onText(/^\/sistem/, (msg, match) => {
+    const chatId = msg.chat.id;
     if (!isAuthorized(msg)) return;
     const totalMem = (os.totalmem() / 1024 / 1024 / 1024).toFixed(2);
     const freeMem = (os.freemem() / 1024 / 1024 / 1024).toFixed(2);
     const usedMem = (totalMem - freeMem).toFixed(2);
     const uptime = (os.uptime() / 60 / 60 / 24).toFixed(1);
-    
+
     const text = `💻 <b>Sistem Durumu</b>\n\n` +
       `🖥️ <b>İşletim Sistemi:</b> ${os.type()} ${os.release()}\n` +
       `⏱️ <b>Çalışma Süresi:</b> ${uptime} Gün\n` +
       `💾 <b>RAM Kullanımı:</b> ${usedMem} GB / ${totalMem} GB\n` +
       `⚙️ <b>CPU Yükü:</b> ${os.loadavg()[0].toFixed(2)} (Son 1 dk)\n` +
       `🟢 <b>Uygulama:</b> Node.js ${process.version}`;
-    
+
     bot.sendMessage(chatId, text, { parse_mode: 'HTML' });
   });
 
   // Command: /gunluk
-  bot.onText(/^\/gunluk/, (msg) => {
+  bot.onText(/^\/gunluk/, (msg, match) => {
+    const chatId = msg.chat.id;
     if (!isAuthorized(msg)) return;
     const cmsSettings = readCMS();
     if (!cmsSettings.settings) cmsSettings.settings = {};
-    
+
     cmsSettings.settings.dailyReport = !cmsSettings.settings.dailyReport;
     writeCMS(cmsSettings);
-    
+
     if (cmsSettings.settings.dailyReport) {
       bot.sendMessage(chatId, `🌅 <b>Günlük Rapor: AÇIK</b>\nHer sabah tam 09:00'da size dünün site istatistikleri ve mesaj durumu otomatik raporlanacak.`, { parse_mode: 'HTML' });
       scheduleDailyReport(chatId);
@@ -274,6 +278,7 @@ function initTelegramBot(app, io) {
 
   // Command: /not [dakika] [mesaj]
   bot.onText(/^\/not\s+(\d+)\s+(.+)/, (msg, match) => {
+    const chatId = msg.chat.id;
     if (!isAuthorized(msg)) return;
     const minutes = parseInt(match[1], 10);
     const noteText = match[2];
@@ -282,9 +287,10 @@ function initTelegramBot(app, io) {
       bot.sendMessage(chatId, `🔔 <b>HATIRLATMA:</b>\n\n<i>${noteText}</i>`, { parse_mode: 'HTML' });
     }, minutes * 60 * 1000);
   });
-  
+
   // Command: /build
-  bot.onText(/^\/build/, (msg) => {
+  bot.onText(/^\/build/, (msg, match) => {
+    const chatId = msg.chat.id;
     if (!isAuthorized(msg)) return;
     bot.sendMessage(chatId, `⏳ Netlify derlemesi başlatılıyor...`);
     triggerNetlifyBuild(chatId, `✅ <b>Derleme tetiklendi!</b> Ortalama 1-2 dakika sürecektir. İşlem bittiğinde otomatik olarak bildirim alacaksınız.`);
@@ -303,7 +309,7 @@ function initTelegramBot(app, io) {
     const hasDekupeCaption = msg.caption && msg.caption.includes('/dekupe');
 
     if ((msg.photo || msg.document) && (hasDekupeCaption || isDekupeSession)) {
-      
+
       let fileId;
       if (msg.photo) {
         fileId = msg.photo[msg.photo.length - 1].file_id;
@@ -318,15 +324,15 @@ function initTelegramBot(app, io) {
 
       if (sessions[chatId]) delete sessions[chatId]; writeSessions(sessions); // Clear session
       bot.sendMessage(chatId, `✂️ <b>Fotoğraf Alındı!</b>\nYapay zeka arka planı kesiyor, lütfen bekleyin... (Eğer fotoğraf yüksek çözünürlüklüyse bu işlem biraz sürebilir)`, { parse_mode: 'HTML' });
-      
+
       try {
         const file = await bot.getFile(fileId);
         const fileUrl = `https://api.telegram.org/file/bot${process.env.TELEGRAM_BOT_TOKEN}/${file.file_path}`;
-        
+
         const apiKey = process.env.REMOVE_BG_API_KEY;
         if (!apiKey) {
-           bot.sendMessage(chatId, `❌ Hata: Sunucuda Remove.bg API anahtarı (.env dosyasında REMOVE_BG_API_KEY) bulunamadı. Lütfen ekleyin.`);
-           return;
+          bot.sendMessage(chatId, `❌ Hata: Sunucuda Remove.bg API anahtarı (.env dosyasında REMOVE_BG_API_KEY) bulunamadı. Lütfen ekleyin.`);
+          return;
         }
 
         const formData = new URLSearchParams();
@@ -349,12 +355,12 @@ function initTelegramBot(app, io) {
 
         const arrayBuffer = await response.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
-        
+
         bot.sendDocument(chatId, buffer, {
           caption: `✅ <b>İşte Şeffaf (PNG) Formatındaki Görseliniz!</b>\n<i>Not: Şeffaflığın bozulmaması için Dosya olarak gönderildi.</i>`,
           parse_mode: 'HTML'
         }, { filename: 'dekupe.png', contentType: 'image/png' });
-        
+
 
       } catch (err) {
         bot.sendMessage(chatId, `❌ Fotoğraf işlenemedi: ${err.message}`);
@@ -365,7 +371,7 @@ function initTelegramBot(app, io) {
     if (msg.text && msg.text.startsWith('/')) {
       // If user types a command while in a session, cancel the session
       if (sessions[chatId]) { delete sessions[chatId]; writeSessions(sessions); }
-      return; 
+      return;
     }
 
 
@@ -373,7 +379,7 @@ function initTelegramBot(app, io) {
     // Check sessions for /seslimail
     if (sessions[chatId] && sessions[chatId].command === 'seslimail') {
       const session = sessions[chatId];
-      
+
       if (session.step === 'awaiting_email') {
         if (!msg.text || !msg.text.includes('@')) {
           bot.sendMessage(chatId, `❌ Lütfen geçerli bir e-posta adresi girin:`);
@@ -397,13 +403,13 @@ function initTelegramBot(app, io) {
         try {
           const rawText = await transcribeVoiceMsg(bot, groqClient, msg.voice.file_id);
 
-          const rewritePrompt = `Sen Geido Studio ajansının Kurumsal İletişim Uzmanısın. Aşağıda patronunun sana gönderdiği dikte (sesli mesaj deşifresi) yer alıyor.
+          const rewritePrompt = `Geido Studio ajansının Kurumsal İletişim Uzmanısın. Aşağıda patronunun sana gönderdiği dikte (sesli mesaj deşifresi) yer alıyor.
 Bunu al, son derece profesyonel, ciddi, resmi ve saygılı bir dille "Müşteriye gidecek kurumsal bir e-posta" olarak baştan yaz. Patronun gündelik ağzını (örneğin "bilginiz olsun dedim", "kanka", "hallederiz" vb.) at, yerine kurumsal iş dünyası terimleri kullan.
 
 Asla fazladan bir şey (merhaba ben yapay zeka vb.) yazma. Yalnızca mailin 'Konu:' satırı ile başlayıp ardından 'İçerik:' şeklinde mail metnini ver.
 
 Patronun Diktesi: "${rawText}"`;
-          
+
           const chatCompletion = await groqClient.chat.completions.create({
             messages: [{ role: 'user', content: rewritePrompt }],
             model: 'llama-3.3-70b-versatile',
@@ -411,13 +417,13 @@ Patronun Diktesi: "${rawText}"`;
           });
 
           const aiResponse = chatCompletion.choices[0]?.message?.content || '';
-          
+
           let subject = "Geido Studio - Bilgilendirme";
           let body = aiResponse;
-          
+
           const subjectMatch = aiResponse.match(/Konu:\s*(.+)/i);
           if (subjectMatch) subject = subjectMatch[1].trim();
-          
+
           const contentMatch = aiResponse.match(/İçerik:\s*([\s\S]+)/i);
           if (contentMatch) body = contentMatch[1].trim();
 
@@ -425,7 +431,7 @@ Patronun Diktesi: "${rawText}"`;
           session.draftBody = body;
           session.step = 'awaiting_approval';
           writeSessions(sessions);
-          
+
           bot.sendMessage(chatId, `📝 <b>Mail Taslağınız Hazır!</b>\n\n<b>Alıcı:</b> ${session.email}\n<b>Konu:</b> ${subject}\n\n<b>İçerik:</b>\n${body}\n\n✅ Göndermek için <b>"evet"</b> veya <b>"gönder"</b> yazın.\n✏️ Değiştirmek istediğiniz yerler varsa sesli mesaj atın veya yeni halini yazın.\n❌ İptal etmek için /start yazın.`, { parse_mode: 'HTML' });
         } catch (err) {
           bot.sendMessage(chatId, `❌ Hata: ${err.message}`);
@@ -442,7 +448,7 @@ Patronun Diktesi: "${rawText}"`;
           try {
             await sendEmail(session.email, session.draftSubject, session.draftBody, session.draftBody.replace(/\n/g, '<br>'));
             bot.sendMessage(chatId, `✅ <b>Mail Başarıyla Gönderildi!</b> 🚀`);
-          } catch(err) {
+          } catch (err) {
             bot.sendMessage(chatId, `❌ Gönderim hatası: ${err.message}`);
           }
           delete sessions[chatId];
@@ -455,10 +461,10 @@ Patronun Diktesi: "${rawText}"`;
         try {
           let feedbackText = msg.text || '';
           if (msg.voice) {
-             feedbackText = await transcribeVoiceMsg(bot, groqClient, msg.voice.file_id);
+            feedbackText = await transcribeVoiceMsg(bot, groqClient, msg.voice.file_id);
           }
-          
-          const rewritePrompt = `Sen Geido Studio ajansının Kurumsal İletişim Uzmanısın. Aşağıda hazırladığın bir taslak mail ve patronunun bu taslakla ilgili düzeltme/revizyon talimatı yer alıyor.
+
+          const rewritePrompt = `Geido Studio ajansının Kurumsal İletişim Uzmanısın. Aşağıda hazırladığın bir taslak mail ve patronunun bu taslakla ilgili düzeltme/revizyon talimatı yer alıyor.
 
 Mevcut Konu: ${session.draftSubject}
 Mevcut İçerik: ${session.draftBody}
@@ -467,7 +473,7 @@ Patronun Düzeltme Talimatı: "${feedbackText}"
 
 Lütfen taslağı bu talimata göre GÜNCELLE. Son derece resmi ve kurumsal kalmaya devam et.
 Sadece 'Konu:' ve 'İçerik:' şeklinde son metni ver. Başka hiçbir şey yazma.`;
-          
+
           const chatCompletion = await groqClient.chat.completions.create({
             messages: [{ role: 'user', content: rewritePrompt }],
             model: 'llama-3.3-70b-versatile',
@@ -475,14 +481,14 @@ Sadece 'Konu:' ve 'İçerik:' şeklinde son metni ver. Başka hiçbir şey yazma
           });
 
           const aiResponse = chatCompletion.choices[0]?.message?.content || '';
-          
+
           const subjectMatch = aiResponse.match(/Konu:\s*(.+)/i);
           if (subjectMatch) session.draftSubject = subjectMatch[1].trim();
-          
+
           const contentMatch = aiResponse.match(/İçerik:\s*([\s\S]+)/i);
           if (contentMatch) session.draftBody = contentMatch[1].trim();
           writeSessions(sessions);
-          
+
           bot.sendMessage(chatId, `📝 <b>YENİ Mail Taslağınız Hazır!</b>\n\n<b>Alıcı:</b> ${session.email}\n<b>Konu:</b> ${session.draftSubject}\n\n<b>İçerik:</b>\n${session.draftBody}\n\n✅ Göndermek için <b>"evet"</b> veya <b>"gönder"</b> yazın.\n✏️ Tekrar değiştirmek isterseniz ses/yazı atın.\n❌ İptal etmek için /start yazın.`, { parse_mode: 'HTML' });
         } catch (err) {
           bot.sendMessage(chatId, `❌ Hata: ${err.message}`);
@@ -522,19 +528,19 @@ Sadece 'Konu:' ve 'İçerik:' şeklinde son metni ver. Başka hiçbir şey yazma
   bot.onText(/^\/duyuru(?:\s+(.+))?/, async (msg, match) => {
     if (!isAuthorized(msg)) return;
     const duyuruText = match[1];
-    
+
     if (!duyuruText) {
       bot.sendMessage(chatId, `❌ Hata: Duyuru metni boş olamaz.\nKullanım: <code>/duyuru Merhaba, yeni tasarım paketimiz çıktı!</code>`, { parse_mode: 'HTML' });
       return;
     }
-    
+
     bot.sendMessage(chatId, `⏳ Müşteri e-posta listesi hazırlanıyor...`);
-    
+
     try {
       const messages = readMessages();
       // Yalnızca geçerli e-posta adreslerini benzersiz (unique) olarak al
       const uniqueEmails = [...new Set(messages.map(m => m.email).filter(e => e && e.includes('@')))];
-      
+
       if (uniqueEmails.length === 0) {
         bot.sendMessage(chatId, `❌ Veritabanında hiç kayıtlı müşteri e-posta adresi bulunamadı.`);
         return;
@@ -564,7 +570,7 @@ Sadece 'Konu:' ve 'İçerik:' şeklinde son metni ver. Başka hiçbir şey yazma
       }
 
       bot.sendMessage(chatId, `✅ <b>Duyuru İşlemi Tamamlandı!</b>\n\nBaşarıyla Gönderilen: ${successCount}\nHatalı/Gönderilemeyen: ${failCount}`, { parse_mode: 'HTML' });
-      
+
     } catch (err) {
       bot.sendMessage(chatId, `❌ Duyuru gönderilirken bir sistem hatası oluştu: ${err.message}`);
     }
@@ -572,8 +578,9 @@ Sadece 'Konu:' ve 'İçerik:' şeklinde son metni ver. Başka hiçbir şey yazma
 
   // Command: /seo [url]
   bot.onText(/^\/seo(?:\s+(.+))?/, (msg, match) => {
+    const chatId = msg.chat.id;
     if (!isAuthorized(msg)) return;
-    
+
     let url = match[1];
     if (!url) {
       bot.sendMessage(chatId, `❌ Hata: Bir site adresi girmelisiniz.\nKullanım: <code>/seo geidostudio.com</code>`, { parse_mode: 'HTML' });
@@ -587,7 +594,7 @@ Sadece 'Konu:' ve 'İçerik:' şeklinde son metni ver. Başka hiçbir şey yazma
     bot.sendMessage(chatId, `⏳ <b>${url}</b> Google PageSpeed sunucularında analiz ediliyor...\n(Bu işlem ortalama 10-15 saniye sürebilir, lütfen bekleyin)`, { parse_mode: 'HTML' });
 
     let apiUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&category=performance&category=seo&category=accessibility&category=best-practices&strategy=mobile`;
-    
+
     if (process.env.PAGESPEED_API_KEY) {
       apiUrl += `&key=${process.env.PAGESPEED_API_KEY}`;
     }
@@ -602,11 +609,11 @@ Sadece 'Konu:' ve 'İçerik:' şeklinde son metni ver. Başka hiçbir şey yazma
       res.on('end', () => {
         try {
           const result = JSON.parse(data);
-          
+
           if (result.error) {
             if (result.error.message.includes('Quota exceeded') && !process.env.PAGESPEED_API_KEY) {
-               bot.sendMessage(chatId, `❌ <b>Google API Kotası Doldu!</b>\n\nGoogle'ın ücretsiz anonim kotasına takıldınız. Bunu çözmek çok kolay:\n1. Google Cloud Console'dan ücretsiz bir "PageSpeed Insights API Key" alın.\n2. Sitenizdeki <code>.env</code> dosyasına <b>PAGESPEED_API_KEY=sizin_kodunuz</b> şeklinde ekleyin.\n3. Sunucuyu yeniden başlatın.`, { parse_mode: 'HTML' });
-               return;
+              bot.sendMessage(chatId, `❌ <b>Google API Kotası Doldu!</b>\n\nGoogle'ın ücretsiz anonim kotasına takıldınız. Bunu çözmek çok kolay:\n1. Google Cloud Console'dan ücretsiz bir "PageSpeed Insights API Key" alın.\n2. Sitenizdeki <code>.env</code> dosyasına <b>PAGESPEED_API_KEY=sizin_kodunuz</b> şeklinde ekleyin.\n3. Sunucuyu yeniden başlatın.`, { parse_mode: 'HTML' });
+              return;
             }
             bot.sendMessage(chatId, `❌ Hata: Analiz yapılamadı. URL'nin doğru olduğundan emin olun.\nDetay: ${result.error.message}`);
             return;
@@ -652,8 +659,9 @@ Sadece 'Konu:' ve 'İçerik:' şeklinde son metni ver. Başka hiçbir şey yazma
 
   // Command: /qr [text/url]
   bot.onText(/^\/qr(?:\s+(.+))?/, (msg, match) => {
+    const chatId = msg.chat.id;
     if (!isAuthorized(msg)) return;
-    
+
     const text = match[1];
     if (!text) {
       bot.sendMessage(chatId, `❌ Hata: QR koda dönüştürülecek bir metin veya link girmelisiniz.\nKullanım: <code>/qr https://geidostudio.com</code>`, { parse_mode: 'HTML' });
@@ -661,9 +669,9 @@ Sadece 'Konu:' ve 'İçerik:' şeklinde son metni ver. Başka hiçbir şey yazma
     }
 
     bot.sendMessage(chatId, `⏳ QR kodunuz yüksek çözünürlüklü olarak hazırlanıyor...`);
-    
+
     const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(text)}&margin=10`;
-    
+
     bot.sendPhoto(chatId, qrUrl, {
       caption: `✅ <b>İşte QR Kodunuz!</b>\nİçerik: <code>${text}</code>`,
       parse_mode: 'HTML'
@@ -675,7 +683,7 @@ Sadece 'Konu:' ve 'İçerik:' şeklinde son metni ver. Başka hiçbir şey yazma
   // Command: /domainbul [kelimeler]
   bot.onText(/^\/domainbul(?:\s+(.+))?/, async (msg, match) => {
     if (!isAuthorized(msg)) return;
-    
+
     const keywords = match[1];
     if (!keywords) {
       bot.sendMessage(chatId, `❌ Hata: Sektör veya anahtar kelime girmelisiniz.\nKullanım: <code>/domainbul izmir mobilya tasarim</code>`, { parse_mode: 'HTML' });
@@ -716,7 +724,7 @@ Sadece 'Konu:' ve 'İçerik:' şeklinde son metni ver. Başka hiçbir şey yazma
               } else {
                 resolve(null); // Registered
               }
-            } catch(e) { resolve(null); }
+            } catch (e) { resolve(null); }
           });
         }).on('error', () => resolve(null));
       });
@@ -736,8 +744,8 @@ Sadece 'Konu:' ve 'İçerik:' şeklinde son metni ver. Başka hiçbir şey yazma
 
       if (availableDomains.length > 0) {
         const finalMessage = `🏷️ <b>Domain Avcısı Sonuçları (Boşta Olanlar):</b>\n\n` +
-                             availableDomains.map(d => `✅ <b>${d}</b>\n💰 Kayıt Ücreti: ${getDomainPrice(d)}`).join('\n\n') +
-                             `\n\n<i>🔗 Hemen ilgili satıcılardan alabilirsiniz.</i>`;
+          availableDomains.map(d => `✅ <b>${d}</b>\n💰 Kayıt Ücreti: ${getDomainPrice(d)}`).join('\n\n') +
+          `\n\n<i>🔗 Hemen ilgili satıcılardan alabilirsiniz.</i>`;
         bot.sendMessage(chatId, finalMessage, { parse_mode: 'HTML' });
       } else {
         bot.sendMessage(chatId, `😔 Yapay zekanın ürettiği ${domains.length} premium domainin de MAALESEF alınmış olduğu (dolu) tespit edildi.\nLütfen farklı veya daha niş anahtar kelimelerle tekrar deneyin.`);
@@ -750,8 +758,9 @@ Sadece 'Konu:' ve 'İçerik:' şeklinde son metni ver. Başka hiçbir şey yazma
 
   // Command: /domain [site]
   bot.onText(/^\/domain(?:$|\s+(.+))/, (msg, match) => {
+    const chatId = msg.chat.id;
     if (!isAuthorized(msg)) return;
-    
+
     let domain = match[1];
     if (!domain) {
       bot.sendMessage(chatId, `❌ Hata: Domain adresi girmelisiniz.\nKullanım: <code>/domain geidostudio.com</code>`, { parse_mode: 'HTML' });
@@ -795,8 +804,9 @@ Sadece 'Konu:' ve 'İçerik:' şeklinde son metni ver. Başka hiçbir şey yazma
 
   // Command: /teknoloji [site]
   bot.onText(/^\/teknoloji(?:\s+(.+))?/, (msg, match) => {
+    const chatId = msg.chat.id;
     if (!isAuthorized(msg)) return;
-    
+
     let url = match[1];
     if (!url) {
       bot.sendMessage(chatId, `❌ Hata: Site adresi girmelisiniz.\nKullanım: <code>/teknoloji geidostudio.com</code>`, { parse_mode: 'HTML' });
@@ -842,9 +852,10 @@ Sadece 'Konu:' ve 'İçerik:' şeklinde son metni ver. Başka hiçbir şey yazma
   });
 
   // Command: /seslimail
-  bot.onText(/^\/seslimail/, (msg) => {
+  bot.onText(/^\/seslimail/, (msg, match) => {
+    const chatId = msg.chat.id;
     if (!isAuthorized(msg)) return;
-    
+
     let sessions = readSessions();
     sessions[msg.chat.id] = { command: 'seslimail', step: 'awaiting_email' };
     writeSessions(sessions);
@@ -853,8 +864,9 @@ Sadece 'Konu:' ve 'İçerik:' şeklinde son metni ver. Başka hiçbir şey yazma
 
   // Command: /ss [site]
   bot.onText(/^\/ss(?:\s+(.+))?/, (msg, match) => {
+    const chatId = msg.chat.id;
     if (!isAuthorized(msg)) return;
-    
+
     let url = match[1];
     if (!url) {
       bot.sendMessage(chatId, `❌ Hata: Site adresi girmelisiniz.\nKullanım: <code>/ss geidostudio.com</code>`, { parse_mode: 'HTML' });
@@ -878,7 +890,7 @@ Sadece 'Konu:' ve 'İçerik:' şeklinde son metni ver. Başka hiçbir şey yazma
               caption: `✅ <b>Ekran Görüntüsü Hazır!</b>\nSite: ${url}`,
               parse_mode: 'HTML'
             }).catch(e => {
-               bot.sendMessage(chatId, `❌ Fotoğraf Telegram'a gönderilemedi: ${e.message}`);
+              bot.sendMessage(chatId, `❌ Fotoğraf Telegram'a gönderilemedi: ${e.message}`);
             });
           } else {
             bot.sendMessage(chatId, `❌ Ekran görüntüsü alınamadı. Site botlara kapalı olabilir.`);
@@ -894,8 +906,9 @@ Sadece 'Konu:' ve 'İçerik:' şeklinde son metni ver. Başka hiçbir şey yazma
 
   // Command: /guvenlik [site]
   bot.onText(/^\/guvenlik(?:\s+(.+))?/, (msg, match) => {
+    const chatId = msg.chat.id;
     if (!isAuthorized(msg)) return;
-    
+
     let url = match[1];
     if (!url) {
       bot.sendMessage(chatId, `❌ Hata: Site adresi girmelisiniz.\nKullanım: <code>/guvenlik geidostudio.com</code>`, { parse_mode: 'HTML' });
@@ -910,7 +923,7 @@ Sadece 'Konu:' ve 'İçerik:' şeklinde son metni ver. Başka hiçbir şey yazma
       try {
         const headers = res.headers;
         const cert = res.socket.getPeerCertificate();
-        
+
         let score = 100;
         let findings = [];
 
@@ -965,7 +978,7 @@ Sadece 'Konu:' ve 'İçerik:' şeklinde son metni ver. Başka hiçbir şey yazma
   // Command: /dedektif [site]
   bot.onText(/^\/dedektif(?:\s+(.+))?/, async (msg, match) => {
     if (!isAuthorized(msg)) return;
-    
+
     let url = match[1];
     if (!url) {
       bot.sendMessage(chatId, `❌ Hata: Site adresi girmelisiniz.\nKullanım: <code>/dedektif geidostudio.com</code>`, { parse_mode: 'HTML' });
@@ -997,7 +1010,7 @@ Sadece 'Konu:' ve 'İçerik:' şeklinde son metni ver. Başka hiçbir şey yazma
       while ((cssMatches = cssRegex.exec(html)) !== null) {
         let href = cssMatches[1];
         if (!href.startsWith('http')) {
-          try { href = new URL(href, url).href; } catch(e){}
+          try { href = new URL(href, url).href; } catch (e) { }
         }
         cssLinks.push(href);
       }
@@ -1035,7 +1048,7 @@ Sadece 'Konu:' ve 'İçerik:' şeklinde son metni ver. Başka hiçbir şey yazma
       // 5. Title & Description
       const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
       const title = titleMatch ? titleMatch[1].trim() : 'Bulunamadı';
-      
+
       const descMatch = html.match(/<meta\s+name=["']description["']\s+content=["']([^"']+)["']/i);
       const description = descMatch ? descMatch[1].trim() : 'Bulunamadı';
 
@@ -1081,18 +1094,19 @@ Sadece 'Konu:' ve 'İçerik:' şeklinde son metni ver. Başka hiçbir şey yazma
 ℹ️ /help - Komutların detaylı açıklamalarını gör`;
 
   // Command: /dekupe
-  bot.onText(/^\/dekupe$/, (msg) => {
+  bot.onText(/^\/dekupe$/, (msg, match) => {
+    const chatId = msg.chat.id;
     if (!isAuthorized(msg)) return;
 
     let sessions = readSessions();
-    const chatId = msg.chat.id;
     sessions[chatId] = { command: 'dekupe', step: 'awaiting_photo' };
     writeSessions(sessions);
-    
+
     bot.sendMessage(chatId, `✂️ Lütfen arka planını silmek (dekupe etmek) istediğiniz fotoğrafı bana gönderin.\n<i>İşlemi iptal etmek için herhangi başka bir komut yazabilirsiniz.</i>`, { parse_mode: 'HTML' });
   });
 
-  bot.onText(/^\/help/, (msg) => {
+  bot.onText(/^\/help/, (msg, match) => {
+    const chatId = msg.chat.id;
     if (!isAuthorized(msg)) return;
     const helpMsg = `📖 <b>Komut Rehberi:</b>\n
 <b>/bakim</b>: Sitenin bakım modunu açar/kapatır ve anında Netlify'ı tetikler.
@@ -1115,7 +1129,8 @@ Sadece 'Konu:' ve 'İçerik:' şeklinde son metni ver. Başka hiçbir şey yazma
     bot.sendMessage(chatId, helpMsg, { parse_mode: 'HTML' });
   });
 
-  bot.onText(/^\/start/, (msg) => {
+  bot.onText(/^\/start/, (msg, match) => {
+    const chatId = msg.chat.id;
     if (!isAuthorized(msg)) return;
     const welcomeMsg = `Merhaba Patron! 🤖\n\nBen sizin kişisel yapay zeka asistanınızım. Bana normal mesaj yazarak taslak mailler yazdırabilir, fikir sorabilirsiniz.\n\nAyrıca şu komutları kullanabilirsiniz:\n${commandsList}`;
     bot.sendMessage(chatId, welcomeMsg);
@@ -1124,15 +1139,13 @@ Sadece 'Konu:' ve 'İçerik:' şeklinde son metni ver. Başka hiçbir şey yazma
 
 async function sendTelegramMessage(text) {
   const token = process.env.TELEGRAM_BOT_TOKEN;
-  const chatId = process.env.TELEGRAM_CHAT_ID;
-  if (!token || !chatId) return;
+  const chatIds = process.env.TELEGRAM_CHAT_ID ? process.env.TELEGRAM_CHAT_ID.split(',').map(id => id.trim()) : [];
+  if (!token || chatIds.length === 0) return;
 
   try {
-    if (bot) {
-      await bot.sendMessage(chatId, text, { parse_mode: 'HTML', disable_web_page_preview: true });
-    } else {
-      const tempBot = new TelegramBot(token, { polling: false });
-      await tempBot.sendMessage(chatId, text, { parse_mode: 'HTML', disable_web_page_preview: true });
+    const activeBot = bot || new TelegramBot(token, { polling: false });
+    for (const id of chatIds) {
+      await activeBot.sendMessage(id, text, { parse_mode: 'HTML', disable_web_page_preview: true }).catch(console.error);
     }
   } catch (err) {
     console.error('[TelegramService] Error sending message:', err);
