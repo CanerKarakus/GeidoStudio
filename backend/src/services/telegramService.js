@@ -522,6 +522,45 @@ function initTelegramBot(app, io) {
     });
   });
 
+  // Command: /domainbul [kelimeler]
+  bot.onText(/^\/domainbul(?:\s+(.+))?/, async (msg, match) => {
+    if (!isAuthorized(msg)) return;
+    
+    const keywords = match[1];
+    if (!keywords) {
+      bot.sendMessage(chatId, `❌ Hata: Sektör veya anahtar kelime girmelisiniz.\nKullanım: <code>/domainbul izmir mobilya tasarim</code>`, { parse_mode: 'HTML' });
+      return;
+    }
+
+    if (!groqClient) {
+      bot.sendMessage(chatId, `❌ Hata: Groq AI API yapılandırılmamış.`);
+      return;
+    }
+
+    bot.sendMessage(chatId, `🧠 <b>Yapay Zeka Devrede...</b>\n"${keywords}" için yaratıcı, akılda kalıcı ve jenerik domain fikirleri üretiliyor...`, { parse_mode: 'HTML' });
+
+    try {
+      const completion = await groqClient.chat.completions.create({
+        messages: [
+          { role: 'system', content: 'Sen yaratıcı bir marka uzmanı ve dijital ajans asistanısın. Görevin, verilen anahtar kelimelerden yola çıkarak son derece akılda kalıcı, premium, kısa ve marka olabilecek 5 adet .com veya .com.tr domain ismi önermektir. Domainlerin kullanılabilir olma ihtimali yüksek, jenerik ve ilgi çekici isimler olsun. Sadece 5 adet isim ve yanlarında kısa (1 cümle) neden bu ismi seçtiğine dair açıklama ver. Başka bir giriş/çıkış cümlesi kurma.' },
+          { role: 'user', content: keywords }
+        ],
+        model: 'llama3-70b-8192',
+        temperature: 0.8
+      });
+
+      const aiResponse = completion.choices[0]?.message?.content || "Hata oluştu.";
+
+      const finalMessage = `🏷️ <b>Domain Avcısı Sonuçları:</b>\n\n` +
+                           `${aiResponse}\n\n` +
+                           `<i>🔗 Bu isimlerin boşta olup olmadığını kontrol etmek için Namecheap veya IHS'yi kullanabilirsiniz.</i>`;
+
+      bot.sendMessage(chatId, finalMessage, { parse_mode: 'HTML' });
+    } catch (e) {
+      bot.sendMessage(chatId, `❌ Yapay zeka ile iletişim kurulamadı: ${e.message}`);
+    }
+  });
+
   // Command: /domain [site]
   bot.onText(/^\/domain(?:\s+(.+))?/, (msg, match) => {
     if (!isAuthorized(msg)) return;
@@ -843,6 +882,7 @@ function initTelegramBot(app, io) {
 🔎 /seo [site_adresi] - Sitenin Google Hız/SEO puanını ölç
 📱 /qr [metin_veya_link] - Yüksek çözünürlüklü QR kod oluştur
 🌍 /domain [site_adresi] - Domainin ne zaman biteceğini öğren
+🏷️ /domainbul [kelime] - Yapay zeka ile satılmamış domain isimleri önerir
 🕵️‍♂️ /teknoloji [site_adresi] - Sitenin hangi yazılımla yapıldığını bul
 🎙️ /seslimail - Sesinizi yapay zeka ile profesyonel e-postaya dönüştürüp yollar
 📸 /ss [site_adresi] - Sitenin ekran görüntüsünü çeker
@@ -863,6 +903,7 @@ function initTelegramBot(app, io) {
 <b>/seo [site_adresi]</b>: İstediğiniz bir web sitesini Google sunucularında analiz eder. Müşterilerin sitelerindeki SEO, Performans ve Hız sorunlarını tespit edip size raporlar. Satış kapatmak için birebirdir!
 <b>/qr [metin]</b>: Yazdığınız metin veya link için hızlıca QR kod oluşturur.
 <b>/domain [site]</b>: Bir domainin bitiş tarihini ve kime kayıtlı olduğunu söyler. (Sadece jenerik uzantılar)
+<b>/domainbul [kelimeler]</b>: Yapay Zeka kullanarak verdiğiniz anahtar kelimelerden harika domain (alan adı) fikirleri üretir.
 <b>/teknoloji [site]</b>: Bir sitenin kaynak kodlarına sızarak hangi altyapıyla (WordPress, React, Shopify vb.) yapıldığını bulur.
 <b>/seslimail</b>: Sizi dinler, söylediğiniz şeyleri hatasız kurumsal bir e-postaya çevirip müşteriye yollar.
 <b>/ss [site]</b>: Belirtilen web sitesinin baştan aşağıya tüm sayfasının tam ekran görüntüsünü çekip fotoğraf olarak gönderir.
