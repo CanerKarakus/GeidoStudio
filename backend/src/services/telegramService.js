@@ -10,6 +10,7 @@ const { sendEmail } = require('./emailService');
 let bot = null;
 let groqClient = null;
 let dailyReportTimeout = null;
+const sessions = {};
 
 // Paths for reading CMS and Analytics
 const CMS_FILE = path.join(__dirname, '../../data/cms.json');
@@ -241,9 +242,104 @@ function initTelegramBot(app, io) {
   });
 
   // AI Assistant (Any message not starting with /)
+  // Handle ALL messages for AI, Voice Mails and AI replies
   bot.on('message', async (msg) => {
     if (!isAuthorized(msg)) return;
-    if (msg.text && msg.text.startsWith('/')) return; // Ignore commands
+    if (msg.text && msg.text.startsWith('/')) {
+      // If user types a command while in a session, cancel the session
+      if (sessions[msg.chat.id]) delete sessions[msg.chat.id];
+      return; 
+    }
+
+    const chatId = msg.chat.id;
+
+    // Check sessions for /seslimail
+    if (sessions[chatId] && sessions[chatId].command === 'seslimail') {
+      const session = sessions[chatId];
+      
+      if (session.step === 'awaiting_email') {
+        if (!msg.text || !msg.text.includes('@')) {
+          bot.sendMessage(chatId, `❌ Lütfen geçerli bir e-posta adresi girin:`);
+          return;
+        }
+        session.email = msg.text.trim();
+        session.step = 'awaiting_voice';
+        bot.sendMessage(chatId, `✅ Adres kaydedildi: <b>${session.email}</b>\n\nŞimdi lütfen göndermek istediğiniz mesajı <b>Sesli Mesaj (🎤)</b> olarak kaydedip bana gönderin. İptal etmek için herhangi bir komut (örn: /start) yazabilirsiniz.`, { parse_mode: 'HTML' });
+        return;
+      }
+
+      if (session.step === 'awaiting_voice') {
+        if (!msg.voice) {
+          bot.sendMessage(chatId, `❌ Lütfen klavyeyi kullanmayın. Mesajınızı <b>Sesli Mesaj (🎤)</b> olarak kaydedin veya iptal etmek için /start yazın.`, { parse_mode: 'HTML' });
+          return;
+        }
+
+        bot.sendMessage(chatId, `⏳ Sesiniz yapay zeka ile deşifre ediliyor ve kurumsal bir maile dönüştürülüyor...\n(Bu işlem sesin uzunluğuna göre 10-20 saniye sürebilir)`, { parse_mode: 'HTML' });
+
+        try {
+          const fileLink = await bot.getFileLink(msg.voice.file_id);
+          const uploadDir = path.join(__dirname, '../../uploads');
+          if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+          const filePath = path.join(uploadDir, `voice_${Date.now()}.ogg`);
+          
+          const fileStream = fs.createWriteStream(filePath);
+          https.get(fileLink, (response) => {
+            response.pipe(fileStream);
+            fileStream.on('finish', async () => {
+              fileStream.close();
+              
+              try {
+                // 1. Whisper API Transcript
+                const transcription = await groqClient.audio.transcriptions.create({
+                  file: fs.createReadStream(filePath),
+                  model: 'whisper-large-v3',
+                });
+                const rawText = transcription.text;
+
+                // 2. Llama-3 API Rewrite
+                const rewritePrompt = `Aşağıdaki metin bir ajans patronunun (Geido Studio) sesli diktesinden alınmıştır. Bu metni al, son derece profesyonel, saygılı, hatasız ve kurumsal bir e-postaya dönüştür. Asla fazladan bir şey (merhaba ben yapay zeka vb.) yazma. Yalnızca mailin 'Konu:' satırı ile başlayıp ardından 'İçerik:' şeklinde mail metnini ver. Başka hiçbir açıklama yapma.\n\nDikte: "${rawText}"`;
+                
+                const chatCompletion = await groqClient.chat.completions.create({
+                  messages: [{ role: 'user', content: rewritePrompt }],
+                  model: 'llama-3.3-70b-versatile',
+                  temperature: 0.3,
+                });
+
+                const aiResponse = chatCompletion.choices[0]?.message?.content || '';
+                
+                // Parse Subject and Body
+                let subject = "Geido Studio - Bilgilendirme";
+                let body = aiResponse;
+                
+                const subjectMatch = aiResponse.match(/Konu:\s*(.+)/i);
+                if (subjectMatch) subject = subjectMatch[1].trim();
+                
+                const contentMatch = aiResponse.match(/İçerik:\s*([\s\S]+)/i);
+                if (contentMatch) body = contentMatch[1].trim();
+
+                // 3. Send Email
+                await sendEmail(session.email, subject, body, body.replace(/\n/g, '<br>'));
+                
+                bot.sendMessage(chatId, `✅ <b>Mail Başarıyla Gönderildi!</b> 🚀\n\n<b>Alıcı:</b> ${session.email}\n<b>Konu:</b> ${subject}\n\n<b>Giden Metin:</b>\n${body}`, { parse_mode: 'HTML' });
+              } catch (aiErr) {
+                console.error('[SesliMail] AI Error:', aiErr);
+                bot.sendMessage(chatId, `❌ Yapay zeka veya gönderim hatası: ${aiErr.message}`);
+              } finally {
+                if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+                delete sessions[chatId];
+              }
+            });
+          }).on('error', () => {
+            bot.sendMessage(chatId, `❌ Ses dosyası indirilemedi.`);
+            delete sessions[chatId];
+          });
+        } catch (err) {
+          bot.sendMessage(chatId, `❌ Sistem hatası: ${err.message}`);
+          delete sessions[chatId];
+        }
+        return;
+      }
+    }
 
     if (!groqClient) {
       bot.sendMessage(chatId, `❌ Groq AI yapılandırılmamış. Lütfen .env dosyasına GROQ_API_KEY ekleyin.`);
@@ -257,7 +353,7 @@ function initTelegramBot(app, io) {
       const chatCompletion = await groqClient.chat.completions.create({
         messages: [
           { role: 'system', content: ADMIN_AI_SYSTEM_PROMPT },
-          { role: 'user', content: msg.text }
+          { role: 'user', content: msg.text || 'Sesli mesaj gönderildi' }
         ],
         model: 'llama-3.3-70b-versatile',
         temperature: 0.7,
@@ -519,6 +615,14 @@ function initTelegramBot(app, io) {
     });
   });
 
+  // Command: /seslimail
+  bot.onText(/^\/seslimail/, (msg) => {
+    if (!isAuthorized(msg)) return;
+    
+    sessions[msg.chat.id] = { command: 'seslimail', step: 'awaiting_email' };
+    bot.sendMessage(chatId, `📧 <b>Sesli Mail Modu Aktif</b>\n\nKime mail atacağız? Lütfen hedef e-posta adresini yazın:`, { parse_mode: 'HTML' });
+  });
+
   const commandsList = `
 🛠️ /bakim - Siteyi bakıma al
 📊 /rapor - Ziyaretçi & mesaj istatistikleri
@@ -531,6 +635,7 @@ function initTelegramBot(app, io) {
 📱 /qr [metin_veya_link] - Yüksek çözünürlüklü QR kod oluştur
 🌍 /domain [site_adresi] - Domainin ne zaman biteceğini öğren
 🕵️‍♂️ /teknoloji [site_adresi] - Sitenin hangi yazılımla yapıldığını bul
+🎙️ /seslimail - Sesinizi yapay zeka ile profesyonel e-postaya dönüştürüp yollar
 ℹ️ /help - Komutların detaylı açıklamalarını gör`;
 
   bot.onText(/^\/help/, (msg) => {
@@ -546,7 +651,8 @@ function initTelegramBot(app, io) {
 <b>/seo [site_adresi]</b>: İstediğiniz bir web sitesini Google sunucularında analiz eder. Müşterilerin sitelerindeki SEO, Performans ve Hız sorunlarını tespit edip size raporlar. Satış kapatmak için birebirdir!
 <b>/qr [metin]</b>: Yazdığınız metin veya link için hızlıca QR kod oluşturur.
 <b>/domain [site]</b>: Bir domainin bitiş tarihini ve kime kayıtlı olduğunu söyler. (Sadece jenerik uzantılar)
-<b>/teknoloji [site]</b>: Bir sitenin kaynak kodlarına sızarak hangi altyapıyla (WordPress, React, Shopify vb.) yapıldığını bulur.`;
+<b>/teknoloji [site]</b>: Bir sitenin kaynak kodlarına sızarak hangi altyapıyla (WordPress, React, Shopify vb.) yapıldığını bulur.
+<b>/seslimail</b>: Sizi dinler, söylediğiniz şeyleri hatasız kurumsal bir e-postaya çevirip müşteriye yollar.`;
     bot.sendMessage(chatId, helpMsg, { parse_mode: 'HTML' });
   });
 
