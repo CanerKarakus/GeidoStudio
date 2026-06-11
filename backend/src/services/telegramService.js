@@ -982,6 +982,14 @@ function initTelegramBot(app, io) {
 ✂️ Fotoğrafa /dekupe yazarak gönder - Yapay zeka ile arka planını siler (Şeffaf PNG yapar)
 ℹ️ /help - Komutların detaylı açıklamalarını gör`;
 
+  // Command: /dekupe
+  bot.onText(/^\/dekupe$/, (msg) => {
+    if (!isAuthorized(msg)) return;
+    const chatId = msg.chat.id;
+    sessions[chatId] = { command: 'dekupe', step: 'awaiting_photo' };
+    bot.sendMessage(chatId, `✂️ Lütfen arka planını silmek (dekupe etmek) istediğiniz fotoğrafı bana gönderin.\n<i>İşlemi iptal etmek için herhangi başka bir komut yazabilirsiniz.</i>`, { parse_mode: 'HTML' });
+  });
+
   bot.onText(/^\/help/, (msg) => {
     if (!isAuthorized(msg)) return;
     const helpMsg = `📖 <b>Komut Rehberi:</b>\n
