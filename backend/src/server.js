@@ -83,19 +83,6 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// ── 404 Handler ──────────────────────────────────────────────────────────────
-app.use((req, res) => {
-  res.status(404).json({ error: 'Endpoint bulunamadı.' });
-});
-
-// ── Global Error Handler ─────────────────────────────────────────────────────
-app.use((err, req, res, next) => {
-  if (err.message && err.message.startsWith('CORS')) {
-    return res.status(403).json({ error: 'CORS: Erişim reddedildi.' });
-  }
-  console.error('[Server Error]', err.message);
-  res.status(500).json({ error: 'Sunucu hatası.' });
-});
 
 // ── Start ─────────────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 3001;
@@ -184,6 +171,20 @@ initImap((newMsg) => {
     console.log(`[IMAP] No matching thread found for message from: ${newMsg.from} (In-Reply-To: ${newMsg.inReplyTo})`);
   }
 }).catch(err => console.error('IMAP Init error:', err));
+
+// ── 404 Handler ──────────────────────────────────────────────────────────────
+app.use((req, res) => {
+  res.status(404).json({ error: 'Endpoint bulunamadı.' });
+});
+
+// ── Global Error Handler ─────────────────────────────────────────────────────
+app.use((err, req, res, next) => {
+  if (err.message && err.message.startsWith('CORS')) {
+    return res.status(403).json({ error: 'CORS: Erişim reddedildi.' });
+  }
+  console.error('[Server Error]', err.message);
+  res.status(500).json({ error: 'Sunucu hatası.' });
+});
 
 server.listen(PORT, () => {
   console.log(`\n🚀 Geido Studio Backend`);
