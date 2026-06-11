@@ -59,6 +59,25 @@ function initTelegramBot(io) {
 
   const isAuthorized = (msg) => msg.chat.id.toString() === chatId;
 
+  const triggerNetlifyBuild = (chatId, successMsg) => {
+    const buildHookUrl = process.env.NETLIFY_BUILD_HOOK_URL;
+    if (!buildHookUrl) {
+      bot.sendMessage(chatId, `❌ Hata: <code>NETLIFY_BUILD_HOOK_URL</code> .env dosyasında bulunamadı. Lütfen Netlify'dan Build Hook oluşturup .env dosyasına ekleyin.`, { parse_mode: 'HTML' });
+      return;
+    }
+    const req = https.request(buildHookUrl, { method: 'POST' }, (res) => {
+      if (res.statusCode >= 200 && res.statusCode < 300) {
+        bot.sendMessage(chatId, successMsg, { parse_mode: 'HTML' });
+      } else {
+        bot.sendMessage(chatId, `❌ Netlify tetiklenemedi. Hata Kodu: ${res.statusCode}`);
+      }
+    });
+    req.on('error', (err) => {
+      bot.sendMessage(chatId, `❌ Derleme başlatılırken hata oluştu: ${err.message}`);
+    });
+    req.end();
+  };
+
   // Command: /bakim
   bot.onText(/^\/bakim/, (msg) => {
     if (!isAuthorized(msg)) return;
@@ -74,6 +93,9 @@ function initTelegramBot(io) {
       ? '🚨 <b>Bakım Modu: AÇIK</b>\nSite kapalı. Müşteriler bakım sayfasını görüyor.' 
       : '✅ <b>Bakım Modu: KAPALI</b>\nSite herkese açık.';
     bot.sendMessage(chatId, statusText, { parse_mode: 'HTML' });
+
+    // Trigger Netlify build so changes are reflected on the frontend
+    triggerNetlifyBuild(chatId, `🚀 Bakım modu değiştirildiği için otomatik olarak <b>Netlify Build</b> tetiklendi! Siteniz 1-2 dakika içinde güncellenecek.`);
   });
 
   // Command: /rapor
@@ -107,28 +129,8 @@ function initTelegramBot(io) {
   // Command: /build
   bot.onText(/^\/build/, (msg) => {
     if (!isAuthorized(msg)) return;
-    
-    const buildHookUrl = process.env.NETLIFY_BUILD_HOOK_URL;
-    if (!buildHookUrl) {
-      bot.sendMessage(chatId, `❌ Hata: <code>NETLIFY_BUILD_HOOK_URL</code> .env dosyasında bulunamadı. Lütfen Netlify'dan Build Hook oluşturup .env dosyasına ekleyin ve backend'i yeniden başlatın.`, { parse_mode: 'HTML' });
-      return;
-    }
-
     bot.sendMessage(chatId, `⏳ Netlify derlemesi başlatılıyor...`);
-
-    const req = https.request(buildHookUrl, { method: 'POST' }, (res) => {
-      if (res.statusCode >= 200 && res.statusCode < 300) {
-        bot.sendMessage(chatId, `✅ <b>Derleme tetiklendi!</b> Ortalama 1-2 dakika sürecektir. İşlem bittiğinde otomatik olarak bildirim alacaksınız.`, { parse_mode: 'HTML' });
-      } else {
-        bot.sendMessage(chatId, `❌ Netlify tetiklenemedi. Hata Kodu: ${res.statusCode}`);
-      }
-    });
-
-    req.on('error', (err) => {
-      bot.sendMessage(chatId, `❌ Derleme başlatılırken hata oluştu: ${err.message}`);
-    });
-
-    req.end();
+    triggerNetlifyBuild(chatId, `✅ <b>Derleme tetiklendi!</b> Ortalama 1-2 dakika sürecektir. İşlem bittiğinde otomatik olarak bildirim alacaksınız.`);
   });
 
   // AI Assistant (Any message not starting with /)
