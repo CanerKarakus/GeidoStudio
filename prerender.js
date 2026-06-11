@@ -50,13 +50,18 @@ const startPrerender = async () => {
         
         const content = await page.content();
         
-        let dir = path.join(__dirname, 'dist', route);
-        if (!fs.existsSync(dir)) {
-          fs.mkdirSync(dir, { recursive: true });
+        let filePath;
+        if (route === '/') {
+          filePath = path.join(__dirname, 'dist', 'index.html');
+        } else {
+          filePath = path.join(__dirname, 'dist', `${route}.html`);
+          const dir = path.dirname(filePath);
+          if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir, { recursive: true });
+          }
         }
         
-        // Save to route/index.html
-        fs.writeFileSync(path.join(dir, 'index.html'), content);
+        fs.writeFileSync(filePath, content);
         console.log(`Saved ${route}`);
       }
       
