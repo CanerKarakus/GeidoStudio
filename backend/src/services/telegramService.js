@@ -594,7 +594,7 @@ function initTelegramBot(app, io) {
           { role: 'system', content: 'Sen yaratıcı bir marka uzmanısın. Görevin, verilen anahtar kelimelerden yola çıkarak akılda kalıcı, premium, kısa ve marka olabilecek 10 adet .com veya .com.tr domain ismi önermektir. Başka HİÇBİR KELİME YAZMA. SADECE virgülle ayrılmış 10 adet domain ismi yaz. Örnek çıktı formatı: ornek1.com, ornek2.com.tr, harika3.com' },
           { role: 'user', content: keywords }
         ],
-        model: 'llama3-70b-8192',
+        model: 'llama-3.3-70b-versatile',
         temperature: 0.9
       });
 
@@ -648,7 +648,7 @@ function initTelegramBot(app, io) {
   });
 
   // Command: /domain [site]
-  bot.onText(/^\/domain(?:\s+(.+))?/, (msg, match) => {
+  bot.onText(/^\/domain(?:$|\s+(.+))/, (msg, match) => {
     if (!isAuthorized(msg)) return;
     
     let domain = match[1];
