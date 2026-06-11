@@ -5,6 +5,7 @@ const https = require('https');
 const os = require('os');
 const Groq = require('groq-sdk');
 const { readMessages } = require('../models/messageModel');
+const { sendEmail } = require('./emailService');
 
 let bot = null;
 let groqClient = null;
@@ -254,9 +255,84 @@ function initTelegramBot(io) {
     }
   });
 
+  // Command: /duyuru [mesaj]
+  bot.onText(/^\/duyuru(?:\s+(.+))?/, async (msg, match) => {
+    if (!isAuthorized(msg)) return;
+    const duyuruText = match[1];
+    
+    if (!duyuruText) {
+      bot.sendMessage(chatId, `❌ Hata: Duyuru metni boş olamaz.\nKullanım: <code>/duyuru Merhaba, yeni tasarım paketimiz çıktı!</code>`, { parse_mode: 'HTML' });
+      return;
+    }
+    
+    bot.sendMessage(chatId, `⏳ Müşteri e-posta listesi hazırlanıyor...`);
+    
+    try {
+      const messages = readMessages();
+      // Yalnızca geçerli e-posta adreslerini benzersiz (unique) olarak al
+      const uniqueEmails = [...new Set(messages.map(m => m.email).filter(e => e && e.includes('@')))];
+      
+      if (uniqueEmails.length === 0) {
+        bot.sendMessage(chatId, `❌ Veritabanında hiç kayıtlı müşteri e-posta adresi bulunamadı.`);
+        return;
+      }
+
+      bot.sendMessage(chatId, `📧 <b>${uniqueEmails.length}</b> müşteriye bülten/duyuru maili gönderiliyor... Lütfen bekleyin.`, { parse_mode: 'HTML' });
+
+      const subject = "Geido Studio'dan Önemli Duyuru";
+      const htmlContent = `
+        <div style="font-family: sans-serif; color: #333; line-height: 1.6;">
+          <h2 style="color: #111;">Geido Studio</h2>
+          <p style="font-size: 15px;">${duyuruText.replace(/\n/g, '<br>')}</p>
+        </div>
+      `;
+
+      let successCount = 0;
+      let failCount = 0;
+
+      for (const email of uniqueEmails) {
+        try {
+          await sendEmail(email, subject, duyuruText, htmlContent);
+          successCount++;
+        } catch (e) {
+          console.error('[TelegramService] Duyuru hatası:', e);
+          failCount++;
+        }
+      }
+
+      bot.sendMessage(chatId, `✅ <b>Duyuru İşlemi Tamamlandı!</b>\n\nBaşarıyla Gönderilen: ${successCount}\nHatalı/Gönderilemeyen: ${failCount}`, { parse_mode: 'HTML' });
+      
+    } catch (err) {
+      bot.sendMessage(chatId, `❌ Duyuru gönderilirken bir sistem hatası oluştu: ${err.message}`);
+    }
+  });
+
+  const commandsList = `
+🛠️ /bakim - Siteyi bakıma al
+📊 /rapor - Ziyaretçi & mesaj istatistikleri
+💻 /sistem - Sunucu donanım durumu
+🌅 /gunluk - Her sabah 09:00 otomatik raporunu aç/kapat
+⏰ /not [dakika] [mesaj] - Hatırlatma kur
+🚀 /build - Siteyi Netlify'da derle
+📢 /duyuru [mesaj] - Tüm müşterilere e-posta (bülten) at
+ℹ️ /help - Komutların detaylı açıklamalarını gör`;
+
+  bot.onText(/^\/help/, (msg) => {
+    if (!isAuthorized(msg)) return;
+    const helpMsg = `📖 <b>Komut Rehberi:</b>\n
+<b>/bakim</b>: Sitenin bakım modunu açar/kapatır ve anında Netlify'ı tetikler.
+<b>/rapor</b>: Sitenize giren dünkü, bugünkü ve toplam ziyaretçi sayısını söyler.
+<b>/sistem</b>: cPanel sunucunuzun CPU, RAM, disk durumunu ve Node.js versiyonunu gösterir.
+<b>/gunluk</b>: Bunu açtığınızda her sabah tam 09:00'da dünün özeti otomatik gönderilir.
+<b>/not [dakika] [metin]</b>: Belirttiğiniz dakika sonra size mesajı hatırlatır.
+<b>/build</b>: Sitenizin kaynak kodlarını Netlify'da zorla yeniden derler (günceller).
+<b>/duyuru [metin]</b>: Site üzerinden daha önce iletişim formu doldurmuş tüm müşterilerin e-posta adreslerine tek seferde Geido Studio imzalı bir kurumsal duyuru maili gönderir.`;
+    bot.sendMessage(chatId, helpMsg, { parse_mode: 'HTML' });
+  });
+
   bot.onText(/^\/start/, (msg) => {
     if (!isAuthorized(msg)) return;
-    const welcomeMsg = `Merhaba Patron! 🤖\n\nBen sizin kişisel yapay zeka asistanınızım. Bana normal mesaj yazarak taslak mailler yazdırabilir, fikir sorabilirsiniz.\n\nAyrıca şu komutları kullanabilirsiniz:\n🛠️ /bakim - Siteyi bakıma al\n📊 /rapor - İstatistikleri gör\n💻 /sistem - Sunucu donanım durumunu gör\n🌅 /gunluk - Her sabah 09:00 otomatik raporunu aç/kapat\n⏰ /not [dakika] [mesaj] - Hatırlatma kur\n🚀 /build - Siteyi Netlify'da derle`;
+    const welcomeMsg = `Merhaba Patron! 🤖\n\nBen sizin kişisel yapay zeka asistanınızım. Bana normal mesaj yazarak taslak mailler yazdırabilir, fikir sorabilirsiniz.\n\nAyrıca şu komutları kullanabilirsiniz:\n${commandsList}`;
     bot.sendMessage(chatId, welcomeMsg);
   });
 }
