@@ -537,25 +537,52 @@ function initTelegramBot(app, io) {
       return;
     }
 
-    bot.sendMessage(chatId, `🧠 <b>Yapay Zeka Devrede...</b>\n"${keywords}" için yaratıcı, akılda kalıcı ve jenerik domain fikirleri üretiliyor...`, { parse_mode: 'HTML' });
+    bot.sendMessage(chatId, `🧠 <b>Yapay Zeka Devrede...</b>\n"${keywords}" için yaratıcı isimler üretiliyor ve boşta olup olmadıkları kontrol ediliyor... (10-15 saniye sürebilir)`, { parse_mode: 'HTML' });
 
     try {
       const completion = await groqClient.chat.completions.create({
         messages: [
-          { role: 'system', content: 'Sen yaratıcı bir marka uzmanı ve dijital ajans asistanısın. Görevin, verilen anahtar kelimelerden yola çıkarak son derece akılda kalıcı, premium, kısa ve marka olabilecek 5 adet .com veya .com.tr domain ismi önermektir. Domainlerin kullanılabilir olma ihtimali yüksek, jenerik ve ilgi çekici isimler olsun. Sadece 5 adet isim ve yanlarında kısa (1 cümle) neden bu ismi seçtiğine dair açıklama ver. Başka bir giriş/çıkış cümlesi kurma.' },
+          { role: 'system', content: 'Sen yaratıcı bir marka uzmanısın. Görevin, verilen anahtar kelimelerden yola çıkarak akılda kalıcı, premium, kısa ve marka olabilecek 10 adet .com veya .com.tr domain ismi önermektir. Başka HİÇBİR KELİME YAZMA. SADECE virgülle ayrılmış 10 adet domain ismi yaz. Örnek çıktı formatı: ornek1.com, ornek2.com.tr, harika3.com' },
           { role: 'user', content: keywords }
         ],
         model: 'llama3-70b-8192',
-        temperature: 0.8
+        temperature: 0.9
       });
 
-      const aiResponse = completion.choices[0]?.message?.content || "Hata oluştu.";
+      const aiResponse = completion.choices[0]?.message?.content || "";
+      const domains = aiResponse.split(',').map(d => d.trim().toLowerCase()).filter(d => d.includes('.'));
 
-      const finalMessage = `🏷️ <b>Domain Avcısı Sonuçları:</b>\n\n` +
-                           `${aiResponse}\n\n` +
-                           `<i>🔗 Bu isimlerin boşta olup olmadığını kontrol etmek için Namecheap veya IHS'yi kullanabilirsiniz.</i>`;
+      if (domains.length === 0) throw new Error("Yapay zeka geçerli bir domain formatı üretemedi.");
 
-      bot.sendMessage(chatId, finalMessage, { parse_mode: 'HTML' });
+      const checkDomain = (domain) => new Promise((resolve) => {
+        https.get(`https://networkcalc.com/api/dns/whois/${domain}`, (res) => {
+          let data = '';
+          res.on('data', chunk => data += chunk);
+          res.on('end', () => {
+            try {
+              const result = JSON.parse(data);
+              if (result.status === 'OK' && result.whois && !result.whois.registrar && !result.whois.registry_expiration_date) {
+                resolve(domain); // Available!
+              } else {
+                resolve(null); // Registered
+              }
+            } catch(e) { resolve(null); }
+          });
+        }).on('error', () => resolve(null));
+      });
+
+      const results = await Promise.all(domains.map(d => checkDomain(d)));
+      const availableDomains = results.filter(d => d !== null);
+
+      if (availableDomains.length > 0) {
+        const finalMessage = `🏷️ <b>Domain Avcısı Sonuçları (Boşta Olanlar):</b>\n\n` +
+                             availableDomains.map(d => `✅ <b>${d}</b> - Hemen Alınabilir!`).join('\n') +
+                             `\n\n<i>🔗 Satın almak için Namecheap veya IHS'yi ziyaret edin.</i>`;
+        bot.sendMessage(chatId, finalMessage, { parse_mode: 'HTML' });
+      } else {
+        bot.sendMessage(chatId, `😔 Yapay zekanın ürettiği ${domains.length} premium domainin de MAALESEF alınmış olduğu (dolu) tespit edildi.\nLütfen farklı veya daha niş anahtar kelimelerle tekrar deneyin.`);
+      }
+
     } catch (e) {
       bot.sendMessage(chatId, `❌ Yapay zeka ile iletişim kurulamadı: ${e.message}`);
     }
