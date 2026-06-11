@@ -4,6 +4,7 @@ import { MessageSquare, X, Send, User, ChevronDown, Minus, Square } from 'lucide
 import clsx from 'clsx';
 import useChatStore from '../../store/chatStore';
 import styles from './LiveSupport.module.scss';
+import { socket } from '../../api/db';
 
 const Typewriter = ({ text, onComplete, onTyping, forceStop }) => {
   const [displayedText, setDisplayedText] = useState('');
@@ -55,11 +56,43 @@ const LiveSupport = () => {
   const [endStep, setEndStep] = useState(0); // 0: no, 1: confirm close, 2: ask email
   const [showToast, setShowToast] = useState(false);
   const [sendEmailCopy, setSendEmailCopy] = useState(false);
+  const [sessionId] = useState(() => Math.random().toString(36).substring(2, 8).toUpperCase());
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
+
+  useEffect(() => {
+    if (isOpen && !isMinimized && userContext) {
+      if (!socket.connected) {
+        socket.connect();
+      }
+      socket.emit('join_support_chat', { sessionId, name: userContext.name, email: userContext.email });
+
+      const onHijacked = () => {
+        addMessage({ id: Date.now().toString() + '-sys', text: '🚨 <b>CANER KARAKUŞ BAĞLANDI.</b>', sender: 'ai', isNew: false });
+      };
+
+      const onReleased = () => {
+        addMessage({ id: Date.now().toString() + '-sys2', text: 'ℹ️ <b>CANER KARAKUŞ AYRILDI. AI ASİSTANI İLE GÖRÜŞMEYE DEVAM EDEBİLİRSİNİZ.</b>', sender: 'ai', isNew: false });
+      };
+
+      const onMessage = (data) => {
+        addMessage({ id: Date.now().toString() + '-admin', text: data.text, sender: 'ai', isNew: false });
+      };
+
+      socket.on('support_chat_hijacked', onHijacked);
+      socket.on('support_chat_released', onReleased);
+      socket.on('support_chat_message', onMessage);
+
+      return () => {
+        socket.off('support_chat_hijacked', onHijacked);
+        socket.off('support_chat_released', onReleased);
+        socket.off('support_chat_message', onMessage);
+      };
+    }
+  }, [isOpen, isMinimized, userContext, sessionId, addMessage]);
 
   useEffect(() => {
     scrollToBottom();
@@ -99,13 +132,15 @@ const LiveSupport = () => {
       const res = await fetch(`${API_URL}/api/ai-chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: history, userContext: context }),
+        body: JSON.stringify({ messages: history, userContext: context, sessionId }),
         signal: abortControllerRef.current.signal
       });
 
       const data = await res.json();
       
-      if (res.ok && data.reply) {
+      if (res.ok && data.hijacked) {
+        // Sessizce bekle, admin yazacak
+      } else if (res.ok && data.reply) {
         const aiMsgId = Date.now().toString() + '-ai';
         addMessage({ id: aiMsgId, text: data.reply, sender: 'ai', isNew: true });
         setActiveTypingId(aiMsgId);
