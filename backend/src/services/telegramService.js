@@ -3,6 +3,8 @@ const fs = require('fs');
 const path = require('path');
 const https = require('https');
 const os = require('os');
+const { exec } = require('child_process');
+const crypto = require('crypto');
 const Groq = require('groq-sdk');
 const { readMessages } = require('../models/messageModel');
 const { sendEmail } = require('./emailService');
@@ -245,9 +247,56 @@ function initTelegramBot(app, io) {
   // Handle ALL messages for AI, Voice Mails and AI replies
   bot.on('message', async (msg) => {
     if (!isAuthorized(msg)) return;
+
+    const chatId = msg.chat.id;
+
+    // Handle Photo + /dekupe caption
+    if (msg.photo && msg.caption && msg.caption.includes('/dekupe')) {
+      bot.sendMessage(chatId, `✂️ <b>Fotoğraf Alındı!</b>\nYapay zeka arka planı kesiyor, lütfen bekleyin... (Bu işlem biraz sürebilir)`, { parse_mode: 'HTML' });
+      
+      try {
+        const fileId = msg.photo[msg.photo.length - 1].file_id;
+        const file = await bot.getFile(fileId);
+        const fileUrl = `https://api.telegram.org/file/bot${process.env.TELEGRAM_BOT_TOKEN}/${file.file_path}`;
+        
+        const tmpId = crypto.randomBytes(8).toString('hex');
+        const inputPath = path.join(os.tmpdir(), `input_${tmpId}.jpg`);
+        const outputPath = path.join(os.tmpdir(), `output_${tmpId}.png`);
+        
+        // Download image
+        await new Promise((resolve, reject) => {
+          https.get(fileUrl, (res) => {
+            const stream = fs.createWriteStream(inputPath);
+            res.pipe(stream);
+            stream.on('finish', resolve);
+            stream.on('error', reject);
+          }).on('error', reject);
+        });
+
+        // Run rembg
+        const venvPython = path.join(__dirname, '../../venv/bin/rembg');
+        exec(`"${venvPython}" i "${inputPath}" "${outputPath}"`, (error, stdout, stderr) => {
+          if (error) {
+            bot.sendMessage(chatId, `❌ Arka plan silinirken bir hata oluştu: ${error.message}`);
+          } else {
+            bot.sendDocument(chatId, outputPath, {
+              caption: `✅ <b>İşte Şeffaf (PNG) Formatındaki Görseliniz!</b>\n<i>Not: Şeffaflığın bozulmaması için Telegram kuralı gereği Dosya olarak gönderildi.</i>`,
+              parse_mode: 'HTML'
+            }).finally(() => {
+              if (fs.existsSync(inputPath)) fs.unlinkSync(inputPath);
+              if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
+            });
+          }
+        });
+      } catch (err) {
+        bot.sendMessage(chatId, `❌ Fotoğraf işlenemedi: ${err.message}`);
+      }
+      return; // End execution so it doesn't trigger standard text AI
+    }
+
     if (msg.text && msg.text.startsWith('/')) {
       // If user types a command while in a session, cancel the session
-      if (sessions[msg.chat.id]) delete sessions[msg.chat.id];
+      if (sessions[chatId]) delete sessions[chatId];
       return; 
     }
 
@@ -925,6 +974,7 @@ function initTelegramBot(app, io) {
 📸 /ss [site_adresi] - Sitenin ekran görüntüsünü çeker
 🔒 /guvenlik [site_adresi] - Sitenin siber güvenlik açıklarını tarar
 🎨 /dedektif [site_adresi] - Sitenin tüm renk paletini ve fontlarını çalar
+✂️ Fotoğrafa /dekupe yazarak gönder - Yapay zeka ile arka planını siler (Şeffaf PNG yapar)
 ℹ️ /help - Komutların detaylı açıklamalarını gör`;
 
   bot.onText(/^\/help/, (msg) => {
@@ -945,7 +995,8 @@ function initTelegramBot(app, io) {
 <b>/seslimail</b>: Sizi dinler, söylediğiniz şeyleri hatasız kurumsal bir e-postaya çevirip müşteriye yollar.
 <b>/ss [site]</b>: Belirtilen web sitesinin baştan aşağıya tüm sayfasının tam ekran görüntüsünü çekip fotoğraf olarak gönderir.
 <b>/guvenlik [site]</b>: Sitenin siber güvenlik zafiyetlerini ve SSL hatalarını tarayarak size bir satış/ikna metni sunar.
-<b>/dedektif [site]</b>: Sitenin CSS kodlarından fontlarını ve ana renk kodlarını (HEX) çekip listeler.`;
+<b>/dedektif [site]</b>: Sitenin CSS kodlarından fontlarını ve ana renk kodlarını (HEX) çekip listeler.
+<b>/dekupe (Fotoğrafa yazın)</b>: Telegram'dan bota bir fotoğraf atarken açıklamasına /dekupe yazın. Bot saniyeler içinde arka planını tamamen silip size profesyonel, şeffaf PNG formatında geri verir.`;
     bot.sendMessage(chatId, helpMsg, { parse_mode: 'HTML' });
   });
 
