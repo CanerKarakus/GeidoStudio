@@ -300,7 +300,7 @@ function initTelegramBot(app, io) {
       return; 
     }
 
-    const chatId = msg.chat.id;
+
 
     // Check sessions for /seslimail
     if (sessions[chatId] && sessions[chatId].command === 'seslimail') {
