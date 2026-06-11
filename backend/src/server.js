@@ -103,6 +103,8 @@ const { Server } = require('socket.io');
 const { initImap } = require('./services/emailService');
 const { readMessages, writeMessages } = require('./models/messageModel');
 
+const { initTelegramBot } = require('./services/telegramService');
+
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
@@ -112,6 +114,9 @@ const io = new Server(server, {
 });
 
 app.set('io', io);
+
+// Initialize Telegram Interactive Bot
+initTelegramBot(io);
 
 io.on('connection', (socket) => {
   console.log('Admin connected to socket:', socket.id);
