@@ -14,6 +14,34 @@ let groqClient = null;
 let dailyReportTimeout = null;
 const sessions = {};
 
+// Helper to download and transcribe voice
+async function transcribeVoiceMsg(botClient, groqCli, voiceFileId) {
+  const fileLink = await botClient.getFileLink(voiceFileId);
+  const uploadDir = path.join(__dirname, '../../uploads');
+  if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+  const filePath = path.join(uploadDir, `voice_${Date.now()}.ogg`);
+  
+  await new Promise((resolve, reject) => {
+    https.get(fileLink, (res) => {
+      const stream = fs.createWriteStream(filePath);
+      res.pipe(stream);
+      stream.on('finish', resolve);
+      stream.on('error', reject);
+    }).on('error', reject);
+  });
+
+  try {
+    const transcription = await groqCli.audio.transcriptions.create({
+      file: fs.createReadStream(filePath),
+      model: 'whisper-large-v3',
+    });
+    return transcription.text;
+  } finally {
+    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+  }
+}
+
+
 // Paths for reading CMS and Analytics
 const CMS_FILE = path.join(__dirname, '../../data/cms.json');
 const ANALYTICS_FILE = path.join(__dirname, '../../data/analytics.json');
@@ -343,68 +371,96 @@ function initTelegramBot(app, io) {
           return;
         }
 
-        bot.sendMessage(chatId, `⏳ Sesiniz yapay zeka ile deşifre ediliyor ve kurumsal bir maile dönüştürülüyor...\n(Bu işlem sesin uzunluğuna göre 10-20 saniye sürebilir)`, { parse_mode: 'HTML' });
+        bot.sendMessage(chatId, `⏳ Sesiniz yapay zeka ile deşifre ediliyor ve tamamen resmi, kurumsal bir e-postaya dönüştürülüyor...`, { parse_mode: 'HTML' });
 
         try {
-          const fileLink = await bot.getFileLink(msg.voice.file_id);
-          const uploadDir = path.join(__dirname, '../../uploads');
-          if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
-          const filePath = path.join(uploadDir, `voice_${Date.now()}.ogg`);
+          const rawText = await transcribeVoiceMsg(bot, groqClient, msg.voice.file_id);
+
+          const rewritePrompt = `Sen Geido Studio ajansının Kurumsal İletişim Uzmanısın. Aşağıda patronunun sana gönderdiği dikte (sesli mesaj deşifresi) yer alıyor.
+Bunu al, son derece profesyonel, ciddi, resmi ve saygılı bir dille "Müşteriye gidecek kurumsal bir e-posta" olarak baştan yaz. Patronun gündelik ağzını (örneğin "bilginiz olsun dedim", "kanka", "hallederiz" vb.) at, yerine kurumsal iş dünyası terimleri kullan.
+
+Asla fazladan bir şey (merhaba ben yapay zeka vb.) yazma. Yalnızca mailin 'Konu:' satırı ile başlayıp ardından 'İçerik:' şeklinde mail metnini ver.
+
+Patronun Diktesi: "${rawText}"`;
           
-          const fileStream = fs.createWriteStream(filePath);
-          https.get(fileLink, (response) => {
-            response.pipe(fileStream);
-            fileStream.on('finish', async () => {
-              fileStream.close();
-              
-              try {
-                // 1. Whisper API Transcript
-                const transcription = await groqClient.audio.transcriptions.create({
-                  file: fs.createReadStream(filePath),
-                  model: 'whisper-large-v3',
-                });
-                const rawText = transcription.text;
-
-                // 2. Llama-3 API Rewrite
-                const rewritePrompt = `Aşağıdaki metin bir ajans patronunun (Geido Studio) sesli diktesinden alınmıştır. Bu metni al, son derece profesyonel, saygılı, hatasız ve kurumsal bir e-postaya dönüştür. Asla fazladan bir şey (merhaba ben yapay zeka vb.) yazma. Yalnızca mailin 'Konu:' satırı ile başlayıp ardından 'İçerik:' şeklinde mail metnini ver. Başka hiçbir açıklama yapma.\n\nDikte: "${rawText}"`;
-                
-                const chatCompletion = await groqClient.chat.completions.create({
-                  messages: [{ role: 'user', content: rewritePrompt }],
-                  model: 'llama-3.3-70b-versatile',
-                  temperature: 0.3,
-                });
-
-                const aiResponse = chatCompletion.choices[0]?.message?.content || '';
-                
-                // Parse Subject and Body
-                let subject = "Geido Studio - Bilgilendirme";
-                let body = aiResponse;
-                
-                const subjectMatch = aiResponse.match(/Konu:\s*(.+)/i);
-                if (subjectMatch) subject = subjectMatch[1].trim();
-                
-                const contentMatch = aiResponse.match(/İçerik:\s*([\s\S]+)/i);
-                if (contentMatch) body = contentMatch[1].trim();
-
-                // 3. Send Email
-                await sendEmail(session.email, subject, body, body.replace(/\n/g, '<br>'));
-                
-                bot.sendMessage(chatId, `✅ <b>Mail Başarıyla Gönderildi!</b> 🚀\n\n<b>Alıcı:</b> ${session.email}\n<b>Konu:</b> ${subject}\n\n<b>Giden Metin:</b>\n${body}`, { parse_mode: 'HTML' });
-              } catch (aiErr) {
-                console.error('[SesliMail] AI Error:', aiErr);
-                bot.sendMessage(chatId, `❌ Yapay zeka veya gönderim hatası: ${aiErr.message}`);
-              } finally {
-                if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
-                delete sessions[chatId];
-              }
-            });
-          }).on('error', () => {
-            bot.sendMessage(chatId, `❌ Ses dosyası indirilemedi.`);
-            delete sessions[chatId];
+          const chatCompletion = await groqClient.chat.completions.create({
+            messages: [{ role: 'user', content: rewritePrompt }],
+            model: 'llama-3.3-70b-versatile',
+            temperature: 0.3,
           });
+
+          const aiResponse = chatCompletion.choices[0]?.message?.content || '';
+          
+          let subject = "Geido Studio - Bilgilendirme";
+          let body = aiResponse;
+          
+          const subjectMatch = aiResponse.match(/Konu:\s*(.+)/i);
+          if (subjectMatch) subject = subjectMatch[1].trim();
+          
+          const contentMatch = aiResponse.match(/İçerik:\s*([\s\S]+)/i);
+          if (contentMatch) body = contentMatch[1].trim();
+
+          session.draftSubject = subject;
+          session.draftBody = body;
+          session.step = 'awaiting_approval';
+          
+          bot.sendMessage(chatId, `📝 <b>Mail Taslağınız Hazır!</b>\n\n<b>Alıcı:</b> ${session.email}\n<b>Konu:</b> ${subject}\n\n<b>İçerik:</b>\n${body}\n\n✅ Göndermek için <b>"evet"</b> veya <b>"gönder"</b> yazın.\n✏️ Değiştirmek istediğiniz yerler varsa sesli mesaj atın veya yeni halini yazın.\n❌ İptal etmek için /start yazın.`, { parse_mode: 'HTML' });
         } catch (err) {
-          bot.sendMessage(chatId, `❌ Sistem hatası: ${err.message}`);
+          bot.sendMessage(chatId, `❌ Hata: ${err.message}`);
           delete sessions[chatId];
+        }
+        return;
+      }
+
+      if (session.step === 'awaiting_approval') {
+        const textLower = (msg.text || '').toLowerCase().trim();
+        if (textLower === 'evet' || textLower === 'gönder' || textLower === 'gonder' || textLower === 'onayla' || textLower === 'tamam') {
+          bot.sendMessage(chatId, `⏳ Mail gönderiliyor...`);
+          try {
+            await sendEmail(session.email, session.draftSubject, session.draftBody, session.draftBody.replace(/\n/g, '<br>'));
+            bot.sendMessage(chatId, `✅ <b>Mail Başarıyla Gönderildi!</b> 🚀`);
+          } catch(err) {
+            bot.sendMessage(chatId, `❌ Gönderim hatası: ${err.message}`);
+          }
+          delete sessions[chatId];
+          return;
+        }
+
+        // It is a revision request
+        bot.sendMessage(chatId, `⏳ Taslağınız talimatınıza göre revize ediliyor...`);
+        try {
+          let feedbackText = msg.text || '';
+          if (msg.voice) {
+             feedbackText = await transcribeVoiceMsg(bot, groqClient, msg.voice.file_id);
+          }
+          
+          const rewritePrompt = `Sen Geido Studio ajansının Kurumsal İletişim Uzmanısın. Aşağıda hazırladığın bir taslak mail ve patronunun bu taslakla ilgili düzeltme/revizyon talimatı yer alıyor.
+
+Mevcut Konu: ${session.draftSubject}
+Mevcut İçerik: ${session.draftBody}
+
+Patronun Düzeltme Talimatı: "${feedbackText}"
+
+Lütfen taslağı bu talimata göre GÜNCELLE. Son derece resmi ve kurumsal kalmaya devam et.
+Sadece 'Konu:' ve 'İçerik:' şeklinde son metni ver. Başka hiçbir şey yazma.`;
+          
+          const chatCompletion = await groqClient.chat.completions.create({
+            messages: [{ role: 'user', content: rewritePrompt }],
+            model: 'llama-3.3-70b-versatile',
+            temperature: 0.3,
+          });
+
+          const aiResponse = chatCompletion.choices[0]?.message?.content || '';
+          
+          const subjectMatch = aiResponse.match(/Konu:\s*(.+)/i);
+          if (subjectMatch) session.draftSubject = subjectMatch[1].trim();
+          
+          const contentMatch = aiResponse.match(/İçerik:\s*([\s\S]+)/i);
+          if (contentMatch) session.draftBody = contentMatch[1].trim();
+          
+          bot.sendMessage(chatId, `📝 <b>YENİ Mail Taslağınız Hazır!</b>\n\n<b>Alıcı:</b> ${session.email}\n<b>Konu:</b> ${session.draftSubject}\n\n<b>İçerik:</b>\n${session.draftBody}\n\n✅ Göndermek için <b>"evet"</b> veya <b>"gönder"</b> yazın.\n✏️ Tekrar değiştirmek isterseniz ses/yazı atın.\n❌ İptal etmek için /start yazın.`, { parse_mode: 'HTML' });
+        } catch (err) {
+          bot.sendMessage(chatId, `❌ Hata: ${err.message}`);
         }
         return;
       }
