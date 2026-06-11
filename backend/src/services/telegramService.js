@@ -404,6 +404,28 @@ function initTelegramBot(app, io) {
     });
   });
 
+  // Command: /qr [text/url]
+  bot.onText(/^\/qr(?:\s+(.+))?/, (msg, match) => {
+    if (!isAuthorized(msg)) return;
+    
+    const text = match[1];
+    if (!text) {
+      bot.sendMessage(chatId, `❌ Hata: QR koda dönüştürülecek bir metin veya link girmelisiniz.\nKullanım: <code>/qr https://geidostudio.com</code>`, { parse_mode: 'HTML' });
+      return;
+    }
+
+    bot.sendMessage(chatId, `⏳ QR kodunuz yüksek çözünürlüklü olarak hazırlanıyor...`);
+    
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(text)}&margin=10`;
+    
+    bot.sendPhoto(chatId, qrUrl, {
+      caption: `✅ <b>İşte QR Kodunuz!</b>\nİçerik: <code>${text}</code>`,
+      parse_mode: 'HTML'
+    }).catch(err => {
+      bot.sendMessage(chatId, `❌ QR Kod gönderilemedi: ${err.message}`);
+    });
+  });
+
   const commandsList = `
 🛠️ /bakim - Siteyi bakıma al
 📊 /rapor - Ziyaretçi & mesaj istatistikleri
