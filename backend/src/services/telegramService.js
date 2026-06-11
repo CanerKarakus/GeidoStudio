@@ -2,11 +2,13 @@ const TelegramBot = require('node-telegram-bot-api');
 const fs = require('fs');
 const path = require('path');
 const https = require('https');
+const os = require('os');
 const Groq = require('groq-sdk');
 const { readMessages } = require('../models/messageModel');
 
 let bot = null;
 let groqClient = null;
+let dailyReportTimeout = null;
 
 // Paths for reading CMS and Analytics
 const CMS_FILE = path.join(__dirname, '../../data/cms.json');
@@ -39,6 +41,51 @@ const ADMIN_AI_SYSTEM_PROMPT = `Sen Geido Studio'nun yöneticisinin/patronunun k
 Amacın yöneticiye e-posta taslakları hazırlamak, projelerde fikir üretmek, yazılım/tasarım konseptlerinde beyin fırtınası yapmak ve yöneticinin sorduğu her türlü soruya kısa, net, saygılı ve profesyonel (ajans jargonuyla) yanıtlar vermektir. 
 Zaman tasarrufu önemlidir, lafı uzatma, doğrudan çözümü veya metni sun.`;
 
+function sendDailyReport(chatId) {
+  const cms = readCMS();
+  const messages = readMessages();
+  const analytics = readAnalytics();
+  
+  // Dünün tarihi
+  const yesterdayDate = new Date(Date.now() - 86400000);
+  const yesterdayStr = yesterdayDate.toISOString().split('T')[0];
+  const yesterdayVisits = analytics[yesterdayStr]?.total || 0;
+  
+  const unreadMessages = messages.filter(m => !m.read).length;
+  const newMessages = messages.filter(m => {
+    const msgDate = new Date(m.date || m.createdAt);
+    return msgDate >= yesterdayDate;
+  }).length;
+  
+  const maintenanceText = cms.settings?.maintenanceMode ? 'AÇIK 🚨 (Müşteriler siteyi göremiyor)' : 'KAPALI ✅';
+  
+  const report = `🌅 <b>GÜNAYDIN PATRON!</b>\nİşte sistemin sabah özeti:\n\n` +
+    `👁️ <b>Dünkü Ziyaretçi:</b> ${yesterdayVisits}\n` +
+    `📩 <b>Son 24 Saatte Gelen Mesaj:</b> ${newMessages}\n` +
+    `⚠️ <b>Okunmamış Biletler:</b> ${unreadMessages}\n` +
+    `🛠️ <b>Bakım Modu:</b> ${maintenanceText}\n` +
+    `⚙️ <b>Sistem Durumu:</b> %100 Sağlıklı Çalışıyor ✅\n\n` +
+    `<i>Harika ve bol kazançlı bir gün dilerim! ☕</i>`;
+    
+  if (bot) bot.sendMessage(chatId, report, { parse_mode: 'HTML' });
+  scheduleDailyReport(chatId); // schedule for tomorrow
+}
+
+function scheduleDailyReport(chatId) {
+  if (dailyReportTimeout) clearTimeout(dailyReportTimeout);
+  
+  const now = new Date();
+  const target = new Date();
+  target.setHours(9, 0, 0, 0); // Sabah 09:00
+  
+  if (now > target) {
+    target.setDate(target.getDate() + 1);
+  }
+  
+  const delay = target.getTime() - now.getTime();
+  dailyReportTimeout = setTimeout(() => sendDailyReport(chatId), delay);
+}
+
 function initTelegramBot(io) {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   const chatId = process.env.TELEGRAM_CHAT_ID;
@@ -58,6 +105,12 @@ function initTelegramBot(io) {
   }
 
   const isAuthorized = (msg) => msg.chat.id.toString() === chatId;
+
+  // Başlangıçta günlük rapor açıksa zamanla
+  const cms = readCMS();
+  if (cms.settings && cms.settings.dailyReport) {
+    scheduleDailyReport(chatId);
+  }
 
   const triggerNetlifyBuild = (chatId, successMsg) => {
     const buildHookUrl = process.env.NETLIFY_BUILD_HOOK_URL;
@@ -115,6 +168,42 @@ function initTelegramBot(io) {
     bot.sendMessage(chatId, report, { parse_mode: 'HTML' });
   });
 
+  // Command: /sistem
+  bot.onText(/^\/sistem/, (msg) => {
+    if (!isAuthorized(msg)) return;
+    const totalMem = (os.totalmem() / 1024 / 1024 / 1024).toFixed(2);
+    const freeMem = (os.freemem() / 1024 / 1024 / 1024).toFixed(2);
+    const usedMem = (totalMem - freeMem).toFixed(2);
+    const uptime = (os.uptime() / 60 / 60 / 24).toFixed(1);
+    
+    const text = `💻 <b>Sistem Durumu</b>\n\n` +
+      `🖥️ <b>İşletim Sistemi:</b> ${os.type()} ${os.release()}\n` +
+      `⏱️ <b>Çalışma Süresi:</b> ${uptime} Gün\n` +
+      `💾 <b>RAM Kullanımı:</b> ${usedMem} GB / ${totalMem} GB\n` +
+      `⚙️ <b>CPU Yükü:</b> ${os.loadavg()[0].toFixed(2)} (Son 1 dk)\n` +
+      `🟢 <b>Uygulama:</b> Node.js ${process.version}`;
+    
+    bot.sendMessage(chatId, text, { parse_mode: 'HTML' });
+  });
+
+  // Command: /gunluk
+  bot.onText(/^\/gunluk/, (msg) => {
+    if (!isAuthorized(msg)) return;
+    const cmsSettings = readCMS();
+    if (!cmsSettings.settings) cmsSettings.settings = {};
+    
+    cmsSettings.settings.dailyReport = !cmsSettings.settings.dailyReport;
+    writeCMS(cmsSettings);
+    
+    if (cmsSettings.settings.dailyReport) {
+      bot.sendMessage(chatId, `🌅 <b>Günlük Rapor: AÇIK</b>\nHer sabah tam 09:00'da size dünün site istatistikleri ve mesaj durumu otomatik raporlanacak.`, { parse_mode: 'HTML' });
+      scheduleDailyReport(chatId);
+    } else {
+      bot.sendMessage(chatId, `🌇 <b>Günlük Rapor: KAPALI</b>\nArtık sabahları otomatik rapor almayacaksınız.`, { parse_mode: 'HTML' });
+      if (dailyReportTimeout) clearTimeout(dailyReportTimeout);
+    }
+  });
+
   // Command: /not [dakika] [mesaj]
   bot.onText(/^\/not\s+(\d+)\s+(.+)/, (msg, match) => {
     if (!isAuthorized(msg)) return;
@@ -167,7 +256,7 @@ function initTelegramBot(io) {
 
   bot.onText(/^\/start/, (msg) => {
     if (!isAuthorized(msg)) return;
-    const welcomeMsg = `Merhaba Patron! 🤖\n\nBen sizin kişisel yapay zeka asistanınızım. Bana normal mesaj yazarak taslak mailler yazdırabilir, fikir sorabilirsiniz.\n\nAyrıca şu komutları kullanabilirsiniz:\n🛠️ /bakim - Siteyi bakıma al\n📊 /rapor - İstatistikleri gör\n⏰ /not [dakika] [mesaj] - Hatırlatma kur\n🚀 /build - Siteyi Netlify'da derle`;
+    const welcomeMsg = `Merhaba Patron! 🤖\n\nBen sizin kişisel yapay zeka asistanınızım. Bana normal mesaj yazarak taslak mailler yazdırabilir, fikir sorabilirsiniz.\n\nAyrıca şu komutları kullanabilirsiniz:\n🛠️ /bakim - Siteyi bakıma al\n📊 /rapor - İstatistikleri gör\n💻 /sistem - Sunucu donanım durumunu gör\n🌅 /gunluk - Her sabah 09:00 otomatik raporunu aç/kapat\n⏰ /not [dakika] [mesaj] - Hatırlatma kur\n🚀 /build - Siteyi Netlify'da derle`;
     bot.sendMessage(chatId, welcomeMsg);
   });
 }
