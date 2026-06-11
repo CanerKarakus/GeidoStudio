@@ -15,7 +15,7 @@ const createSlug = (title) => {
 
 const AdminBlog = () => {
   const { cms, updateCMS } = useCmsStore();
-  
+
   const [localBlogs, setLocalBlogs] = useState(cms?.blogs || []);
   const [isOrderDirty, setIsOrderDirty] = useState(false);
   const [dragIndex, setDragIndex] = useState(null);
@@ -26,10 +26,10 @@ const AdminBlog = () => {
       setLocalBlogs(cms?.blogs || []);
     }
   }, [cms?.blogs, isOrderDirty]);
-  
+
   const [isEditing, setIsEditing] = useState(false);
   const [currentBlog, setCurrentBlog] = useState(null);
-  
+
   const [formData, setFormData] = useState({
     title: '',
     content: '',
@@ -44,18 +44,16 @@ const AdminBlog = () => {
   const [aiPrompt, setAIPrompt] = useState('');
   const [aiLength, setAiLength] = useState('medium');
   const [useCodeBlocks, setUseCodeBlocks] = useState(false);
-  const [useArtBlocks, setUseArtBlocks] = useState(false);
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   const [aiError, setAiError] = useState('');
   const [isAIGeneratorOpen, setIsAIGeneratorOpen] = useState(false);
 
   const handleOpenAIGenerator = () => {
     setIsAIGeneratorOpen(true);
-    if (!aiPrompt) setAIPrompt(''); // Don't clear prompt if already set
+    setAIPrompt('');
     setAiError('');
     setAiLength('medium');
     setUseCodeBlocks(false);
-    setUseArtBlocks(false);
   };
 
   const handleGenerateAI = async () => {
@@ -63,11 +61,10 @@ const AdminBlog = () => {
     setIsGeneratingAI(true);
     setAiError('');
     try {
-      const response = await api.generateBlogAI({ 
-        prompt: aiPrompt, 
-        length: aiLength, 
-        useCodeBlocks,
-        useArtBlocks
+      const response = await api.generateBlogAI({
+        prompt: aiPrompt,
+        length: aiLength,
+        useCodeBlocks
       });
       if (response.success && response.data) {
         setFormData(prev => ({
@@ -166,9 +163,9 @@ const AdminBlog = () => {
   const handleSave = async (e) => {
     e.preventDefault();
     if (!formData.title || !formData.content) return;
-    
+
     const slug = currentBlog ? currentBlog.slug : createSlug(formData.title);
-    
+
     const newBlog = {
       slug,
       title: formData.title,
@@ -196,44 +193,39 @@ const AdminBlog = () => {
       <div className={styles.adminSection}>
         <div className={styles.sectionHeader}>
           <h2 className={styles.sectionTitle}>{currentBlog ? 'Blog Yazısını Düzenle' : 'Yeni Blog Yazısı'}</h2>
-          <div className={styles.headerActions}>
-            <button className={styles.aiBtnSecondary} onClick={handleOpenAIGenerator}>
-              <Bot size={16} /> ✨ Yapay Zeka ile Yeniden Düzenle
-            </button>
-            <button className={styles.iconBtn} onClick={() => setIsEditing(false)}>
-              <X size={20} />
-            </button>
-          </div>
+          <button className={styles.iconBtn} onClick={() => setIsEditing(false)}>
+            <X size={20} />
+          </button>
         </div>
-        
+
         <form onSubmit={handleSave} className={styles.formGroup}>
           <div className={styles.inputGroup}>
             <label>Başlık</label>
-            <input 
-              type="text" 
-              value={formData.title} 
-              onChange={e => setFormData({ ...formData, title: e.target.value })} 
+            <input
+              type="text"
+              value={formData.title}
+              onChange={e => setFormData({ ...formData, title: e.target.value })}
               required
               placeholder="Örn: Yapay Zeka Hayatımızda Neleri Değiştirdi"
             />
           </div>
-          
-          <ImageUploader 
-            value={formData.image} 
-            onChange={url => setFormData({ ...formData, image: url })} 
-            label="Kapak Görseli" 
+
+          <ImageUploader
+            value={formData.image}
+            onChange={url => setFormData({ ...formData, image: url })}
+            label="Kapak Görseli"
           />
-          
+
           <div className={styles.inputGroup}>
             <label>Yazar</label>
-            <input 
-              type="text" 
-              value={formData.author} 
-              onChange={e => setFormData({ ...formData, author: e.target.value })} 
+            <input
+              type="text"
+              value={formData.author}
+              onChange={e => setFormData({ ...formData, author: e.target.value })}
               placeholder="Yazar Adı"
             />
           </div>
-          
+
           <div className={styles.inputGroup}>
             <label>Keywords (SEO) - Eklemek için Enter'a basın</label>
             <div className={styles.tagsInputContainer}>
@@ -244,8 +236,8 @@ const AdminBlog = () => {
                     <button type="button" onClick={() => handleRemoveTag(tag)}><X size={14} /></button>
                   </span>
                 ))}
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   value={tagInput}
                   onChange={e => setTagInput(e.target.value)}
                   onKeyDown={handleTagKeyDown}
@@ -255,18 +247,18 @@ const AdminBlog = () => {
               </div>
             </div>
           </div>
-          
+
           <div className={styles.inputGroup}>
             <label>İçerik (HTML veya düz metin kullanabilirsiniz)</label>
-            <textarea 
-              value={formData.content} 
-              onChange={e => setFormData({ ...formData, content: e.target.value })} 
+            <textarea
+              value={formData.content}
+              onChange={e => setFormData({ ...formData, content: e.target.value })}
               rows={15}
               required
               placeholder="Blog içeriğini buraya yazın..."
             />
           </div>
-          
+
           <div className={styles.actions}>
             <button type="button" onClick={() => setIsEditing(false)} className={styles.cancelBtn}>İptal</button>
             <button type="submit" className={styles.saveBtn}><Save size={16} /> Kaydet</button>
@@ -305,21 +297,21 @@ const AdminBlog = () => {
             <div className={styles.aiGenOptionGroup}>
               <label>Uzunluk Seçimi</label>
               <div className={styles.aiGenLengthCards}>
-                <div 
+                <div
                   className={`${styles.aiGenCard} ${aiLength === 'short' ? styles.active : ''}`}
                   onClick={() => !isGeneratingAI && setAiLength('short')}
                 >
                   <h4>Kısa</h4>
                   <p>300-400 kelime</p>
                 </div>
-                <div 
+                <div
                   className={`${styles.aiGenCard} ${aiLength === 'medium' ? styles.active : ''}`}
                   onClick={() => !isGeneratingAI && setAiLength('medium')}
                 >
                   <h4>Orta</h4>
                   <p>600-800 kelime</p>
                 </div>
-                <div 
+                <div
                   className={`${styles.aiGenCard} ${aiLength === 'long' ? styles.active : ''}`}
                   onClick={() => !isGeneratingAI && setAiLength('long')}
                 >
@@ -331,29 +323,20 @@ const AdminBlog = () => {
 
             <div className={styles.aiGenOptionGroup}>
               <label>Ekstra Formatlama</label>
-              <div className={styles.aiTogglesContainer}>
-                <div className={styles.modernToggleWrapper} onClick={() => !isGeneratingAI && setUseCodeBlocks(!useCodeBlocks)}>
-                  <div className={`${styles.modernToggle} ${useCodeBlocks ? styles.toggled : ''}`}>
-                    <div className={styles.toggleKnob}></div>
-                  </div>
-                  <span>Önemli yerlerde &lt;pre&gt;&lt;code&gt; bloğu kullan</span>
+              <div className={styles.modernToggleWrapper} onClick={() => !isGeneratingAI && setUseCodeBlocks(!useCodeBlocks)}>
+                <div className={`${styles.modernToggle} ${useCodeBlocks ? styles.toggled : ''}`}>
+                  <div className={styles.toggleKnob}></div>
                 </div>
-                
-                <div className={styles.modernToggleWrapper} onClick={() => !isGeneratingAI && setUseArtBlocks(!useArtBlocks)}>
-                  <div className={`${styles.modernToggle} ${useArtBlocks ? styles.toggledArt : ''}`}>
-                    <div className={styles.toggleKnob}></div>
-                  </div>
-                  <span>Photoshop (Art) Tasarımı kullan &lt;pre&gt;&lt;art&gt;</span>
-                </div>
+                <span>Önemli yerlerde &lt;pre&gt;&lt;code&gt; bloğu kullan</span>
               </div>
             </div>
           </div>
 
-          {aiError && <div className={styles.aiGenError}><AlertCircle size={16}/> {aiError}</div>}
+          {aiError && <div className={styles.aiGenError}><AlertCircle size={16} /> {aiError}</div>}
 
           <div className={styles.aiGenFooter}>
-            <button 
-              className={`${styles.aiGenSubmitBtn} ${isGeneratingAI ? styles.loading : ''}`} 
+            <button
+              className={`${styles.aiGenSubmitBtn} ${isGeneratingAI ? styles.loading : ''}`}
               onClick={handleGenerateAI}
               disabled={isGeneratingAI || !aiPrompt.trim()}
             >
@@ -383,7 +366,7 @@ const AdminBlog = () => {
           </button>
         </div>
       </div>
-      
+
       {isOrderDirty && (
         <div className={styles.saveBar}>
           <span className={styles.saveBarText}>
@@ -394,14 +377,14 @@ const AdminBlog = () => {
           </button>
         </div>
       )}
-      
+
       <div className={styles.gridList}>
         {localBlogs.length === 0 ? (
           <p className={styles.emptyState}>Henüz hiç blog yazısı eklenmemiş.</p>
         ) : (
           localBlogs.map((blog, index) => (
-            <div 
-              key={blog.slug} 
+            <div
+              key={blog.slug}
               className={`${styles.gridItem} ${dragIndex === index ? styles.dragging : ''}`}
               draggable
               onDragStart={(e) => handleDragStart(e, index)}

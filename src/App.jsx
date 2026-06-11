@@ -2,6 +2,8 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { LazyMotion, domAnimation, AnimatePresence } from 'framer-motion';
 import { lazy, Suspense, useEffect, useState, useRef } from 'react';
+import Lenis from 'lenis';
+import 'lenis/dist/lenis.css';
 
 // Components
 import Navbar from './components/Navbar/Navbar';
@@ -139,6 +141,30 @@ function App() {
   const isHomePage = location.pathname === '/';
   
   const isMaintenanceMode = cms?.settings?.maintenanceMode;
+
+  // Initialize Lenis Smooth Scroll
+  useEffect(() => {
+    if (isAdminRoute) return; // Don't use smooth scroll in admin panel
+
+    const lenis = new Lenis({
+      duration: 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      smoothWheel: true,
+      wheelMultiplier: 1,
+      touchMultiplier: 2,
+    });
+
+    function raf(time) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    }
+
+    requestAnimationFrame(raf);
+
+    return () => {
+      lenis.destroy();
+    };
+  }, [isAdminRoute]);
 
   useEffect(() => {
     init();

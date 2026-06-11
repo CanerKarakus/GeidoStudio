@@ -11,6 +11,7 @@ const rateLimit = require('express-rate-limit');
 const authMiddleware = require('../middleware/auth');
 const { readMessages, writeMessages } = require('../models/messageModel');
 const { sendEmail } = require('../services/emailService');
+const { sendTelegramMessage } = require('../services/telegramService');
 const fs = require('fs');
 const path = require('path');
 
@@ -112,6 +113,12 @@ router.post('/', submitLimiter, async (req, res) => {
     </div>`;
     sendEmail(process.env.SMTP_USER, adminSubject, adminText, adminHtml, newMessage.email).catch(err => {
       console.error('[Messages] Admin notification error:', err);
+    });
+
+    // Notify via Telegram
+    const telegramMessage = `🚨 <b>Yeni İletişim Formu Dolduruldu!</b>\n\n👤 <b>İsim:</b> ${newMessage.name}\n📧 <b>E-posta:</b> ${newMessage.email}\n📞 <b>Telefon:</b> ${newMessage.phone || '-'}\n\n💬 <b>Mesaj:</b>\n<i>${newMessage.message}</i>\n\n🔗 <a href="${process.env.FRONTEND_URL || 'https://geidostudio.com'}/admin/messages">Admin Panele Git</a>`;
+    sendTelegramMessage(telegramMessage).catch(err => {
+      console.error('[Messages] Telegram notification error:', err);
     });
 
     const io = req.app.get('io');
@@ -291,6 +298,12 @@ router.post('/ticket/:id/reply', async (req, res) => {
     try {
       await sendEmail(process.env.SMTP_USER, adminSubject, adminText, adminHtml, thread.email);
     } catch (err) {}
+
+    // Notify via Telegram
+    const telegramReplyMessage = `💬 <b>Yeni Bilet Yanıtı (Müşteri)</b>\n\n👤 <b>İsim:</b> ${thread.name}\n🔖 <b>Konu:</b> ${thread.subject || '-'}\n\n📝 <b>Yanıt:</b>\n<i>${text.trim()}</i>\n\n🔗 <a href="${process.env.FRONTEND_URL || 'https://geidostudio.com'}/admin/messages">Admin Panele Git</a>`;
+    sendTelegramMessage(telegramReplyMessage).catch(err => {
+      console.error('[Messages] Telegram reply notification error:', err);
+    });
 
     const io = req.app.get('io');
     if (io) {
