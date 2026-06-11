@@ -340,7 +340,11 @@ function initTelegramBot(app, io) {
 
     bot.sendMessage(chatId, `⏳ <b>${url}</b> Google PageSpeed sunucularında analiz ediliyor...\n(Bu işlem ortalama 10-15 saniye sürebilir, lütfen bekleyin)`, { parse_mode: 'HTML' });
 
-    const apiUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&category=performance&category=seo&category=accessibility&category=best-practices&strategy=mobile`;
+    let apiUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&category=performance&category=seo&category=accessibility&category=best-practices&strategy=mobile`;
+    
+    if (process.env.PAGESPEED_API_KEY) {
+      apiUrl += `&key=${process.env.PAGESPEED_API_KEY}`;
+    }
 
     https.get(apiUrl, (res) => {
       let data = '';
@@ -354,6 +358,10 @@ function initTelegramBot(app, io) {
           const result = JSON.parse(data);
           
           if (result.error) {
+            if (result.error.message.includes('Quota exceeded') && !process.env.PAGESPEED_API_KEY) {
+               bot.sendMessage(chatId, `❌ <b>Google API Kotası Doldu!</b>\n\nGoogle'ın ücretsiz anonim kotasına takıldınız. Bunu çözmek çok kolay:\n1. Google Cloud Console'dan ücretsiz bir "PageSpeed Insights API Key" alın.\n2. Sitenizdeki <code>.env</code> dosyasına <b>PAGESPEED_API_KEY=sizin_kodunuz</b> şeklinde ekleyin.\n3. Sunucuyu yeniden başlatın.`, { parse_mode: 'HTML' });
+               return;
+            }
             bot.sendMessage(chatId, `❌ Hata: Analiz yapılamadı. URL'nin doğru olduğundan emin olun.\nDetay: ${result.error.message}`);
             return;
           }
