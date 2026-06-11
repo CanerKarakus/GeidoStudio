@@ -117,7 +117,7 @@ const io = new Server(server, {
 app.set('io', io);
 
 // Initialize Telegram Interactive Bot
-initTelegramBot(io);
+initTelegramBot(app, io);
 
 io.on('connection', (socket) => {
   console.log('Admin connected to socket:', socket.id);

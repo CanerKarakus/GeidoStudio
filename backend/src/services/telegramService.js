@@ -87,7 +87,7 @@ function scheduleDailyReport(chatId) {
   dailyReportTimeout = setTimeout(() => sendDailyReport(chatId), delay);
 }
 
-function initTelegramBot(io) {
+function initTelegramBot(app, io) {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   const chatId = process.env.TELEGRAM_CHAT_ID;
 
@@ -96,8 +96,25 @@ function initTelegramBot(io) {
     return;
   }
 
-  bot = new TelegramBot(token, { polling: true });
-  console.log('[TelegramService] Telegram Bot is listening for commands.');
+  bot = new TelegramBot(token); // Polling kapatıldı
+  
+  // Webhook Ayarı
+  const backendUrl = process.env.BACKEND_URL || 'https://api.geidostudio.com';
+  const webhookUrl = `${backendUrl}/api/webhooks/telegram`;
+  
+  bot.setWebHook(webhookUrl).then(() => {
+    console.log(`[TelegramService] Webhook başarıyla kuruldu: ${webhookUrl}`);
+  }).catch((err) => {
+    console.error('[TelegramService] Webhook kurulamadı:', err);
+  });
+
+  // Telegram'dan gelen istekleri yakalayan Endpoint
+  app.post('/api/webhooks/telegram', (req, res) => {
+    bot.processUpdate(req.body);
+    res.sendStatus(200);
+  });
+
+  console.log('[TelegramService] Telegram Bot is listening via Webhook.');
 
   // Init Groq if available
   if (process.env.GROQ_API_KEY) {
