@@ -845,7 +845,9 @@ Sadece 'Konu:' ve 'İçerik:' şeklinde son metni ver. Başka hiçbir şey yazma
   bot.onText(/^\/seslimail/, (msg) => {
     if (!isAuthorized(msg)) return;
     
+    let sessions = readSessions();
     sessions[msg.chat.id] = { command: 'seslimail', step: 'awaiting_email' };
+    writeSessions(sessions);
     bot.sendMessage(chatId, `📧 <b>Sesli Mail Modu Aktif</b>\n\nKime mail atacağız? Lütfen hedef e-posta adresini yazın:`, { parse_mode: 'HTML' });
   });
 
@@ -1081,8 +1083,12 @@ Sadece 'Konu:' ve 'İçerik:' şeklinde son metni ver. Başka hiçbir şey yazma
   // Command: /dekupe
   bot.onText(/^\/dekupe$/, (msg) => {
     if (!isAuthorized(msg)) return;
+
+    let sessions = readSessions();
     const chatId = msg.chat.id;
     sessions[chatId] = { command: 'dekupe', step: 'awaiting_photo' };
+    writeSessions(sessions);
+    
     bot.sendMessage(chatId, `✂️ Lütfen arka planını silmek (dekupe etmek) istediğiniz fotoğrafı bana gönderin.\n<i>İşlemi iptal etmek için herhangi başka bir komut yazabilirsiniz.</i>`, { parse_mode: 'HTML' });
   });
 
