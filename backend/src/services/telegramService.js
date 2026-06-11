@@ -12,7 +12,26 @@ const { sendEmail } = require('./emailService');
 let bot = null;
 let groqClient = null;
 let dailyReportTimeout = null;
-const sessions = {};
+const SESSIONS_FILE = path.join(__dirname, '../../data/sessions.json');
+
+const readSessions = () => {
+  try {
+    if (!fs.existsSync(SESSIONS_FILE)) return {};
+    return JSON.parse(fs.readFileSync(SESSIONS_FILE, 'utf8'));
+  } catch {
+    return {};
+  }
+};
+
+const writeSessions = (data) => {
+  try {
+    const dir = path.dirname(SESSIONS_FILE);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(SESSIONS_FILE, JSON.stringify(data, null, 2), 'utf8');
+  } catch (e) {
+    console.error('Session write error', e);
+  }
+};
 
 // Helper to download and transcribe voice
 async function transcribeVoiceMsg(botClient, groqCli, voiceFileId) {
@@ -277,6 +296,7 @@ function initTelegramBot(app, io) {
     if (!isAuthorized(msg)) return;
 
     const chatId = msg.chat.id;
+    let sessions = readSessions();
 
     // Handle /dekupe logic (either by caption OR by active session)
     const isDekupeSession = sessions[chatId] && sessions[chatId].command === 'dekupe';
@@ -296,7 +316,7 @@ function initTelegramBot(app, io) {
         }
       }
 
-      if (sessions[chatId]) delete sessions[chatId]; // Clear session
+      if (sessions[chatId]) delete sessions[chatId]; writeSessions(sessions); // Clear session
       bot.sendMessage(chatId, `✂️ <b>Fotoğraf Alındı!</b>\nYapay zeka arka planı kesiyor, lütfen bekleyin... (Eğer fotoğraf yüksek çözünürlüklüyse bu işlem biraz sürebilir)`, { parse_mode: 'HTML' });
       
       try {
@@ -344,7 +364,7 @@ function initTelegramBot(app, io) {
 
     if (msg.text && msg.text.startsWith('/')) {
       // If user types a command while in a session, cancel the session
-      if (sessions[chatId]) delete sessions[chatId];
+      if (sessions[chatId]) { delete sessions[chatId]; writeSessions(sessions); }
       return; 
     }
 
@@ -361,6 +381,7 @@ function initTelegramBot(app, io) {
         }
         session.email = msg.text.trim();
         session.step = 'awaiting_voice';
+        writeSessions(sessions);
         bot.sendMessage(chatId, `✅ Adres kaydedildi: <b>${session.email}</b>\n\nŞimdi lütfen göndermek istediğiniz mesajı <b>Sesli Mesaj (🎤)</b> olarak kaydedip bana gönderin. İptal etmek için herhangi bir komut (örn: /start) yazabilirsiniz.`, { parse_mode: 'HTML' });
         return;
       }
@@ -403,11 +424,13 @@ Patronun Diktesi: "${rawText}"`;
           session.draftSubject = subject;
           session.draftBody = body;
           session.step = 'awaiting_approval';
+          writeSessions(sessions);
           
           bot.sendMessage(chatId, `📝 <b>Mail Taslağınız Hazır!</b>\n\n<b>Alıcı:</b> ${session.email}\n<b>Konu:</b> ${subject}\n\n<b>İçerik:</b>\n${body}\n\n✅ Göndermek için <b>"evet"</b> veya <b>"gönder"</b> yazın.\n✏️ Değiştirmek istediğiniz yerler varsa sesli mesaj atın veya yeni halini yazın.\n❌ İptal etmek için /start yazın.`, { parse_mode: 'HTML' });
         } catch (err) {
           bot.sendMessage(chatId, `❌ Hata: ${err.message}`);
           delete sessions[chatId];
+          writeSessions(sessions);
         }
         return;
       }
@@ -423,6 +446,7 @@ Patronun Diktesi: "${rawText}"`;
             bot.sendMessage(chatId, `❌ Gönderim hatası: ${err.message}`);
           }
           delete sessions[chatId];
+          writeSessions(sessions);
           return;
         }
 
@@ -457,6 +481,7 @@ Sadece 'Konu:' ve 'İçerik:' şeklinde son metni ver. Başka hiçbir şey yazma
           
           const contentMatch = aiResponse.match(/İçerik:\s*([\s\S]+)/i);
           if (contentMatch) session.draftBody = contentMatch[1].trim();
+          writeSessions(sessions);
           
           bot.sendMessage(chatId, `📝 <b>YENİ Mail Taslağınız Hazır!</b>\n\n<b>Alıcı:</b> ${session.email}\n<b>Konu:</b> ${session.draftSubject}\n\n<b>İçerik:</b>\n${session.draftBody}\n\n✅ Göndermek için <b>"evet"</b> veya <b>"gönder"</b> yazın.\n✏️ Tekrar değiştirmek isterseniz ses/yazı atın.\n❌ İptal etmek için /start yazın.`, { parse_mode: 'HTML' });
         } catch (err) {
