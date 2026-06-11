@@ -735,7 +735,7 @@ function initTelegramBot(app, io) {
   });
 
   // Command: /dedektif [site]
-  bot.onText(/^\/dedektif(?:\s+(.+))?/, (msg, match) => {
+  bot.onText(/^\/dedektif(?:\s+(.+))?/, async (msg, match) => {
     if (!isAuthorized(msg)) return;
     
     let url = match[1];
@@ -746,45 +746,90 @@ function initTelegramBot(app, io) {
 
     if (!url.startsWith('http')) url = 'https://' + url;
 
-    bot.sendMessage(chatId, `🎨 <b>${url}</b> kodları kazınıyor, renkler ve fontlar çalınıyor...`, { parse_mode: 'HTML' });
+    bot.sendMessage(chatId, `🕵️‍♂️ <b>${url}</b> kodları derinlemesine kazınıyor. Renkler, fontlar, e-postalar, sosyal medya hesapları çalınıyor... (Bu biraz zaman alabilir)`, { parse_mode: 'HTML' });
 
-    https.get(url, (res) => {
-      let data = '';
-      res.on('data', chunk => data += chunk);
-      res.on('end', () => {
-        try {
-          const html = data;
-          const colorRegex = /#[0-9a-fA-F]{6}\b/g;
-          const colors = html.match(colorRegex) || [];
-          const uniqueColors = [...new Set(colors.map(c => c.toUpperCase()))].slice(0, 10);
-          
-          const fontRegex = /family=([A-Za-z0-9+]+)[&:]/g;
-          let fontMatches;
-          const fonts = new Set();
-          while ((fontMatches = fontRegex.exec(html)) !== null) {
-            fonts.add(fontMatches[1].replace(/\+/g, ' '));
-          }
-
-          if (uniqueColors.length === 0 && fonts.size === 0) {
-            bot.sendMessage(chatId, `❓ Bu site tasarımsal olarak çok kapalı veya statik. CSS dosyalarına ulaşılamadı.`);
-            return;
-          }
-
-          let report = `🕵️‍♂️ <b>Tasarım İstihbaratı: ${url}</b>\n\n`;
-          if (fonts.size > 0) report += `🔤 <b>Tespit Edilen Fontlar:</b>\n` + [...fonts].join(', ') + `\n\n`;
-          else report += `🔤 <b>Tespit Edilen Fontlar:</b> (Standart sistem fontları)\n\n`;
-
-          if (uniqueColors.length > 0) report += `🎨 <b>Ana Renk Paleti (HEX):</b>\n` + uniqueColors.join(', ') + `\n\n`;
-
-          report += `<i>Bu bilgileri Figma'da tasarım yaparken veya müşteriye "Kurumsal kimliğinizi analiz ettik" derken kullanabilirsiniz.</i>`;
-          bot.sendMessage(chatId, report, { parse_mode: 'HTML' });
-        } catch (e) {
-          bot.sendMessage(chatId, `❌ Analiz sırasında hata oluştu.`);
-        }
-      });
-    }).on('error', () => {
-      bot.sendMessage(chatId, `❌ Siteye bağlanılamadı.`);
+    const fetchUrl = (targetUrl) => new Promise((resolve) => {
+      https.get(targetUrl, (res) => {
+        let data = '';
+        res.on('data', chunk => data += chunk);
+        res.on('end', () => resolve(data));
+      }).on('error', () => resolve(''));
     });
+
+    try {
+      const html = await fetchUrl(url);
+      if (!html) throw new Error('HTML alınamadı');
+
+      let combinedText = html;
+
+      // Extract CSS files to find colors
+      const cssRegex = /<link[^>]*rel="stylesheet"[^>]*href="([^"]+)"/gi;
+      let cssMatches;
+      const cssLinks = [];
+      while ((cssMatches = cssRegex.exec(html)) !== null) {
+        let href = cssMatches[1];
+        if (!href.startsWith('http')) {
+          try { href = new URL(href, url).href; } catch(e){}
+        }
+        cssLinks.push(href);
+      }
+
+      // Fetch first 2 CSS files to avoid long waiting times
+      for (let link of cssLinks.slice(0, 2)) {
+        combinedText += await fetchUrl(link);
+      }
+
+      // 1. Find Hex Colors
+      const colorRegex = /#[0-9a-fA-F]{6}\b/g;
+      const colors = combinedText.match(colorRegex) || [];
+      const uniqueColors = [...new Set(colors.map(c => c.toUpperCase()))].slice(0, 10);
+
+      // 2. Find Fonts
+      const fontRegex = /family=([A-Za-z0-9+]+)[&:]/g;
+      const fonts = new Set();
+      let fontMatches;
+      while ((fontMatches = fontRegex.exec(html)) !== null) {
+        fonts.add(fontMatches[1].replace(/\+/g, ' '));
+      }
+
+      // 3. Find Emails
+      const emailRegex = /[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}/g;
+      const emails = [...new Set(html.match(emailRegex) || [])].filter(e => !e.includes('sentry') && !e.includes('wix'));
+
+      // 4. Find Social Links
+      const socialLinks = [];
+      if (html.includes('instagram.com/')) socialLinks.push('Instagram');
+      if (html.includes('facebook.com/')) socialLinks.push('Facebook');
+      if (html.includes('twitter.com/') || html.includes('x.com/')) socialLinks.push('Twitter/X');
+      if (html.includes('linkedin.com/')) socialLinks.push('LinkedIn');
+      if (html.includes('youtube.com/')) socialLinks.push('YouTube');
+
+      // 5. Title & Description
+      const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+      const title = titleMatch ? titleMatch[1].trim() : 'Bulunamadı';
+      
+      const descMatch = html.match(/<meta\s+name=["']description["']\s+content=["']([^"']+)["']/i);
+      const description = descMatch ? descMatch[1].trim() : 'Bulunamadı';
+
+      let report = `🕵️‍♂️ <b>Derin İstihbarat: ${url}</b>\n\n`;
+      report += `📌 <b>Başlık:</b> ${title}\n`;
+      report += `📝 <b>Açıklama:</b> ${description}\n\n`;
+
+      if (emails.length > 0) report += `📧 <b>Sızdırılan E-Postalar:</b>\n${emails.join('\n')}\n\n`;
+      if (socialLinks.length > 0) report += `📱 <b>Sosyal Ağlar:</b> ${socialLinks.join(', ')}\n\n`;
+
+      if (fonts.size > 0) report += `🔤 <b>Tespit Edilen Fontlar:</b>\n` + [...fonts].join(', ') + `\n\n`;
+      else report += `🔤 <b>Tespit Edilen Fontlar:</b> (Sistem fontları)\n\n`;
+
+      if (uniqueColors.length > 0) report += `🎨 <b>Ana Renk Paleti (CSS'ten Çalındı):</b>\n` + uniqueColors.join(', ') + `\n\n`;
+      else report += `🎨 <b>Ana Renk Paleti:</b> Gizlenmiş.\n\n`;
+
+      report += `<i>Geido Studio Tasarım İstihbarat Servisi sundu.</i>`;
+      bot.sendMessage(chatId, report, { parse_mode: 'HTML' });
+
+    } catch (e) {
+      bot.sendMessage(chatId, `❌ Analiz sırasında hata oluştu veya site bağlantıyı reddetti.`);
+    }
   });
 
   const commandsList = `
