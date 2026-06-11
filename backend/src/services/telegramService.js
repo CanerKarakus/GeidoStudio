@@ -88,7 +88,7 @@ const readAnalytics = () => {
 };
 
 // Isolated AI Prompt for Admin Assistant
-const ADMIN_AI_SYSTEM_PROMPT = `Geido Studio'nun yöneticisinin/patronunun kişisel yapay zeka asistanısın. Müşterilerle veya site ziyaretçileriyle KONUŞMUYORSUN. Sadece yöneticiye hizmet ediyorsun. 
+const ADMIN_AI_SYSTEM_PROMPT = `Geido Studio'nun yöneticisinin kişisel yapay zeka asistanısın. Müşterilerle veya site ziyaretçileriyle KONUŞMUYORSUN. Sadece yöneticiye hizmet ediyorsun. 
 Amacın yöneticiye e-posta taslakları hazırlamak, projelerde fikir üretmek, yazılım/tasarım konseptlerinde beyin fırtınası yapmak ve yöneticinin sorduğu her türlü soruya kısa, net, saygılı ve profesyonel (ajans jargonuyla) yanıtlar vermektir. 
 Zaman tasarrufu önemlidir, lafı uzatma, doğrudan çözümü veya metni sun.`;
 
@@ -110,7 +110,7 @@ function sendDailyReport(chatId) {
 
   const maintenanceText = cms.settings?.maintenanceMode ? 'AÇIK 🚨 (Müşteriler siteyi göremiyor)' : 'KAPALI ✅';
 
-  const report = `🌅 <b>GÜNAYDIN PATRON!</b>\nİşte sistemin sabah özeti:\n\n` +
+  const report = `🌅 <b>GÜNAYDIN!</b>\nİşte sistemin sabah özeti:\n\n` +
     `👁️ <b>Dünkü Ziyaretçi:</b> ${yesterdayVisits}\n` +
     `📩 <b>Son 24 Saatte Gelen Mesaj:</b> ${newMessages}\n` +
     `⚠️ <b>Okunmamış Biletler:</b> ${unreadMessages}\n` +
@@ -218,6 +218,22 @@ function initTelegramBot(app, io) {
 
     // Trigger Netlify build so changes are reflected on the frontend
     triggerNetlifyBuild(chatId, `🚀 Bakım modu değiştirildiği için otomatik olarak <b>Netlify Build</b> tetiklendi! Siteniz 1-2 dakika içinde güncellenecek.`);
+  });
+
+  // Command: /sahtewp
+  bot.onText(/^\/sahtewp$/, (msg) => {
+    const chatId = msg.chat.id;
+    if (!isAuthorized(msg)) return;
+
+    const cms = readCMS();
+    if (!cms.settings) cms.settings = {};
+    
+    cms.settings.honeypotEnabled = !cms.settings.honeypotEnabled;
+    writeCMS(cms);
+
+    const status = cms.settings.honeypotEnabled ? 'AÇIK (Aktif)' : 'KAPALI (Pasif)';
+    bot.sendMessage(chatId, `🚨 <b>Hacker Kapanı (/wp-admin) ${status}</b>\n\nSistemi yayına almak için Netlify derlemesi başlatılıyor...`, { parse_mode: 'HTML' });
+    triggerNetlifyBuild(chatId, `✅ <b>Hacker Kapanı Yayında!</b> Artık /wp-admin adresine girenler otomatik banlanacak.`);
   });
 
   // Command: /rapor
@@ -403,12 +419,12 @@ function initTelegramBot(app, io) {
         try {
           const rawText = await transcribeVoiceMsg(bot, groqClient, msg.voice.file_id);
 
-          const rewritePrompt = `Geido Studio ajansının Kurumsal İletişim Uzmanısın. Aşağıda patronunun sana gönderdiği dikte (sesli mesaj deşifresi) yer alıyor.
-Bunu al, son derece profesyonel, ciddi, resmi ve saygılı bir dille "Müşteriye gidecek kurumsal bir e-posta" olarak baştan yaz. Patronun gündelik ağzını (örneğin "bilginiz olsun dedim", "kanka", "hallederiz" vb.) at, yerine kurumsal iş dünyası terimleri kullan.
+          const rewritePrompt = `Geido Studio ajansının Kurumsal İletişim Uzmanısın. Aşağıda sana gönderilen dikte (sesli mesaj deşifresi) yer alıyor.
+Bunu al, son derece profesyonel, ciddi, resmi ve saygılı bir dille "Müşteriye gidecek kurumsal bir e-posta" olarak baştan yaz. Gündelik ağzı (örneğin "bilginiz olsun dedim", "kanka", "hallederiz" vb.) at, yerine kurumsal iş dünyası terimleri kullan.
 
 Asla fazladan bir şey (merhaba ben yapay zeka vb.) yazma. Yalnızca mailin 'Konu:' satırı ile başlayıp ardından 'İçerik:' şeklinde mail metnini ver.
 
-Patronun Diktesi: "${rawText}"`;
+Gönderilen Dikte: "${rawText}"`;
 
           const chatCompletion = await groqClient.chat.completions.create({
             messages: [{ role: 'user', content: rewritePrompt }],
@@ -464,12 +480,12 @@ Patronun Diktesi: "${rawText}"`;
             feedbackText = await transcribeVoiceMsg(bot, groqClient, msg.voice.file_id);
           }
 
-          const rewritePrompt = `Geido Studio ajansının Kurumsal İletişim Uzmanısın. Aşağıda hazırladığın bir taslak mail ve patronunun bu taslakla ilgili düzeltme/revizyon talimatı yer alıyor.
+          const rewritePrompt = `Geido Studio ajansının Kurumsal İletişim Uzmanısın. Aşağıda hazırladığın bir taslak mail ve yöneticinin bu taslakla ilgili düzeltme/revizyon talimatı yer alıyor.
 
 Mevcut Konu: ${session.draftSubject}
 Mevcut İçerik: ${session.draftBody}
 
-Patronun Düzeltme Talimatı: "${feedbackText}"
+Düzeltme Talimatı: "${feedbackText}"
 
 Lütfen taslağı bu talimata göre GÜNCELLE. Son derece resmi ve kurumsal kalmaya devam et.
 Sadece 'Konu:' ve 'İçerik:' şeklinde son metni ver. Başka hiçbir şey yazma.`;
@@ -501,6 +517,59 @@ Sadece 'Konu:' ve 'İçerik:' şeklinde son metni ver. Başka hiçbir şey yazma
       bot.sendMessage(chatId, `❌ Groq AI yapılandırılmamış. Lütfen .env dosyasına GROQ_API_KEY ekleyin.`);
       return;
     }
+
+    // JARVIS MODU (Sesli CMS)
+    if (msg.voice) {
+      try {
+        bot.sendMessage(chatId, `🧠 <b>Jarvis Modu Aktif</b>
+Sesiniz deşifre ediliyor, CMS güncellenecek...`, { parse_mode: 'HTML' });
+        bot.sendChatAction(chatId, 'typing');
+        
+        const rawText = await transcribeVoiceMsg(bot, groqClient, msg.voice.file_id);
+        const cms = readCMS();
+        
+        const prompt = `Geido Studio CMS veritabanını güncelleyen Jarvis yapay zekasısın.
+Aşağıda yöneticinin sana verdiği sesli komut ve şu anki CMS JSON verisi var.
+SADECE güncellenmesi gereken kısmı değiştirilmiş GÜNCEL VE TAM CMS JSON objesini döndür. 
+Asla JSON harici hiçbir açıklama metni yazma. Markdown block kullanma, sadece saf JSON ver!
+
+Yönetici Komutu: "${rawText}"
+
+Mevcut CMS:
+${JSON.stringify(cms, null, 2)}
+`;
+
+        const chatCompletion = await groqClient.chat.completions.create({
+          messages: [{ role: 'system', content: prompt }],
+          model: 'llama-3.3-70b-versatile',
+          temperature: 0.1,
+        });
+
+        let aiResponse = chatCompletion.choices[0]?.message?.content || '{}';
+        aiResponse = aiResponse.replace(/```json/g, '').replace(/```/g, '').trim();
+        
+        const newCms = JSON.parse(aiResponse);
+        
+        // Backup
+        const backupPath = path.join(__dirname, '../../data/cms_backup_' + Date.now() + '.json');
+        fs.writeFileSync(backupPath, JSON.stringify(cms, null, 2), 'utf8');
+        
+        writeCMS(newCms);
+        
+        bot.sendMessage(chatId, `✅ <b>Jarvis CMS'i Güncelledi!</b>
+
+Deşifre edilen komutunuz: <i>"${rawText}"</i>
+
+Sistem yayına alınıyor...`, { parse_mode: 'HTML' });
+        triggerNetlifyBuild(chatId, `🚀 <b>Güncellemeler Yayında!</b>`);
+
+      } catch (e) {
+        bot.sendMessage(chatId, `❌ Jarvis Hatası: ${e.message}`);
+      }
+      return;
+    }
+
+    if (!msg.text || msg.text.startsWith('/')) return;
 
     try {
       // Typing indicator
@@ -840,7 +909,7 @@ Sadece 'Konu:' ve 'İçerik:' şeklinde son metni ver. Başka hiçbir şey yazma
           if (techs.length === 0) {
             bot.sendMessage(chatId, `❓ <b>${url}</b>\n\nBu sitenin altyapısı çok iyi gizlenmiş veya özel (custom) yazılım kullanılmış. Piyasada bilinen hazır sistemlere benzemiyor.`, { parse_mode: 'HTML' });
           } else {
-            bot.sendMessage(chatId, `🕵️‍♂️ <b>İstihbarat Raporu: ${url}</b>\n\nSitenin kodlarında şu teknolojilerin izine rastlandı:\n\n${techs.join('\n')}\n\n<i>Patron, eğer site WordPress veya eski bir altyapıdaysa, Geido Studio'nun modern özel yazılımlarını satmak için harika bir fırsat!</i>`, { parse_mode: 'HTML' });
+            bot.sendMessage(chatId, `🕵️‍♂️ <b>İstihbarat Raporu: ${url}</b>\n\nSitenin kodlarında şu teknolojilerin izine rastlandı:\n\n${techs.join('\n')}\n\n<i>Eğer site WordPress veya eski bir altyapıdaysa, Geido Studio'nun modern özel yazılımlarını satmak için harika bir fırsat!</i>`, { parse_mode: 'HTML' });
           }
         } catch (e) {
           bot.sendMessage(chatId, `❌ Analiz sırasında hata oluştu.`);
@@ -1110,6 +1179,7 @@ Sadece 'Konu:' ve 'İçerik:' şeklinde son metni ver. Başka hiçbir şey yazma
     if (!isAuthorized(msg)) return;
     const helpMsg = `📖 <b>Komut Rehberi:</b>\n
 <b>/bakim</b>: Sitenin bakım modunu açar/kapatır ve anında Netlify'ı tetikler.
+<b>/sahtewp</b>: Hacker kapanını açar/kapatır (Sahte wp-admin sayfası oluşturur).
 <b>/rapor</b>: Sitenize giren dünkü, bugünkü ve toplam ziyaretçi sayısını söyler.
 <b>/sistem</b>: cPanel sunucunuzun CPU, RAM, disk durumunu ve Node.js versiyonunu gösterir.
 <b>/gunluk</b>: Bunu açtığınızda her sabah tam 09:00'da dünün özeti otomatik gönderilir.
@@ -1132,7 +1202,7 @@ Sadece 'Konu:' ve 'İçerik:' şeklinde son metni ver. Başka hiçbir şey yazma
   bot.onText(/^\/start/, (msg, match) => {
     const chatId = msg.chat.id;
     if (!isAuthorized(msg)) return;
-    const welcomeMsg = `Merhaba Patron! 🤖\n\nBen sizin kişisel yapay zeka asistanınızım. Bana normal mesaj yazarak taslak mailler yazdırabilir, fikir sorabilirsiniz.\n\nAyrıca şu komutları kullanabilirsiniz:\n${commandsList}`;
+    const welcomeMsg = `Merhaba! 🤖\n\nBen sizin kişisel yapay zeka asistanınızım. Bana normal mesaj yazarak taslak mailler yazdırabilir, fikir sorabilirsiniz.\n\nAyrıca şu komutları kullanabilirsiniz:\n${commandsList}`;
     bot.sendMessage(chatId, welcomeMsg);
   });
 }

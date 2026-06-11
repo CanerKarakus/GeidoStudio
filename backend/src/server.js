@@ -66,6 +66,53 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 // ── Trust proxy (needed if behind Nginx/cPanel proxy) ───────────────────────
 app.set('trust proxy', 1);
 
+// ── IP Blocking Middleware (Honeypot) ──────────────────────────────────────
+const { readCMS, writeCMS } = require('./models/cmsModel');
+const { sendTelegramMessage } = require('./services/telegramService');
+
+app.use((req, res, next) => {
+  try {
+    const cms = readCMS();
+    const blockedIPs = cms?.settings?.blockedIPs || [];
+    let clientIP = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    if (typeof clientIP === 'string') {
+      clientIP = clientIP.split(',')[0].trim();
+    }
+    
+    if (blockedIPs.includes(clientIP)) {
+      return res.status(403).send('Access Denied');
+    }
+  } catch(e) {}
+  next();
+});
+
+// ── Honeypot Route ────────────────────────────────────────────────────────
+app.post('/api/honeypot', (req, res) => {
+  try {
+    const cms = readCMS();
+    if (!cms?.settings?.honeypotEnabled) return res.status(404).send('Not found');
+    
+    let clientIP = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    if (typeof clientIP === 'string') {
+      clientIP = clientIP.split(',')[0].trim();
+    }
+
+    if (!cms.settings.blockedIPs) {
+      cms.settings.blockedIPs = [];
+    }
+
+    if (!cms.settings.blockedIPs.includes(clientIP)) {
+      cms.settings.blockedIPs.push(clientIP);
+      writeCMS(cms);
+      sendTelegramMessage(`🚨 <b>Hacker Kapanı Tetiklendi!</b>\n\nBirisi sahte /wp-admin paneline girmeye çalıştı.\nIP: ${clientIP}\nDurum: <b>KALICI OLARAK BANLANDI!</b>`);
+    }
+    res.json({ success: true });
+  } catch(e) {
+    res.status(500).send('Error');
+  }
+});
+
+
 // ── Routes ───────────────────────────────────────────────────────────────────
 app.use('/api/auth',       require('./routes/auth'));
 app.use('/api/cms',        require('./routes/cms'));

@@ -31,6 +31,7 @@ const KvkkPolicy = lazy(() => import('./pages/Legal/KvkkPolicy'));
 const Ticket = lazy(() => import('./pages/Ticket/Ticket'));
 const Unsubscribe = lazy(() => import('./pages/Unsubscribe/Unsubscribe'));
 const Tracking = lazy(() => import('./pages/Tracking/Tracking'));
+const Honeypot = lazy(() => import('./pages/Honeypot/Honeypot'));
 
 // Admin pages
 const AdminLayout = lazy(() => import('./components/AdminLayout/AdminLayout'));
@@ -126,6 +127,7 @@ function AnimatedRoutes() {
         </Route>
 
         {/* 404 Route */}
+        <Route path="/wp-admin" element={<PageTransition><Honeypot /></PageTransition>} />
         <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
       </Routes>
     </AnimatePresence>

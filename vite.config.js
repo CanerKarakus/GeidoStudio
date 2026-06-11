@@ -47,10 +47,11 @@ export default defineConfig({
     },
   },
   server: {
+    port: 5175,
     allowedHosts: ['jaquelyn-vitreum-collene.ngrok-free.dev', 'all'],
     proxy: {
       '/api': {
-        target: 'http://localhost:3001',
+        target: 'http://localhost:3005',
         changeOrigin: true,
         secure: false,
       },
