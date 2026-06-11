@@ -664,6 +664,129 @@ function initTelegramBot(app, io) {
     });
   });
 
+  // Command: /guvenlik [site]
+  bot.onText(/^\/guvenlik(?:\s+(.+))?/, (msg, match) => {
+    if (!isAuthorized(msg)) return;
+    
+    let url = match[1];
+    if (!url) {
+      bot.sendMessage(chatId, `❌ Hata: Site adresi girmelisiniz.\nKullanım: <code>/guvenlik geidostudio.com</code>`, { parse_mode: 'HTML' });
+      return;
+    }
+
+    if (!url.startsWith('http')) url = 'https://' + url;
+
+    bot.sendMessage(chatId, `🔒 <b>${url}</b> siber güvenlik taramasından geçiriliyor...`, { parse_mode: 'HTML' });
+
+    https.get(url, (res) => {
+      try {
+        const headers = res.headers;
+        const cert = res.socket.getPeerCertificate();
+        
+        let score = 100;
+        let findings = [];
+
+        if (!headers['strict-transport-security']) {
+          score -= 20;
+          findings.push('❌ HSTS (Güvenli İletişim) eksik.');
+        } else findings.push('✅ HSTS aktif.');
+
+        if (!headers['x-frame-options']) {
+          score -= 15;
+          findings.push('❌ Clickjacking koruması (X-Frame-Options) yok.');
+        } else findings.push('✅ Clickjacking koruması aktif.');
+
+        if (!headers['content-security-policy']) {
+          score -= 25;
+          findings.push('❌ XSS (Cross-Site Scripting) Koruması (CSP) zayıf.');
+        } else findings.push('✅ Güçlü CSP kuralları tespit edildi.');
+
+        if (cert && cert.valid_to) {
+          const daysLeft = Math.floor((new Date(cert.valid_to) - new Date()) / (1000 * 60 * 60 * 24));
+          if (daysLeft < 15) {
+            score -= 30;
+            findings.push(`🚨 DİKKAT: SSL Sertifikasının süresinin bitmesine sadece ${daysLeft} gün kaldı!`);
+          } else findings.push(`✅ SSL Sertifikası geçerli (Kalan: ${daysLeft} gün).`);
+        } else {
+          score -= 40;
+          findings.push(`❌ Geçerli bir SSL sertifikası bulunamadı! Veriler tehlikede.`);
+        }
+
+        if (score < 0) score = 0;
+
+        let emoji = '🟢';
+        let pitch = 'Bu sitenin güvenliği gayet iyi durumda. Başka bir eksiğine odaklanalım.';
+        if (score < 50) {
+          emoji = '🔴';
+          pitch = 'Bu sitenin ciddi güvenlik açıkları var! Müşteriye derhal "Kapsamlı Siber Güvenlik Optimizasyonu" paketi satmalısınız!';
+        } else if (score < 80) {
+          emoji = '🟠';
+          pitch = 'Sitenin temel güvenliği var ancak modern standartların gerisinde. Bir "Güvenlik İyileştirme" teklifi götürülebilir.';
+        }
+
+        const report = `🛡️ <b>Güvenlik Analizi: ${url}</b>\n\n${emoji} <b>Güvenlik Skoru:</b> ${score}/100\n\n<b>Tespitler:</b>\n${findings.join('\n')}\n\n💡 <b>Satış Önerisi:</b>\n<i>${pitch}</i>`;
+        bot.sendMessage(chatId, report, { parse_mode: 'HTML' });
+      } catch (err) {
+        bot.sendMessage(chatId, `❌ Güvenlik taraması yapılamadı.`);
+      }
+    }).on('error', () => {
+      bot.sendMessage(chatId, `❌ Siteye bağlanılamadı. Geçersiz SSL sertifikası veya çökmüş sunucu olabilir.`);
+    });
+  });
+
+  // Command: /dedektif [site]
+  bot.onText(/^\/dedektif(?:\s+(.+))?/, (msg, match) => {
+    if (!isAuthorized(msg)) return;
+    
+    let url = match[1];
+    if (!url) {
+      bot.sendMessage(chatId, `❌ Hata: Site adresi girmelisiniz.\nKullanım: <code>/dedektif geidostudio.com</code>`, { parse_mode: 'HTML' });
+      return;
+    }
+
+    if (!url.startsWith('http')) url = 'https://' + url;
+
+    bot.sendMessage(chatId, `🎨 <b>${url}</b> kodları kazınıyor, renkler ve fontlar çalınıyor...`, { parse_mode: 'HTML' });
+
+    https.get(url, (res) => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => {
+        try {
+          const html = data;
+          const colorRegex = /#[0-9a-fA-F]{6}\b/g;
+          const colors = html.match(colorRegex) || [];
+          const uniqueColors = [...new Set(colors.map(c => c.toUpperCase()))].slice(0, 10);
+          
+          const fontRegex = /family=([A-Za-z0-9+]+)[&:]/g;
+          let fontMatches;
+          const fonts = new Set();
+          while ((fontMatches = fontRegex.exec(html)) !== null) {
+            fonts.add(fontMatches[1].replace(/\+/g, ' '));
+          }
+
+          if (uniqueColors.length === 0 && fonts.size === 0) {
+            bot.sendMessage(chatId, `❓ Bu site tasarımsal olarak çok kapalı veya statik. CSS dosyalarına ulaşılamadı.`);
+            return;
+          }
+
+          let report = `🕵️‍♂️ <b>Tasarım İstihbaratı: ${url}</b>\n\n`;
+          if (fonts.size > 0) report += `🔤 <b>Tespit Edilen Fontlar:</b>\n` + [...fonts].join(', ') + `\n\n`;
+          else report += `🔤 <b>Tespit Edilen Fontlar:</b> (Standart sistem fontları)\n\n`;
+
+          if (uniqueColors.length > 0) report += `🎨 <b>Ana Renk Paleti (HEX):</b>\n` + uniqueColors.join(', ') + `\n\n`;
+
+          report += `<i>Bu bilgileri Figma'da tasarım yaparken veya müşteriye "Kurumsal kimliğinizi analiz ettik" derken kullanabilirsiniz.</i>`;
+          bot.sendMessage(chatId, report, { parse_mode: 'HTML' });
+        } catch (e) {
+          bot.sendMessage(chatId, `❌ Analiz sırasında hata oluştu.`);
+        }
+      });
+    }).on('error', () => {
+      bot.sendMessage(chatId, `❌ Siteye bağlanılamadı.`);
+    });
+  });
+
   const commandsList = `
 🛠️ /bakim - Siteyi bakıma al
 📊 /rapor - Ziyaretçi & mesaj istatistikleri
@@ -678,6 +801,8 @@ function initTelegramBot(app, io) {
 🕵️‍♂️ /teknoloji [site_adresi] - Sitenin hangi yazılımla yapıldığını bul
 🎙️ /seslimail - Sesinizi yapay zeka ile profesyonel e-postaya dönüştürüp yollar
 📸 /ss [site_adresi] - Sitenin ekran görüntüsünü çeker
+🔒 /guvenlik [site_adresi] - Sitenin siber güvenlik açıklarını tarar
+🎨 /dedektif [site_adresi] - Sitenin tüm renk paletini ve fontlarını çalar
 ℹ️ /help - Komutların detaylı açıklamalarını gör`;
 
   bot.onText(/^\/help/, (msg) => {
@@ -695,7 +820,9 @@ function initTelegramBot(app, io) {
 <b>/domain [site]</b>: Bir domainin bitiş tarihini ve kime kayıtlı olduğunu söyler. (Sadece jenerik uzantılar)
 <b>/teknoloji [site]</b>: Bir sitenin kaynak kodlarına sızarak hangi altyapıyla (WordPress, React, Shopify vb.) yapıldığını bulur.
 <b>/seslimail</b>: Sizi dinler, söylediğiniz şeyleri hatasız kurumsal bir e-postaya çevirip müşteriye yollar.
-<b>/ss [site]</b>: Belirtilen web sitesinin baştan aşağıya tüm sayfasının tam ekran görüntüsünü çekip fotoğraf olarak gönderir.`;
+<b>/ss [site]</b>: Belirtilen web sitesinin baştan aşağıya tüm sayfasının tam ekran görüntüsünü çekip fotoğraf olarak gönderir.
+<b>/guvenlik [site]</b>: Sitenin siber güvenlik zafiyetlerini ve SSL hatalarını tarayarak size bir satış/ikna metni sunar.
+<b>/dedektif [site]</b>: Sitenin CSS kodlarından fontlarını ve ana renk kodlarını (HEX) çekip listeler.`;
     bot.sendMessage(chatId, helpMsg, { parse_mode: 'HTML' });
   });
 
