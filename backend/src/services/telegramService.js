@@ -413,6 +413,7 @@ function initTelegramBot(app, io) {
 🚀 /build - Siteyi Netlify'da derle
 📢 /duyuru [mesaj] - Tüm müşterilere e-posta (bülten) at
 🔎 /seo [site_adresi] - Sitenin Google Hız/SEO puanını ölç
+📱 /qr [metin_veya_link] - Yüksek çözünürlüklü QR kod oluştur
 ℹ️ /help - Komutların detaylı açıklamalarını gör`;
 
   bot.onText(/^\/help/, (msg) => {
@@ -425,7 +426,8 @@ function initTelegramBot(app, io) {
 <b>/not [dakika] [metin]</b>: Belirttiğiniz dakika sonra size mesajı hatırlatır.
 <b>/build</b>: Sitenizin kaynak kodlarını Netlify'da zorla yeniden derler (günceller).
 <b>/duyuru [metin]</b>: Site üzerinden daha önce iletişim formu doldurmuş tüm müşterilerin e-posta adreslerine tek seferde Geido Studio imzalı bir kurumsal duyuru maili gönderir.
-<b>/seo [site_adresi]</b>: İstediğiniz bir web sitesini Google sunucularında analiz eder. Müşterilerin sitelerindeki SEO, Performans ve Hız sorunlarını tespit edip size raporlar. Satış kapatmak için birebirdir!`;
+<b>/seo [site_adresi]</b>: İstediğiniz bir web sitesini Google sunucularında analiz eder. Müşterilerin sitelerindeki SEO, Performans ve Hız sorunlarını tespit edip size raporlar. Satış kapatmak için birebirdir!
+<b>/qr [metin]</b>: Yazdığınız metin veya link için hızlıca QR kod oluşturur.`;
     bot.sendMessage(chatId, helpMsg, { parse_mode: 'HTML' });
   });
 
