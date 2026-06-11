@@ -250,8 +250,9 @@ function initTelegramBot(app, io) {
 
     const chatId = msg.chat.id;
 
-    // Handle Photo + /dekupe caption
-    if (msg.photo && msg.caption && msg.caption.includes('/dekupe')) {
+    // Handle /dekupe logic (either by caption OR by active session)
+    if (msg.photo && ((msg.caption && msg.caption.includes('/dekupe')) || (sessions[chatId] && sessions[chatId].command === 'dekupe'))) {
+      if (sessions[chatId]) delete sessions[chatId]; // Clear session
       bot.sendMessage(chatId, `✂️ <b>Fotoğraf Alındı!</b>\nYapay zeka arka planı kesiyor, lütfen bekleyin... (Bu işlem biraz sürebilir)`, { parse_mode: 'HTML' });
       
       try {
@@ -996,7 +997,7 @@ function initTelegramBot(app, io) {
 <b>/ss [site]</b>: Belirtilen web sitesinin baştan aşağıya tüm sayfasının tam ekran görüntüsünü çekip fotoğraf olarak gönderir.
 <b>/guvenlik [site]</b>: Sitenin siber güvenlik zafiyetlerini ve SSL hatalarını tarayarak size bir satış/ikna metni sunar.
 <b>/dedektif [site]</b>: Sitenin CSS kodlarından fontlarını ve ana renk kodlarını (HEX) çekip listeler.
-<b>/dekupe (Fotoğrafa yazın)</b>: Telegram'dan bota bir fotoğraf atarken açıklamasına /dekupe yazın. Bot saniyeler içinde arka planını tamamen silip size profesyonel, şeffaf PNG formatında geri verir.`;
+<b>/dekupe</b>: Komutu gönderdiğinizde bot sizden bir fotoğraf bekler. Gönderdiğiniz fotoğrafın arka planını yapay zeka ile tamamen silip size profesyonel, şeffaf PNG formatında geri verir. (İsterseniz fotoğrafı atarken açıklama kısmına /dekupe yazarak da hızlıca kullanabilirsiniz)`;
     bot.sendMessage(chatId, helpMsg, { parse_mode: 'HTML' });
   });
 
