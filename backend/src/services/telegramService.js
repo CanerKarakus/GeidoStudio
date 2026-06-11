@@ -251,12 +251,27 @@ function initTelegramBot(app, io) {
     const chatId = msg.chat.id;
 
     // Handle /dekupe logic (either by caption OR by active session)
-    if (msg.photo && ((msg.caption && msg.caption.includes('/dekupe')) || (sessions[chatId] && sessions[chatId].command === 'dekupe'))) {
+    const isDekupeSession = sessions[chatId] && sessions[chatId].command === 'dekupe';
+    const hasDekupeCaption = msg.caption && msg.caption.includes('/dekupe');
+
+    if ((msg.photo || msg.document) && (hasDekupeCaption || isDekupeSession)) {
+      
+      let fileId;
+      if (msg.photo) {
+        fileId = msg.photo[msg.photo.length - 1].file_id;
+      } else if (msg.document) {
+        if (msg.document.mime_type && msg.document.mime_type.startsWith('image/')) {
+          fileId = msg.document.file_id;
+        } else {
+          if (isDekupeSession) bot.sendMessage(chatId, `❌ Hata: Lütfen geçerli bir resim dosyası gönderin.`);
+          return;
+        }
+      }
+
       if (sessions[chatId]) delete sessions[chatId]; // Clear session
-      bot.sendMessage(chatId, `✂️ <b>Fotoğraf Alındı!</b>\nYapay zeka arka planı kesiyor, lütfen bekleyin... (Bu işlem biraz sürebilir)`, { parse_mode: 'HTML' });
+      bot.sendMessage(chatId, `✂️ <b>Fotoğraf Alındı!</b>\nYapay zeka arka planı kesiyor, lütfen bekleyin... (Eğer fotoğraf yüksek çözünürlüklüyse bu işlem biraz sürebilir)`, { parse_mode: 'HTML' });
       
       try {
-        const fileId = msg.photo[msg.photo.length - 1].file_id;
         const file = await bot.getFile(fileId);
         const fileUrl = `https://api.telegram.org/file/bot${process.env.TELEGRAM_BOT_TOKEN}/${file.file_path}`;
         
@@ -268,7 +283,7 @@ function initTelegramBot(app, io) {
 
         const formData = new URLSearchParams();
         formData.append('image_url', fileUrl);
-        formData.append('size', 'auto');
+        formData.append('size', 'full'); // Zorla en yüksek kaliteyi iste
 
         const response = await fetch('https://api.remove.bg/v1.0/removebg', {
           method: 'POST',
