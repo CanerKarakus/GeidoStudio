@@ -635,9 +635,9 @@ function initTelegramBot(app, io) {
 
     if (!url.startsWith('http')) url = 'https://' + url;
 
-    bot.sendMessage(chatId, `📸 <b>${url}</b> adresine giriliyor, ekran görüntüsü çekiliyor...\n(Birkaç saniye sürebilir)`, { parse_mode: 'HTML' });
+    bot.sendMessage(chatId, `📸 <b>${url}</b> adresine giriliyor, tüm sayfanın (yukarıdan aşağıya) ekran görüntüsü çekiliyor...\n(Birkaç saniye sürebilir)`, { parse_mode: 'HTML' });
 
-    const apiUrl = `https://api.microlink.io/?url=${encodeURIComponent(url)}&screenshot=true&meta=false`;
+    const apiUrl = `https://api.microlink.io/?url=${encodeURIComponent(url)}&screenshot=true&fullPage=true&meta=false`;
 
     https.get(apiUrl, (res) => {
       let data = '';
@@ -695,7 +695,7 @@ function initTelegramBot(app, io) {
 <b>/domain [site]</b>: Bir domainin bitiş tarihini ve kime kayıtlı olduğunu söyler. (Sadece jenerik uzantılar)
 <b>/teknoloji [site]</b>: Bir sitenin kaynak kodlarına sızarak hangi altyapıyla (WordPress, React, Shopify vb.) yapıldığını bulur.
 <b>/seslimail</b>: Sizi dinler, söylediğiniz şeyleri hatasız kurumsal bir e-postaya çevirip müşteriye yollar.
-<b>/ss [site]</b>: Belirtilen web sitesinin anında ilk açılan sayfasının ekran görüntüsünü çekip fotoğraf olarak gönderir.`;
+<b>/ss [site]</b>: Belirtilen web sitesinin baştan aşağıya tüm sayfasının tam ekran görüntüsünü çekip fotoğraf olarak gönderir.`;
     bot.sendMessage(chatId, helpMsg, { parse_mode: 'HTML' });
   });
 
