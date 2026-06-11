@@ -296,20 +296,26 @@ function initTelegramBot(app, io) {
                 });
                 const rawText = transcription.text;
 
-                // 2. Llama-3 API for Subject Only
-                const subjectPrompt = `Aşağıdaki metin için 3-4 kelimelik kısa bir e-posta konu başlığı üret. Sadece başlığı yaz, başka hiçbir açıklama yapma veya noktalama işareti koyma.\n\nMetin: "${rawText}"`;
+                // 2. Llama-3 API Rewrite
+                const rewritePrompt = `Aşağıdaki metin bir ajans patronunun (Geido Studio) sesli diktesinden alınmıştır. Bu metni al, son derece profesyonel, saygılı, hatasız ve kurumsal bir e-postaya dönüştür. Asla fazladan bir şey (merhaba ben yapay zeka vb.) yazma. Yalnızca mailin 'Konu:' satırı ile başlayıp ardından 'İçerik:' şeklinde mail metnini ver. Başka hiçbir açıklama yapma.\n\nDikte: "${rawText}"`;
                 
                 const chatCompletion = await groqClient.chat.completions.create({
-                  messages: [{ role: 'user', content: subjectPrompt }],
+                  messages: [{ role: 'user', content: rewritePrompt }],
                   model: 'llama-3.3-70b-versatile',
                   temperature: 0.3,
                 });
 
-                let subject = chatCompletion.choices[0]?.message?.content?.trim() || "Geido Studio - Mesaj";
-                subject = subject.replace(/^Konu:\s*/i, '').replace(/["']/g, ''); // Temizlik
+                const aiResponse = chatCompletion.choices[0]?.message?.content || '';
                 
-                // Müşterinin isteği: İçeriği YZ ile değiştirme, tam olarak ne söylediyse onu yolla
-                let body = rawText;
+                // Parse Subject and Body
+                let subject = "Geido Studio - Bilgilendirme";
+                let body = aiResponse;
+                
+                const subjectMatch = aiResponse.match(/Konu:\s*(.+)/i);
+                if (subjectMatch) subject = subjectMatch[1].trim();
+                
+                const contentMatch = aiResponse.match(/İçerik:\s*([\s\S]+)/i);
+                if (contentMatch) body = contentMatch[1].trim();
 
                 // 3. Send Email
                 await sendEmail(session.email, subject, body, body.replace(/\n/g, '<br>'));
@@ -617,6 +623,47 @@ function initTelegramBot(app, io) {
     bot.sendMessage(chatId, `📧 <b>Sesli Mail Modu Aktif</b>\n\nKime mail atacağız? Lütfen hedef e-posta adresini yazın:`, { parse_mode: 'HTML' });
   });
 
+  // Command: /ss [site]
+  bot.onText(/^\/ss(?:\s+(.+))?/, (msg, match) => {
+    if (!isAuthorized(msg)) return;
+    
+    let url = match[1];
+    if (!url) {
+      bot.sendMessage(chatId, `❌ Hata: Site adresi girmelisiniz.\nKullanım: <code>/ss geidostudio.com</code>`, { parse_mode: 'HTML' });
+      return;
+    }
+
+    if (!url.startsWith('http')) url = 'https://' + url;
+
+    bot.sendMessage(chatId, `📸 <b>${url}</b> adresine giriliyor, ekran görüntüsü çekiliyor...\n(Birkaç saniye sürebilir)`, { parse_mode: 'HTML' });
+
+    const apiUrl = `https://api.microlink.io/?url=${encodeURIComponent(url)}&screenshot=true&meta=false`;
+
+    https.get(apiUrl, (res) => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => {
+        try {
+          const result = JSON.parse(data);
+          if (result.status === 'success' && result.data && result.data.screenshot && result.data.screenshot.url) {
+            bot.sendPhoto(chatId, result.data.screenshot.url, {
+              caption: `✅ <b>Ekran Görüntüsü Hazır!</b>\nSite: ${url}`,
+              parse_mode: 'HTML'
+            }).catch(e => {
+               bot.sendMessage(chatId, `❌ Fotoğraf Telegram'a gönderilemedi: ${e.message}`);
+            });
+          } else {
+            bot.sendMessage(chatId, `❌ Ekran görüntüsü alınamadı. Site botlara kapalı olabilir.`);
+          }
+        } catch (e) {
+          bot.sendMessage(chatId, `❌ Analiz sırasında hata oluştu.`);
+        }
+      });
+    }).on('error', () => {
+      bot.sendMessage(chatId, `❌ API bağlantı hatası.`);
+    });
+  });
+
   const commandsList = `
 🛠️ /bakim - Siteyi bakıma al
 📊 /rapor - Ziyaretçi & mesaj istatistikleri
@@ -630,6 +677,7 @@ function initTelegramBot(app, io) {
 🌍 /domain [site_adresi] - Domainin ne zaman biteceğini öğren
 🕵️‍♂️ /teknoloji [site_adresi] - Sitenin hangi yazılımla yapıldığını bul
 🎙️ /seslimail - Sesinizi yapay zeka ile profesyonel e-postaya dönüştürüp yollar
+📸 /ss [site_adresi] - Sitenin ekran görüntüsünü çeker
 ℹ️ /help - Komutların detaylı açıklamalarını gör`;
 
   bot.onText(/^\/help/, (msg) => {
@@ -646,7 +694,8 @@ function initTelegramBot(app, io) {
 <b>/qr [metin]</b>: Yazdığınız metin veya link için hızlıca QR kod oluşturur.
 <b>/domain [site]</b>: Bir domainin bitiş tarihini ve kime kayıtlı olduğunu söyler. (Sadece jenerik uzantılar)
 <b>/teknoloji [site]</b>: Bir sitenin kaynak kodlarına sızarak hangi altyapıyla (WordPress, React, Shopify vb.) yapıldığını bulur.
-<b>/seslimail</b>: Sizi dinler, söylediğiniz şeyleri hatasız kurumsal bir e-postaya çevirip müşteriye yollar.`;
+<b>/seslimail</b>: Sizi dinler, söylediğiniz şeyleri hatasız kurumsal bir e-postaya çevirip müşteriye yollar.
+<b>/ss [site]</b>: Belirtilen web sitesinin anında ilk açılan sayfasının ekran görüntüsünü çekip fotoğraf olarak gönderir.`;
     bot.sendMessage(chatId, helpMsg, { parse_mode: 'HTML' });
   });
 
