@@ -574,10 +574,20 @@ function initTelegramBot(app, io) {
       const results = await Promise.all(domains.map(d => checkDomain(d)));
       const availableDomains = results.filter(d => d !== null);
 
+      const getDomainPrice = (domain) => {
+        if (domain.endsWith('.com')) return '~10.98$ (Ort. 350 TL) - Namecheap';
+        if (domain.endsWith('.net')) return '~12.98$ (Ort. 420 TL) - Namecheap';
+        if (domain.endsWith('.org')) return '~12.98$ (Ort. 420 TL) - Namecheap';
+        if (domain.endsWith('.co')) return '~25.00$ (Ort. 800 TL) - Namecheap';
+        if (domain.endsWith('.io')) return '~35.00$ (Ort. 1150 TL) - Namecheap';
+        if (domain.endsWith('.com.tr') || domain.endsWith('.tr')) return '~250 TL - TRABİS/Metunic';
+        return 'Fiyat belirsiz';
+      };
+
       if (availableDomains.length > 0) {
         const finalMessage = `🏷️ <b>Domain Avcısı Sonuçları (Boşta Olanlar):</b>\n\n` +
-                             availableDomains.map(d => `✅ <b>${d}</b> - Hemen Alınabilir!`).join('\n') +
-                             `\n\n<i>🔗 Satın almak için Namecheap veya IHS'yi ziyaret edin.</i>`;
+                             availableDomains.map(d => `✅ <b>${d}</b>\n💰 Kayıt Ücreti: ${getDomainPrice(d)}`).join('\n\n') +
+                             `\n\n<i>🔗 Hemen ilgili satıcılardan alabilirsiniz.</i>`;
         bot.sendMessage(chatId, finalMessage, { parse_mode: 'HTML' });
       } else {
         bot.sendMessage(chatId, `😔 Yapay zekanın ürettiği ${domains.length} premium domainin de MAALESEF alınmış olduğu (dolu) tespit edildi.\nLütfen farklı veya daha niş anahtar kelimelerle tekrar deneyin.`);
