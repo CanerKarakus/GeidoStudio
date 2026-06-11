@@ -296,26 +296,20 @@ function initTelegramBot(app, io) {
                 });
                 const rawText = transcription.text;
 
-                // 2. Llama-3 API Rewrite
-                const rewritePrompt = `Aşağıdaki metin bir ajans patronunun (Geido Studio) sesli diktesinden alınmıştır. Bu metni al, son derece profesyonel, saygılı, hatasız ve kurumsal bir e-postaya dönüştür. Asla fazladan bir şey (merhaba ben yapay zeka vb.) yazma. Yalnızca mailin 'Konu:' satırı ile başlayıp ardından 'İçerik:' şeklinde mail metnini ver. Başka hiçbir açıklama yapma.\n\nDikte: "${rawText}"`;
+                // 2. Llama-3 API for Subject Only
+                const subjectPrompt = `Aşağıdaki metin için 3-4 kelimelik kısa bir e-posta konu başlığı üret. Sadece başlığı yaz, başka hiçbir açıklama yapma veya noktalama işareti koyma.\n\nMetin: "${rawText}"`;
                 
                 const chatCompletion = await groqClient.chat.completions.create({
-                  messages: [{ role: 'user', content: rewritePrompt }],
+                  messages: [{ role: 'user', content: subjectPrompt }],
                   model: 'llama-3.3-70b-versatile',
                   temperature: 0.3,
                 });
 
-                const aiResponse = chatCompletion.choices[0]?.message?.content || '';
+                let subject = chatCompletion.choices[0]?.message?.content?.trim() || "Geido Studio - Mesaj";
+                subject = subject.replace(/^Konu:\s*/i, '').replace(/["']/g, ''); // Temizlik
                 
-                // Parse Subject and Body
-                let subject = "Geido Studio - Bilgilendirme";
-                let body = aiResponse;
-                
-                const subjectMatch = aiResponse.match(/Konu:\s*(.+)/i);
-                if (subjectMatch) subject = subjectMatch[1].trim();
-                
-                const contentMatch = aiResponse.match(/İçerik:\s*([\s\S]+)/i);
-                if (contentMatch) body = contentMatch[1].trim();
+                // Müşterinin isteği: İçeriği YZ ile değiştirme, tam olarak ne söylediyse onu yolla
+                let body = rawText;
 
                 // 3. Send Email
                 await sendEmail(session.email, subject, body, body.replace(/\n/g, '<br>'));
