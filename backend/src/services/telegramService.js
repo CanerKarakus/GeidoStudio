@@ -139,9 +139,9 @@ function scheduleDailyReport(chatId) {
 
 function initTelegramBot(app, io) {
   const token = process.env.TELEGRAM_BOT_TOKEN;
-  const chatId = process.env.TELEGRAM_CHAT_ID;
+  const allowedChatIds = process.env.TELEGRAM_CHAT_ID ? process.env.TELEGRAM_CHAT_ID.split(',').map(id => id.trim()) : [];
 
-  if (!token || !chatId) {
+  if (!token || allowedChatIds.length === 0) {
     console.log('[TelegramService] Token or Chat ID missing. Bot disabled.');
     return;
   }
