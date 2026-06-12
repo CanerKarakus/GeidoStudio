@@ -7,6 +7,7 @@ const useChatStore = create(
       isOpen: false,
       isMinimized: false,
       isEnding: false,
+      sessionId: Math.random().toString(36).substring(2, 8).toUpperCase(),
       setIsOpen: (isOpen) => set({ isOpen }),
       setIsMinimized: (isMinimized) => set({ isMinimized }),
       setIsEnding: (isEnding) => set({ isEnding }),
@@ -25,7 +26,8 @@ const useChatStore = create(
         userContext: null, 
         isOpen: false, 
         isMinimized: false,
-        isEnding: false 
+        isEnding: false,
+        sessionId: Math.random().toString(36).substring(2, 8).toUpperCase()
       })
     }),
     {
@@ -34,7 +36,8 @@ const useChatStore = create(
         messages: state.messages,
         userContext: state.userContext,
         isOpen: state.isOpen,
-        isMinimized: state.isMinimized
+        isMinimized: state.isMinimized,
+        sessionId: state.sessionId
       })
     }
   )

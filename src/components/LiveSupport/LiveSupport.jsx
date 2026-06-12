@@ -44,7 +44,8 @@ const LiveSupport = () => {
     isMinimized, setIsMinimized,
     isEnding, setIsEnding,
     userContext, setUserContext, 
-    messages, addMessage, clearChat 
+    messages, addMessage, clearChat,
+    sessionId 
   } = useChatStore();
   
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
@@ -56,7 +57,6 @@ const LiveSupport = () => {
   const [endStep, setEndStep] = useState(0); // 0: no, 1: confirm close, 2: ask email
   const [showToast, setShowToast] = useState(false);
   const [sendEmailCopy, setSendEmailCopy] = useState(false);
-  const [sessionId] = useState(() => Math.random().toString(36).substring(2, 8).toUpperCase());
   const messagesEndRef = useRef(null);
 
   // Ses Kayıt Stateleri
