@@ -97,7 +97,7 @@ const notifyVoiceMessage = (sessionId, userContext, audioFilePath) => {
   if (!fs.existsSync(audioFilePath)) return;
 
   const userName = userContext?.name || 'Bilinmeyen Ziyaretçi';
-  const msgText = `🎤 <b>Yeni Sesli Mesaj</b>\n👤 <b>Gönderen:</b> ${userName}\n\n<i>Cevap vermek için:\n/terminal ${sessionId} [Cevabınız]</i>`;
+  const msgText = `🎤 <b>Yeni Sesli Mesaj</b>\n👤 <b>Gönderen:</b> ${userName}\n\n<i>Cevap vermek için:\n/canlidestekbaglan ${sessionId}</i>`;
 
   bot.sendVoice(adminChatId, fs.createReadStream(audioFilePath), {
     caption: msgText,
@@ -112,13 +112,20 @@ const notifyHumanRequest = (sessionId, userContext) => {
   if (!adminChatId || !bot) return;
 
   const userName = userContext?.name || 'Bilinmeyen Ziyaretçi';
-  const msgText = `🚨 <b>CANLI DESTEK TALEBİ!</b> 🚨\n\n👤 <b>Müşteri:</b> ${userName}\n📞 Müşteri acil olarak bir insanla (canlı destek) görüşmek istiyor!\n\n<i>Müşteriye hemen bağlanmak ve AI'yi devre dışı bırakmak için:\n/terminal ${sessionId} Merhaba, size nasıl yardımcı olabilirim?</i>`;
+  const msgText = `🚨 <b>CANLI DESTEK TALEBİ!</b> 🚨\n\n👤 <b>Müşteri:</b> ${userName}\n📞 Müşteri acil olarak bir insanla (canlı destek) görüşmek istiyor!\n\n<i>Müşteriye hemen bağlanmak ve AI'yi devre dışı bırakmak için:\n/canlidestekbaglan ${sessionId}</i>`;
 
   // Send the alert multiple times or pin it if possible. We will send one prominent alert.
   bot.sendMessage(adminChatId, msgText, { parse_mode: 'HTML' }).then(sentMsg => {
     // Optionally pin the message if the bot has rights
     bot.pinChatMessage(adminChatId, sentMsg.message_id, { disable_notification: false }).catch(() => {});
   }).catch(() => {});
+
+  // Spam notifications to vibrate phone
+  for (let i = 0; i < 5; i++) {
+    setTimeout(() => {
+      bot.sendMessage(adminChatId, `🔔 [${userName}] acil canlı destek bekliyor!`).catch(() => {});
+    }, i * 1500); // Wait 1.5 seconds between each to ensure multiple vibrations
+  }
 };
 
 
