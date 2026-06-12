@@ -259,9 +259,8 @@ const LiveSupport = () => {
 
     setIsWaitingForAPI(true);
     setAudioBlob(null);
-    // Don't setAudioUrl(null) immediately to keep the chat bubble playable
-    // We only clear the preview.
-
+    setAudioUrl(null); // Clear the preview so input field returns
+    
     try {
       const res = await fetch(`${API_URL}/api/ai-chat/voice`, {
         method: 'POST',
