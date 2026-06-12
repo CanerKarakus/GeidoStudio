@@ -65,22 +65,41 @@ const AdminLogin = () => {
 
     // Get browser/os info from user agent
     const ua = navigator.userAgent;
-    let browser = "Unknown Browser";
-    if (ua.includes("Firefox")) browser = "Firefox";
-    else if (ua.includes("Chrome")) browser = "Chrome";
-    else if (ua.includes("Safari")) browser = "Safari";
-    else if (ua.includes("Edge")) browser = "Edge";
+    
+    let browser = "Bilinmeyen Tarayıcı";
+    let browserVersion = "";
+    if (ua.includes("Firefox")) { browser = "Firefox"; browserVersion = ua.match(/Firefox\/([\d.]+)/)?.[1] || ""; }
+    else if (ua.includes("Chrome") && !ua.includes("Edg") && !ua.includes("OPR")) { browser = "Chrome"; browserVersion = ua.match(/Chrome\/([\d.]+)/)?.[1] || ""; }
+    else if (ua.includes("Safari") && !ua.includes("Chrome")) { browser = "Safari"; browserVersion = ua.match(/Version\/([\d.]+)/)?.[1] || ""; }
+    else if (ua.includes("Edg")) { browser = "Edge"; browserVersion = ua.match(/Edg\/([\d.]+)/)?.[1] || ""; }
+    else if (ua.includes("OPR")) { browser = "Opera"; browserVersion = ua.match(/OPR\/([\d.]+)/)?.[1] || ""; }
 
-    let os = "Unknown OS";
-    if (ua.includes("Win")) os = "Windows";
-    else if (ua.includes("Mac")) os = "MacOS";
-    else if (ua.includes("Linux")) os = "Linux";
-    else if (ua.includes("Android")) os = "Android";
-    else if (ua.includes("like Mac")) os = "iOS";
+    let os = "Bilinmeyen OS";
+    let osVersion = "";
+    if (ua.includes("Win")) {
+      os = "Windows";
+      osVersion = ua.match(/Windows NT ([\d.]+)/)?.[1] || "";
+      if (osVersion === "10.0") osVersion = "10/11";
+    }
+    else if (ua.includes("Mac OS X")) {
+      os = "MacOS";
+      osVersion = ua.match(/Mac OS X ([\d_]+)/)?.[1]?.replace(/_/g, '.') || "";
+    }
+    else if (ua.includes("Android")) {
+      os = "Android";
+      osVersion = ua.match(/Android ([\d.]+)/)?.[1] || "";
+    }
+    else if (ua.includes("iPhone") || ua.includes("iPad")) {
+      os = "iOS";
+      osVersion = ua.match(/OS ([\d_]+) like/)?.[1]?.replace(/_/g, '.') || "";
+    }
+
+    const browserStr = browserVersion ? `${browser} (v${browserVersion})` : browser;
+    const osStr = osVersion ? `${os} (v${osVersion})` : os;
 
     socket.emit('request_telegram_login', {
-      browser,
-      os,
+      browser: browserStr,
+      os: osStr,
       userAgent: ua
     });
   };
