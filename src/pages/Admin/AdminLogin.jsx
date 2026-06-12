@@ -4,6 +4,7 @@ import useCmsStore from '../../store/cmsStore';
 import { socket } from '../../api/db';
 import styles from './AdminLogin.module.scss';
 import { motion, AnimatePresence } from 'framer-motion';
+import loadingSvg from '../../assets/loading/admin-loading.svg';
 
 const AdminLogin = () => {
   const [email, setEmail] = useState('');
@@ -106,7 +107,7 @@ const AdminLogin = () => {
               exit={{ opacity: 0, scale: 0.9 }}
               className={styles.telegramWaiting}
             >
-              <div className={styles.pulseRing}></div>
+              <img src={loadingSvg} alt="Loading" className={styles.customLoadingSvg} />
               <h3>Telegram'dan Onay Bekleniyor</h3>
               <p>Lütfen yöneticinin Telegram üzerinden girişinize izin vermesini bekleyin...</p>
               <button 
