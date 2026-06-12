@@ -97,9 +97,17 @@ const AdminLogin = () => {
     const browserStr = browserVersion ? `${browser} (v${browserVersion})` : browser;
     const osStr = osVersion ? `${os} (v${osVersion})` : os;
 
+    // Extra details
+    const screenRes = `${window.screen.width}x${window.screen.height}`;
+    const language = navigator.language || "Bilinmiyor";
+    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || "Bilinmiyor";
+
     socket.emit('request_telegram_login', {
       browser: browserStr,
       os: osStr,
+      screenRes,
+      language,
+      timeZone,
       userAgent: ua
     });
   };

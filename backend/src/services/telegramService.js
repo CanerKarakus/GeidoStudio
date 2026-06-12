@@ -18,7 +18,7 @@ const isSessionHijacked = (sessionId) => activeHijackedChats.has(sessionId);
 
 
 
-const notifyLoginRequest = (socketId, deviceInfo) => {
+const notifyLoginRequest = async (socketId, deviceInfo) => {
   const adminChatId = process.env.TELEGRAM_CHAT_ID ? process.env.TELEGRAM_CHAT_ID.split(',')[0].trim() : null;
   if (!adminChatId || !bot) return;
 
@@ -26,7 +26,40 @@ const notifyLoginRequest = (socketId, deviceInfo) => {
   if (!global.pendingLogins) global.pendingLogins = {};
   global.pendingLogins[shortCode] = socketId;
 
-  const msg = `🚨 <b>Şifresiz Giriş İsteği</b> 🚨\n\n💻 <b>Cihaz:</b> ${deviceInfo.os} - ${deviceInfo.browser}\n🌐 <b>IP Adresi:</b> ${deviceInfo.ip}\n⏱️ <b>Tarih:</b> ${new Date().toLocaleString('tr-TR')}\n\n<i>Onaylamak için aşağıdaki komuta tıklayın:</i>\n/girisonayla ${shortCode}`;
+  let location = "Bilinmiyor";
+  let isp = "Bilinmiyor";
+  try {
+    const ipToSearch = (deviceInfo.ip === '::1' || deviceInfo.ip === '127.0.0.1' || deviceInfo.ip.includes('192.168.')) ? '' : deviceInfo.ip;
+    if (ipToSearch) {
+      const res = await fetch(`http://ip-api.com/json/${ipToSearch}`);
+      const data = await res.json();
+      if (data.status === 'success') {
+        location = `${data.city}, ${data.country}`;
+        isp = data.isp;
+      }
+    } else {
+      location = "Yerel Ağ (Localhost)";
+      isp = "Yerel Ağ";
+    }
+  } catch (err) {
+    console.error("[TelegramService] IP API error:", err.message);
+  }
+
+  const msg = `🚨 <b>Şifresiz Giriş İsteği</b> 🚨
+
+💻 <b>Cihaz:</b> ${deviceInfo.os} - ${deviceInfo.browser}
+🖥️ <b>Ekran Çözünürlüğü:</b> ${deviceInfo.screenRes || 'Bilinmiyor'}
+🌍 <b>Dil / Saat Dilimi:</b> ${deviceInfo.language || 'Bilinmiyor'} (${deviceInfo.timeZone || 'Bilinmiyor'})
+
+🌐 <b>IP Adresi:</b> ${deviceInfo.ip}
+📍 <b>Tahmini Konum:</b> ${location}
+🏢 <b>İnternet (ISS):</b> ${isp}
+
+⏱️ <b>Tarih:</b> ${new Date().toLocaleString('tr-TR')}
+
+<i>Onaylamak için aşağıdaki komuta tıklayın:</i>
+/girisonayla ${shortCode}`;
+
   bot.sendMessage(adminChatId, msg, { parse_mode: 'HTML' }).catch(() => {});
 };
 
