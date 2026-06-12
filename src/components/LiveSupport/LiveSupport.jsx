@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
-import { MessageSquare, X, Send, User, ChevronDown, Minus, Square } from 'lucide-react';
+import { MessageSquare, X, Send, User, ChevronDown, Minus, Square, Mic, Trash2 } from 'lucide-react';
 import clsx from 'clsx';
 import useChatStore from '../../store/chatStore';
 import styles from './LiveSupport.module.scss';
@@ -58,6 +58,15 @@ const LiveSupport = () => {
   const [sendEmailCopy, setSendEmailCopy] = useState(false);
   const [sessionId] = useState(() => Math.random().toString(36).substring(2, 8).toUpperCase());
   const messagesEndRef = useRef(null);
+
+  // Ses Kayıt Stateleri
+  const [isRecording, setIsRecording] = useState(false);
+  const [audioBlob, setAudioBlob] = useState(null);
+  const [audioUrl, setAudioUrl] = useState(null);
+  const [recordingTime, setRecordingTime] = useState(0);
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
+  const recordingIntervalRef = useRef(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -158,6 +167,91 @@ const LiveSupport = () => {
         addMessage({ id: aiMsgId, text: 'Üzgünüm, teknik bir hata oluştu.', sender: 'ai', isNew: true });
         setActiveTypingId(aiMsgId);
       }
+    } finally {
+      setIsWaitingForAPI(false);
+    }
+  };
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) audioChunksRef.current.push(e.data);
+      };
+
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(audioChunksRef.current, { type: 'audio/ogg' });
+        const url = URL.createObjectURL(blob);
+        setAudioBlob(blob);
+        setAudioUrl(url);
+        stream.getTracks().forEach(track => track.stop());
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+      setRecordingTime(0);
+      recordingIntervalRef.current = setInterval(() => {
+        setRecordingTime(prev => prev + 1);
+      }, 1000);
+    } catch (err) {
+      alert("Mikrofon izni verilmedi. Lütfen tarayıcı ayarlarından mikrofon erişimine izin verin.");
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+      clearInterval(recordingIntervalRef.current);
+    }
+  };
+
+  const cancelRecording = () => {
+    setAudioBlob(null);
+    if (audioUrl) URL.revokeObjectURL(audioUrl);
+    setAudioUrl(null);
+    setIsRecording(false);
+    clearInterval(recordingIntervalRef.current);
+  };
+
+  const sendVoiceMessage = async () => {
+    if (!audioBlob) return;
+    
+    const msgId = Date.now().toString();
+    addMessage({ id: msgId, text: '', audioUrl: audioUrl, sender: 'user', isNew: false });
+    
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+    const formData = new FormData();
+    formData.append('audio', audioBlob, 'voice.ogg');
+    formData.append('sessionId', sessionId);
+    formData.append('userContext', JSON.stringify(userContext));
+    formData.append('messages', JSON.stringify(messages));
+
+    setIsWaitingForAPI(true);
+    setAudioBlob(null);
+    // Don't setAudioUrl(null) immediately to keep the chat bubble playable
+    // We only clear the preview.
+
+    try {
+      const res = await fetch(`${API_URL}/api/ai-chat/voice`, {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+      
+      if (data.hijacked) {
+        // Admin handles it
+      } else if (data.reply) {
+        const aiMsgId = Date.now().toString() + '-ai';
+        addMessage({ id: aiMsgId, text: data.reply, sender: 'ai', isNew: true });
+        setActiveTypingId(aiMsgId);
+      }
+    } catch (err) {
+      addMessage({ id: Date.now().toString() + '-err', text: 'Ses gönderilemedi.', sender: 'ai', isNew: true });
     } finally {
       setIsWaitingForAPI(false);
     }
@@ -357,6 +451,10 @@ const LiveSupport = () => {
                               onComplete={(finalText) => handleTypingComplete(msg.id, finalText)} 
                               onTyping={scrollToBottom} 
                             />
+                          ) : msg.audioUrl ? (
+                            <div className={styles.audioMessage}>
+                              <audio controls src={msg.audioUrl} />
+                            </div>
                           ) : (
                             <span dangerouslySetInnerHTML={{ __html: msg.text.replace(/\n/g, '<br/>') }} />
                           )}
@@ -396,24 +494,60 @@ const LiveSupport = () => {
                   </AnimatePresence>
 
                   {/* Input Area */}
-                  <form className={styles.inputArea} onSubmit={handleSendMessage}>
-                    <input
-                      type="text"
-                      placeholder="Mesajınızı yazın..."
-                      value={inputValue}
-                      onChange={e => setInputValue(e.target.value)}
-                      disabled={isWaitingForAPI || activeTypingId}
-                    />
-                    {(isWaitingForAPI || activeTypingId) ? (
-                      <button type="button" onClick={handleStop} className={styles.stopBtn} aria-label="Durdur">
-                        <Square size={18} fill="currentColor" />
+                  {audioUrl && !isRecording ? (
+                    <div className={styles.audioPreviewArea}>
+                      <button type="button" className={styles.trashBtn} onClick={cancelRecording}>
+                        <Trash2 size={18} />
                       </button>
-                    ) : (
-                      <button type="submit" disabled={!inputValue.trim()}>
+                      <audio controls src={audioUrl} className={styles.previewAudio} />
+                      <button type="button" className={styles.sendAudioBtn} onClick={sendVoiceMessage} disabled={isWaitingForAPI}>
                         <Send size={18} />
                       </button>
-                    )}
-                  </form>
+                    </div>
+                  ) : (
+                    <form className={styles.inputArea} onSubmit={handleSendMessage}>
+                      {isRecording ? (
+                        <div className={styles.recordingState}>
+                          <span className={styles.recordDot}></span>
+                          <span className={styles.recordTime}>
+                            Kaydediliyor... {Math.floor(recordingTime / 60)}:{(recordingTime % 60).toString().padStart(2, '0')}
+                          </span>
+                        </div>
+                      ) : (
+                        <input
+                          type="text"
+                          placeholder="Mesajınızı yazın..."
+                          value={inputValue}
+                          onChange={e => setInputValue(e.target.value)}
+                          disabled={isWaitingForAPI || activeTypingId}
+                        />
+                      )}
+                      
+                      <div className={styles.inputActions}>
+                        {(isWaitingForAPI || activeTypingId) ? (
+                          <button type="button" onClick={handleStop} className={styles.stopBtn} aria-label="Durdur">
+                            <Square size={18} fill="currentColor" />
+                          </button>
+                        ) : !inputValue.trim() ? (
+                          <button 
+                            type="button" 
+                            className={clsx(styles.micBtn, isRecording && styles.recording)}
+                            onPointerDown={startRecording}
+                            onPointerUp={stopRecording}
+                            onPointerLeave={stopRecording}
+                            onContextMenu={e => e.preventDefault()}
+                            title="Basılı tutarak konuşun"
+                          >
+                            <Mic size={18} />
+                          </button>
+                        ) : (
+                          <button type="submit">
+                            <Send size={18} />
+                          </button>
+                        )}
+                      </div>
+                    </form>
+                  )}
                 </div>
               )}
             </div>

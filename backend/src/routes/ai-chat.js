@@ -3,7 +3,13 @@ const rateLimit = require('express-rate-limit');
 const Groq = require('groq-sdk');
 const { sendEmail } = require('../services/emailService');
 const authMiddleware = require('../middleware/auth');
-const { isSessionHijacked, notifyLiveSupportMessage } = require('../services/telegramService');
+const { isSessionHijacked, notifyLiveSupportMessage, notifyVoiceMessage } = require('../services/telegramService');
+const multer = require('multer');
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
+
+const upload = multer({ dest: os.tmpdir() });
 
 const router = express.Router();
 
@@ -100,7 +106,105 @@ router.post('/', async (req, res) => {
   }
 });
 
-// ── POST /api/ai-chat/end-session ──────────────────────────────────────────────
+// ── POST /api/ai-chat/voice ──────────────────────────────────────────────────
+router.post('/voice', upload.single('audio'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'Ses dosyası bulunamadı.' });
+    }
+
+    const { sessionId, userContext } = req.body;
+    let parsedContext = null;
+    try {
+      if (userContext) parsedContext = JSON.parse(userContext);
+    } catch (e) {}
+
+    const audioPath = req.file.path;
+    const newPath = audioPath + '.ogg'; // Groq and Telegram prefer extensions
+    fs.renameSync(audioPath, newPath);
+
+    // 1. Telegram'a gönder
+    if (notifyVoiceMessage) {
+      notifyVoiceMessage(sessionId, parsedContext, newPath);
+    }
+
+    // 2. Admin aktifse AI'a sorma, sadece başarılı dön
+    if (sessionId && isSessionHijacked(sessionId)) {
+      setTimeout(() => {
+        if (fs.existsSync(newPath)) fs.unlinkSync(newPath);
+      }, 5000); // Give Telegram 5 secs to upload
+      return res.json({ success: true, hijacked: true, text: 'Sesli mesaj yöneticiye iletildi.' });
+    }
+
+    // 3. AI Modu - Whisper ile metne çevir
+    if (!groq) {
+      if (fs.existsSync(newPath)) fs.unlinkSync(newPath);
+      return res.status(503).json({ error: 'Groq API yapılandırılmamış.' });
+    }
+
+    const transcription = await groq.audio.transcriptions.create({
+      file: fs.createReadStream(newPath),
+      model: "whisper-large-v3-turbo",
+      language: "tr"
+    });
+
+    const userText = transcription.text;
+    
+    // Geçici dosyayı sil
+    if (fs.existsSync(newPath)) fs.unlinkSync(newPath);
+
+    // AI'a bu metinle cevap verdirt (chat logic'e benzer)
+    let systemInstruction = SYSTEM_PROMPT;
+    if (parsedContext && parsedContext.name) {
+      systemInstruction += `\nŞu an konuştuğun müşterinin adı: ${parsedContext.name}. Ona adıyla hitap edebilirsin.`;
+    }
+
+    const formattedMessages = [
+      { role: 'system', content: systemInstruction },
+      { role: 'user', content: userText } // Sadece son sesi baz alarak basit bir cevap verebilir, geçmişi front-end de tutuyor ama ses için tekli atalım. Wait, we should probably accept chat history if we want context, but for now single turn is fine or we can parse `req.body.messages`.
+    ];
+
+    // Let's actually use the provided chat history if sent
+    let pastMessages = [];
+    try {
+      if (req.body.messages) pastMessages = JSON.parse(req.body.messages);
+    } catch(e) {}
+
+    const fullMessagesForGroq = [
+      { role: 'system', content: systemInstruction },
+      ...pastMessages.map(m => ({
+        role: m.sender === 'user' ? 'user' : 'assistant',
+        content: m.text
+      })),
+      { role: 'user', content: userText }
+    ];
+
+    const chatCompletion = await groq.chat.completions.create({
+      messages: fullMessagesForGroq,
+      model: 'llama-3.3-70b-versatile',
+      temperature: 0.7,
+      max_tokens: 1024,
+    });
+
+    const aiResponse = chatCompletion.choices[0]?.message?.content || 'Üzgünüm, şu an yanıt veremiyorum.';
+
+    // Admin'e de yazılı olarak bildir
+    if (sessionId) {
+      notifyLiveSupportMessage(sessionId, parsedContext, `🎤 Sesli Mesaj: "${userText}"`, aiResponse);
+    }
+
+    res.json({
+      success: true,
+      transcribedText: userText,
+      reply: aiResponse
+    });
+
+  } catch (error) {
+    console.error('[Voice API Error]', error);
+    if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+    res.status(500).json({ error: 'Ses işlenirken hata oluştu.' });
+  }
+});
 router.post('/end-session', async (req, res) => {
   try {
     const { messages, userContext, wantsEmail } = req.body;

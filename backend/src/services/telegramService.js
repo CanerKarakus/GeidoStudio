@@ -90,6 +90,36 @@ const notifyLiveSupportMessage = (sessionId, userContext, userMsg, aiMsg) => {
   bot.sendMessage(adminChatId, msg, { parse_mode: 'HTML' }).catch(() => {});
 };
 
+const notifyVoiceMessage = (sessionId, userContext, audioFilePath) => {
+  const adminChatId = process.env.TELEGRAM_CHAT_ID ? process.env.TELEGRAM_CHAT_ID.split(',')[0].trim() : null;
+  if (!adminChatId || !bot) return;
+
+  if (!fs.existsSync(audioFilePath)) return;
+
+  const userName = userContext?.name || 'Bilinmeyen Ziyaretçi';
+  const msgText = `🎤 <b>Yeni Sesli Mesaj</b>\n👤 <b>Gönderen:</b> ${userName}\n\n<i>Cevap vermek için:\n/terminal ${sessionId} [Cevabınız]</i>`;
+
+  bot.sendVoice(adminChatId, fs.createReadStream(audioFilePath), {
+    caption: msgText,
+    parse_mode: 'HTML'
+  }).catch((e) => {
+    console.error("[TelegramService] Error sending voice:", e.message);
+  });
+};
+
+module.exports = {
+  initTelegramBot,
+  notifyLoginRequest,
+  notifyEasterEgg,
+  notifyLiveSupportMessage,
+  notifyVoiceMessage,
+  isSessionHijacked,
+  decryptText,
+  encryptText,
+  readSessions,
+  writeSessions
+};
+
 let groqClient = null;
 let dailyReportTimeout = null;
 const SESSIONS_FILE = path.join(__dirname, '../../data/sessions.json');
@@ -1555,4 +1585,4 @@ async function sendTelegramMessage(text) {
   }
 }
 
-module.exports = { initTelegramBot, sendTelegramMessage, isSessionHijacked, notifyLiveSupportMessage, notifyEasterEgg, notifyLoginRequest };
+module.exports = { initTelegramBot, sendTelegramMessage, isSessionHijacked, notifyLiveSupportMessage, notifyEasterEgg, notifyLoginRequest, notifyVoiceMessage };
