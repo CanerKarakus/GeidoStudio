@@ -15,6 +15,7 @@ import SplashScreen from './components/SplashScreen/SplashScreen';
 import MaintenanceScreen from './components/MaintenanceScreen/MaintenanceScreen';
 import HeatmapTracker from './components/HeatmapTracker/HeatmapTracker';
 import LiveSupport from './components/LiveSupport/LiveSupport';
+import EasterEggTerminal from './components/EasterEggTerminal/EasterEggTerminal';
 
 // Lazy loaded pages
 const Home = lazy(() => import('./pages/Home/Home'));
@@ -224,6 +225,7 @@ function App() {
         </main>
         {!isAdminRoute && !isMaintenanceMode && <Footer />}
         {!isAdminRoute && !isMaintenanceMode && <LiveSupport />}
+        {!isAdminRoute && !isMaintenanceMode && <EasterEggTerminal />}
       </div>
     </LazyMotion>
   );

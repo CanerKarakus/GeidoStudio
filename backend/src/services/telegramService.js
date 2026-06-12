@@ -10,6 +10,40 @@ const { readMessages } = require('../models/messageModel');
 const { sendEmail } = require('./emailService');
 
 let bot = null;
+
+const activeHijackedChats = new Set();
+let adminCurrentSupportSession = null; // Store which session the admin is currently focusing on
+
+const isSessionHijacked = (sessionId) => activeHijackedChats.has(sessionId);
+
+
+const notifyEasterEgg = (socketId, userMsg) => {
+  const adminChatId = process.env.TELEGRAM_CHAT_ID ? process.env.TELEGRAM_CHAT_ID.split(',')[0].trim() : null;
+  if (!adminChatId || !bot) return;
+
+  const msg = `🚨 <b>Gizli Terminal Bulundu!</b>\n\n👤 <b>Ziyaretçi:</b> ${userMsg}\n\n<i>Cevap vermek için:\n/terminal ${socketId} [Cevabınız]</i>`;
+  bot.sendMessage(adminChatId, msg, { parse_mode: 'HTML' }).catch(() => {});
+};
+
+const notifyLiveSupportMessage = (sessionId, userContext, userMsg, aiMsg) => {
+  const adminChatId = process.env.TELEGRAM_CHAT_ID ? process.env.TELEGRAM_CHAT_ID.split(',')[0].trim() : null;
+  if (!adminChatId || !bot) return;
+
+  const userInfo = userContext ? `${userContext.name} (${userContext.email})` : 'Bilinmeyen Kullanıcı';
+  
+  let msg = `💬 <b>Canlı Destek (#${sessionId})</b>\n👤 ${userInfo}\n\n🗣️ <b>Müşteri:</b> ${userMsg}`;
+  
+  if (aiMsg) {
+    msg += `\n🤖 <b>AI:</b> ${aiMsg}`;
+  } else {
+    msg += `\n🚨 <i>AI Susturuldu (Siz Bağlısınız)</i>`;
+  }
+  
+  msg += `\n\n<i>Bu sohbete bağlanmak için: /canlidestekbaglan ${sessionId}</i>`;
+  
+  bot.sendMessage(adminChatId, msg, { parse_mode: 'HTML' }).catch(() => {});
+};
+
 let groqClient = null;
 let dailyReportTimeout = null;
 const SESSIONS_FILE = path.join(__dirname, '../../data/sessions.json');
@@ -30,6 +64,51 @@ const writeSessions = (data) => {
     fs.writeFileSync(SESSIONS_FILE, JSON.stringify(data, null, 2), 'utf8');
   } catch (e) {
     console.error('Session write error', e);
+  }
+};
+
+
+// ── VAULT / ENCRYPTION SYSTEM ──────────────────────────────────────────────
+const VAULT_FILE = path.join(__dirname, '../../data/vault.json');
+
+// Generate a 32-byte key from the telegram token
+const getVaultKey = () => crypto.createHash('sha256').update(process.env.TELEGRAM_BOT_TOKEN).digest();
+
+const readVault = () => {
+  try {
+    if (!fs.existsSync(VAULT_FILE)) return [];
+    return JSON.parse(fs.readFileSync(VAULT_FILE, 'utf8'));
+  } catch {
+    return [];
+  }
+};
+
+const writeVault = (data) => {
+  try {
+    const dir = path.dirname(VAULT_FILE);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(VAULT_FILE, JSON.stringify(data, null, 2), 'utf8');
+  } catch (e) {
+    console.error('Vault write error', e);
+  }
+};
+
+const encryptText = (text) => {
+  const iv = crypto.randomBytes(16);
+  const cipher = crypto.createCipheriv('aes-256-cbc', getVaultKey(), iv);
+  let encrypted = cipher.update(text, 'utf8', 'hex');
+  encrypted += cipher.final('hex');
+  return { iv: iv.toString('hex'), data: encrypted };
+};
+
+const decryptText = (encryptedData) => {
+  try {
+    const decipher = crypto.createDecipheriv('aes-256-cbc', getVaultKey(), Buffer.from(encryptedData.iv, 'hex'));
+    let decrypted = decipher.update(encryptedData.data, 'hex', 'utf8');
+    decrypted += decipher.final('utf8');
+    return decrypted;
+  } catch (e) {
+    return "[Şifre Çözülemedi]";
   }
 };
 
@@ -137,7 +216,9 @@ function scheduleDailyReport(chatId) {
   dailyReportTimeout = setTimeout(() => sendDailyReport(chatId), delay);
 }
 
+let reqApp = null;
 function initTelegramBot(app, io) {
+  reqApp = app;
   const token = process.env.TELEGRAM_BOT_TOKEN;
   const allowedChatIds = process.env.TELEGRAM_CHAT_ID ? process.env.TELEGRAM_CHAT_ID.split(',').map(id => id.trim()) : [];
 
@@ -236,6 +317,51 @@ function initTelegramBot(app, io) {
     triggerNetlifyBuild(chatId, `✅ <b>Hacker Kapanı Yayında!</b> Artık /wp-admin adresine girenler otomatik banlanacak.`);
   });
 
+
+  // Command: /canlidestekbaglan
+  bot.onText(/^\/canlidestekbaglan(?:\s+(.+))?$/, (msg, match) => {
+    const chatId = msg.chat.id;
+    if (!isAuthorized(msg)) return;
+
+    const sessionId = match[1];
+    if (!sessionId) {
+      return bot.sendMessage(chatId, `Lütfen bir ID girin. Örn: /canlidestekbaglan A7B9X`);
+    }
+
+    activeHijackedChats.add(sessionId);
+    adminCurrentSupportSession = sessionId;
+    
+    // Broadcast to socket
+    const io = reqApp.get('io');
+    if (io) {
+      io.to(sessionId).emit('support_chat_hijacked');
+    }
+
+    bot.sendMessage(chatId, `🔌 <b>Sisteme Bağlanıldı! (#${sessionId})</b>\n\nŞu andan itibaren yapay zeka bu kullanıcıya cevap vermeyecek. Buraya yazdığınız her mesaj DOĞRUDAN müşterinin canlı destek ekranına gidecek.\n\nAyrılmak için: /canlidestekayril`, { parse_mode: 'HTML' });
+  });
+
+  // Command: /canlidestekayril
+  bot.onText(/^\/canlidestekayril$/, (msg) => {
+    const chatId = msg.chat.id;
+    if (!isAuthorized(msg)) return;
+
+    if (!adminCurrentSupportSession) {
+      return bot.sendMessage(chatId, `Şu an aktif olarak bağlandığınız bir canlı destek sohbeti yok.`);
+    }
+
+    const sessionId = adminCurrentSupportSession;
+    activeHijackedChats.delete(sessionId);
+    adminCurrentSupportSession = null;
+
+    // Broadcast to socket
+    const io = reqApp.get('io');
+    if (io) {
+      io.to(sessionId).emit('support_chat_released');
+    }
+
+    bot.sendMessage(chatId, `🔌 <b>Sohbetten Ayrıldınız. (#${sessionId})</b>\n\nYapay zeka kontrolü geri aldı.`, { parse_mode: 'HTML' });
+  });
+
   // Command: /rapor
   bot.onText(/^\/rapor/, (msg, match) => {
     const chatId = msg.chat.id;
@@ -319,6 +445,18 @@ function initTelegramBot(app, io) {
 
     const chatId = msg.chat.id;
     let sessions = readSessions();
+
+    if (adminCurrentSupportSession && msg.text && !msg.text.startsWith('/')) {
+      const io = reqApp.get('io');
+      if (io) {
+        io.to(adminCurrentSupportSession).emit('support_chat_message', { text: msg.text });
+        bot.sendMessage(chatId, `✅ <i>Mesajınız #${adminCurrentSupportSession} kullanıcısına iletildi.</i>`, { parse_mode: 'HTML' });
+      } else {
+        bot.sendMessage(chatId, `❌ Socket bulunamadı.`);
+      }
+      return; // Stop AI chat execution
+    }
+
 
     // Handle /dekupe logic (either by caption OR by active session)
     const isDekupeSession = sessions[chatId] && sessions[chatId].command === 'dekupe';
@@ -926,6 +1064,18 @@ Sistem yayına alınıyor...`, { parse_mode: 'HTML' });
     if (!isAuthorized(msg)) return;
 
     let sessions = readSessions();
+
+    if (adminCurrentSupportSession && msg.text && !msg.text.startsWith('/')) {
+      const io = reqApp.get('io');
+      if (io) {
+        io.to(adminCurrentSupportSession).emit('support_chat_message', { text: msg.text });
+        bot.sendMessage(chatId, `✅ <i>Mesajınız #${adminCurrentSupportSession} kullanıcısına iletildi.</i>`, { parse_mode: 'HTML' });
+      } else {
+        bot.sendMessage(chatId, `❌ Socket bulunamadı.`);
+      }
+      return; // Stop AI chat execution
+    }
+
     sessions[msg.chat.id] = { command: 'seslimail', step: 'awaiting_email' };
     writeSessions(sessions);
     bot.sendMessage(chatId, `📧 <b>Sesli Mail Modu Aktif</b>\n\nKime mail atacağız? Lütfen hedef e-posta adresini yazın:`, { parse_mode: 'HTML' });
@@ -1168,10 +1318,114 @@ Sistem yayına alınıyor...`, { parse_mode: 'HTML' });
     if (!isAuthorized(msg)) return;
 
     let sessions = readSessions();
+
+    if (adminCurrentSupportSession && msg.text && !msg.text.startsWith('/')) {
+      const io = reqApp.get('io');
+      if (io) {
+        io.to(adminCurrentSupportSession).emit('support_chat_message', { text: msg.text });
+        bot.sendMessage(chatId, `✅ <i>Mesajınız #${adminCurrentSupportSession} kullanıcısına iletildi.</i>`, { parse_mode: 'HTML' });
+      } else {
+        bot.sendMessage(chatId, `❌ Socket bulunamadı.`);
+      }
+      return; // Stop AI chat execution
+    }
+
     sessions[chatId] = { command: 'dekupe', step: 'awaiting_photo' };
     writeSessions(sessions);
 
     bot.sendMessage(chatId, `✂️ Lütfen arka planını silmek (dekupe etmek) istediğiniz fotoğrafı bana gönderin.\n<i>İşlemi iptal etmek için herhangi başka bir komut yazabilirsiniz.</i>`, { parse_mode: 'HTML' });
+  });
+
+
+  // Command: /sifreekle
+  bot.onText(/^\/sifreekle\s+([^\s]+)\s+([^\s]+)\s+([^\s]+)\s+(.+)$/, (msg, match) => {
+    const chatId = msg.chat.id;
+    if (!isAuthorized(msg)) return;
+
+    const name = match[1].toLowerCase();
+    const technology = match[2];
+    const username = match[3];
+    const password = match[4];
+
+    const vault = readVault();
+    const encryptedPassword = encryptText(password);
+
+    vault.push({
+      id: Date.now().toString(),
+      name,
+      technology,
+      username,
+      encryptedPassword
+    });
+
+    writeVault(vault);
+    bot.sendMessage(chatId, `🔐 <b>Başarılı!</b>\n\n<b>${name}</b> isimli müşteri için <b>${technology}</b> şifresi şifrelenerek kasaya eklendi.`, { parse_mode: 'HTML' });
+  });
+
+  // Command: /sifre
+  bot.onText(/^\/sifre(?:\s+(.+))?$/, (msg, match) => {
+    const chatId = msg.chat.id;
+    if (!isAuthorized(msg)) return;
+
+    const query = match[1] ? match[1].toLowerCase() : null;
+    const vault = readVault();
+
+    if (vault.length === 0) {
+      return bot.sendMessage(chatId, `📭 Kasanız şu an boş.`);
+    }
+
+    const results = query ? vault.filter(v => v.name.includes(query)) : vault;
+
+    if (results.length === 0) {
+      return bot.sendMessage(chatId, `❌ "${query}" ismine ait şifre bulunamadı.`);
+    }
+
+    let response = `🔐 <b>Müşteri Şifre Kasası:</b>\n\n`;
+    results.forEach(v => {
+      const decryptedPassword = decryptText(v.encryptedPassword);
+      response += `👤 <b>${v.name.toUpperCase()}</b> | ${v.technology}\nKullanıcı: <code>${v.username}</code>\nŞifre: <span class="tg-spoiler"><code>${decryptedPassword}</code></span>\n\n`;
+    });
+
+    response += `<i>Silmek için: /sifresil [isim]</i>`;
+    bot.sendMessage(chatId, response, { parse_mode: 'HTML' });
+  });
+
+  // Command: /sifresil
+  bot.onText(/^\/sifresil(?:\s+(.+))?$/, (msg, match) => {
+    const chatId = msg.chat.id;
+    if (!isAuthorized(msg)) return;
+
+    const name = match[1] ? match[1].toLowerCase() : null;
+    if (!name) return bot.sendMessage(chatId, `❌ Lütfen silmek istediğiniz müşterinin tam ismini girin. Örn: /sifresil ahmet`);
+
+    let vault = readVault();
+    const initialLength = vault.length;
+    vault = vault.filter(v => v.name !== name);
+
+    if (vault.length === initialLength) {
+      return bot.sendMessage(chatId, `❌ "${name}" ismine ait silinecek şifre bulunamadı.`);
+    }
+
+    writeVault(vault);
+    bot.sendMessage(chatId, `🗑️ <b>${name}</b> isimli müşteriye ait ${initialLength - vault.length} adet şifre kasadan kalıcı olarak silindi.`, { parse_mode: 'HTML' });
+  });
+
+
+  // Command: /terminal
+  bot.onText(/^\/terminal\s+([^\s]+)\s+(.+)$/, (msg, match) => {
+    const chatId = msg.chat.id;
+    if (!isAuthorized(msg)) return;
+
+    const socketId = match[1];
+    const text = match[2];
+
+    const io = reqApp.get('io');
+    if (io) {
+      io.to(socketId).emit('easter_egg_response', { text });
+      bot.sendMessage(chatId, `✅ <i>Mesajınız terminale iletildi.</i>`, { parse_mode: 'HTML' });
+    } else {
+      bot.sendMessage(chatId, `❌ Socket sunucusu bulunamadı.`);
+    }
   });
 
   bot.onText(/^\/help/, (msg, match) => {
@@ -1195,6 +1449,12 @@ Sistem yayına alınıyor...`, { parse_mode: 'HTML' });
 <b>/ss [site]</b>: Belirtilen web sitesinin baştan aşağıya tüm sayfasının tam ekran görüntüsünü çekip fotoğraf olarak gönderir.
 <b>/guvenlik [site]</b>: Sitenin siber güvenlik zafiyetlerini ve SSL hatalarını tarayarak size bir satış/ikna metni sunar.
 <b>/dedektif [site]</b>: Sitenin CSS kodlarından fontlarını ve ana renk kodlarını (HEX) çekip listeler.
+<b>/canlidestekbaglan [id]</b>: Canlı destek sohbetini ele geçirir ve müşteriyle direkt Telegram'dan yazışırsınız.
+<b>/canlidestekayril</b>: Canlı destek sohbetini terk edip kontrolü tekrar AI asistanına bırakır.
+<b>/sifreekle [isim] [teknoloji] [kullanıcı] [şifre]</b>: Yeni bir müşteri şifresi şifreleyerek kaydeder.
+<b>/sifre [isim]</b>: Belirtilen isme sahip müşterinin çözülmüş şifrelerini gösterir.
+<b>/sifresil [isim]</b>: Müşterinin tüm şifrelerini kalıcı olarak kasadan siler.
+<b>/terminal [id] [mesaj]</b>: Gizli hacker terminaline mesaj atar.
 <b>/dekupe</b>: Komutu gönderdiğinizde bot sizden bir fotoğraf bekler. Gönderdiğiniz fotoğrafın arka planını yapay zeka ile tamamen silip size profesyonel, şeffaf PNG formatında geri verir. (İsterseniz fotoğrafı atarken açıklama kısmına /dekupe yazarak da hızlıca kullanabilirsiniz)`;
     bot.sendMessage(chatId, helpMsg, { parse_mode: 'HTML' });
   });
@@ -1222,4 +1482,4 @@ async function sendTelegramMessage(text) {
   }
 }
 
-module.exports = { initTelegramBot, sendTelegramMessage };
+module.exports = { initTelegramBot, sendTelegramMessage, isSessionHijacked, notifyLiveSupportMessage, notifyEasterEgg };

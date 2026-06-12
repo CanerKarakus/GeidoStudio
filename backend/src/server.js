@@ -67,7 +67,29 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 app.set('trust proxy', 1);
 
 // ── IP Blocking Middleware (Honeypot) ──────────────────────────────────────
-const { readCMS, writeCMS } = require('./models/cmsModel');
+// ── IP Blocking Middleware (Honeypot) ──────────────────────────────────────
+const fs = require('fs');
+const cmsPath = path.join(__dirname, '../../data/cms.json');
+
+const readCMS = () => {
+  try {
+    if (fs.existsSync(cmsPath)) {
+      return JSON.parse(fs.readFileSync(cmsPath, 'utf8'));
+    }
+  } catch (err) {
+    console.error('Error reading cms.json', err);
+  }
+  return {};
+};
+
+const writeCMS = (data) => {
+  try {
+    fs.writeFileSync(cmsPath, JSON.stringify(data, null, 2), 'utf8');
+  } catch (err) {
+    console.error('Error writing cms.json', err);
+  }
+};
+
 const { sendTelegramMessage } = require('./services/telegramService');
 
 app.use((req, res, next) => {
@@ -154,7 +176,12 @@ app.set('io', io);
 initTelegramBot(app, io);
 
 io.on('connection', (socket) => {
-  console.log('Admin connected to socket:', socket.id);
+  console.log('Client connected to socket:', socket.id);
+
+  socket.on('join_support_chat', ({ sessionId, name, email }) => {
+    socket.join(sessionId);
+    console.log(`Live Support: User joined session room ${sessionId}`);
+  });
 });
 
 // Initialize IMAP listener

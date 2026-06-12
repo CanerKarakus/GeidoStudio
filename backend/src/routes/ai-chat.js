@@ -3,6 +3,7 @@ const rateLimit = require('express-rate-limit');
 const Groq = require('groq-sdk');
 const { sendEmail } = require('../services/emailService');
 const authMiddleware = require('../middleware/auth');
+const { isSessionHijacked, notifyLiveSupportMessage } = require('../services/telegramService');
 
 const router = express.Router();
 
@@ -43,10 +44,17 @@ router.post('/', async (req, res) => {
       });
     }
 
-    const { messages, userContext } = req.body;
+    const { messages, userContext, sessionId } = req.body;
 
     if (!messages || !Array.isArray(messages)) {
       return res.status(400).json({ error: 'Geçersiz mesaj formatı.' });
+    }
+
+    const lastMessage = messages[messages.length - 1];
+
+    if (sessionId && isSessionHijacked(sessionId)) {
+      notifyLiveSupportMessage(sessionId, userContext, lastMessage?.text, null);
+      return res.json({ success: true, hijacked: true });
     }
 
     // Optional: userContext might contain { name, email } so AI knows who it is talking to
@@ -73,6 +81,10 @@ router.post('/', async (req, res) => {
     });
 
     const aiResponse = chatCompletion.choices[0]?.message?.content || 'Üzgünüm, şu an yanıt veremiyorum.';
+
+    if (sessionId && lastMessage?.sender === 'user') {
+      notifyLiveSupportMessage(sessionId, userContext, lastMessage.text, aiResponse);
+    }
 
     res.json({ 
       success: true, 
