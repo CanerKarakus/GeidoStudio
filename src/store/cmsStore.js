@@ -51,6 +51,19 @@ const useCmsStore = create((set) => ({
     set({ isAdmin: true, messages: msgs, subscribers: subs });
   },
 
+  telegramLogin: async (socketId) => {
+    await api.telegramLogin(socketId);
+    socket.connect();
+    socket.on('messages_updated', (newMsgs) => {
+      set({ messages: newMsgs });
+    });
+    const [msgs, subs] = await Promise.all([
+      api.getMessages(),
+      api.getSubscribers()
+    ]);
+    set({ isAdmin: true, messages: msgs, subscribers: subs });
+  },
+
   logout: async () => {
     try {
       await api.logout();

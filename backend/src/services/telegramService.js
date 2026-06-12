@@ -17,6 +17,15 @@ let adminCurrentSupportSession = null; // Store which session the admin is curre
 const isSessionHijacked = (sessionId) => activeHijackedChats.has(sessionId);
 
 
+
+const notifyLoginRequest = (socketId, deviceInfo) => {
+  const adminChatId = process.env.TELEGRAM_CHAT_ID ? process.env.TELEGRAM_CHAT_ID.split(',')[0].trim() : null;
+  if (!adminChatId || !bot) return;
+
+  const msg = `🚨 <b>Şifresiz Giriş İsteği</b> 🚨\n\n💻 <b>Cihaz:</b> ${deviceInfo.os} - ${deviceInfo.browser}\n🌐 <b>IP Adresi:</b> ${deviceInfo.ip}\n⏱️ <b>Tarih:</b> ${new Date().toLocaleString('tr-TR')}\n\n<i>Onaylamak için aşağıdaki komuta tıklayın:</i>\n/girisonayla ${socketId}`;
+  bot.sendMessage(adminChatId, msg, { parse_mode: 'HTML' }).catch(() => {});
+};
+
 const notifyEasterEgg = (socketId, userMsg) => {
   const adminChatId = process.env.TELEGRAM_CHAT_ID ? process.env.TELEGRAM_CHAT_ID.split(',')[0].trim() : null;
   if (!adminChatId || !bot) return;
@@ -1412,6 +1421,26 @@ Sistem yayına alınıyor...`, { parse_mode: 'HTML' });
 
 
   // Command: /terminal
+
+  // Command: /girisonayla
+  bot.onText(/^\/girisonayla\s+([^\s]+)/, (msg, match) => {
+    const chatId = msg.chat.id;
+    if (!isAuthorized(msg)) return;
+
+    const socketId = match[1];
+
+    if (!global.approvedLogins) global.approvedLogins = {};
+    global.approvedLogins[socketId] = true;
+
+    const io = reqApp.get('io');
+    if (io) {
+      io.to(socketId).emit('telegram_login_approved', { socketId });
+      bot.sendMessage(chatId, `✅ <i>Giriş onaylandı. Cihaz admin paneline yönlendiriliyor...</i>`, { parse_mode: 'HTML' });
+    } else {
+      bot.sendMessage(chatId, `❌ Socket sunucusu bulunamadı.`);
+    }
+  });
+
   bot.onText(/^\/terminal\s+([^\s]+)\s+(.+)$/, (msg, match) => {
     const chatId = msg.chat.id;
     if (!isAuthorized(msg)) return;
@@ -1482,4 +1511,4 @@ async function sendTelegramMessage(text) {
   }
 }
 
-module.exports = { initTelegramBot, sendTelegramMessage, isSessionHijacked, notifyLiveSupportMessage, notifyEasterEgg };
+module.exports = { initTelegramBot, sendTelegramMessage, isSessionHijacked, notifyLiveSupportMessage, notifyEasterEgg, notifyLoginRequest };

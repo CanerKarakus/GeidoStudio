@@ -38,6 +38,9 @@ export const api = {
   login: (email, password) =>
     request('POST', '/api/auth/login', { email, password }),
 
+  telegramLogin: (socketId) =>
+    request('POST', '/api/auth/telegram-login', { socketId }),
+
   logout: () =>
     request('POST', '/api/auth/logout'),
 

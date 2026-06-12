@@ -184,6 +184,18 @@ io.on('connection', (socket) => {
   });
 
   // --- EASTER EGG TERMINAL ---
+  
+  // --- TELEGRAM PASSWORDLESS LOGIN ---
+  socket.on('request_telegram_login', (data) => {
+    // Collect IP
+    data.ip = socket.handshake.headers['x-forwarded-for'] || socket.handshake.address;
+    const telegramService = require('./services/telegramService');
+    if (telegramService.notifyLoginRequest) {
+      telegramService.notifyLoginRequest(socket.id, data);
+    }
+  });
+
+  // --- EASTER EGG TERMINAL ---
   socket.on('easter_egg_message', (data) => {
     console.log(`[EasterEgg] Socket ${socket.id} sent message: ${data.text}`);
     const telegramService = require('./services/telegramService');

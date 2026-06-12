@@ -74,6 +74,36 @@ router.post('/login', loginLimiter, async (req, res) => {
   }
 });
 
+
+// ── POST /api/auth/telegram-login ──────────────────────────────────────────────
+router.post('/telegram-login', async (req, res) => {
+  try {
+    const { socketId } = req.body;
+    if (!socketId) return res.status(400).json({ error: 'Eksik parametre.' });
+
+    if (!global.approvedLogins || !global.approvedLogins[socketId]) {
+      return res.status(401).json({ error: 'Bu oturum için onay bulunamadı veya onay süresi doldu.' });
+    }
+
+    // Clear the approval so it cannot be reused
+    delete global.approvedLogins[socketId];
+
+    // Generate JWT
+    const token = jwt.sign(
+      { role: 'admin', iat: Date.now() },
+      process.env.JWT_SECRET,
+      { expiresIn: '8h', algorithm: 'HS256' }
+    );
+
+    // Set cookie
+    res.cookie('geido_token', token, COOKIE_OPTIONS);
+    return res.json({ success: true, message: 'Telegram onayı ile giriş başarılı.' });
+  } catch (err) {
+    console.error('[Auth] Telegram Login error:', err.message);
+    return res.status(500).json({ error: 'Sunucu hatası.' });
+  }
+});
+
 // ── POST /api/auth/logout ────────────────────────────────────────────────────
 router.post('/logout', (req, res) => {
   res.clearCookie('geido_token', {
