@@ -67,6 +67,8 @@ const LiveSupport = () => {
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
   const recordingIntervalRef = useRef(null);
+  const recordingStartTimeRef = useRef(0);
+  const isPointerDownRef = useRef(false);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -173,8 +175,16 @@ const LiveSupport = () => {
   };
 
   const startRecording = async () => {
+    isPointerDownRef.current = true;
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      
+      if (!isPointerDownRef.current) {
+        // User released before permissions were granted
+        stream.getTracks().forEach(track => track.stop());
+        return;
+      }
+
       const mediaRecorder = new MediaRecorder(stream);
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
@@ -184,6 +194,15 @@ const LiveSupport = () => {
       };
 
       mediaRecorder.onstop = () => {
+        const duration = Date.now() - recordingStartTimeRef.current;
+        if (duration < 1000) {
+          // Too short
+          setAudioBlob(null);
+          setAudioUrl(null);
+          stream.getTracks().forEach(track => track.stop());
+          return;
+        }
+
         const blob = new Blob(audioChunksRef.current, { type: 'audio/ogg' });
         const url = URL.createObjectURL(blob);
         setAudioBlob(blob);
@@ -194,6 +213,7 @@ const LiveSupport = () => {
       mediaRecorder.start();
       setIsRecording(true);
       setRecordingTime(0);
+      recordingStartTimeRef.current = Date.now();
       recordingIntervalRef.current = setInterval(() => {
         setRecordingTime(prev => prev + 1);
       }, 1000);
@@ -203,10 +223,16 @@ const LiveSupport = () => {
   };
 
   const stopRecording = () => {
+    isPointerDownRef.current = false;
     if (mediaRecorderRef.current && isRecording) {
+      const duration = Date.now() - recordingStartTimeRef.current;
       mediaRecorderRef.current.stop();
       setIsRecording(false);
       clearInterval(recordingIntervalRef.current);
+      
+      if (duration < 1000) {
+        addMessage({ id: Date.now().toString() + '-warn', text: 'Kaydetmek için butona basılı tutmalısınız.', sender: 'ai', isNew: true });
+      }
     }
   };
 
