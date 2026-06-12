@@ -310,6 +310,10 @@ const initImap = async (onNewMessage) => {
       logger: false
     });
 
+    client.on('error', err => {
+      console.error('[IMAP] Connection error caught:', err.message);
+    });
+
     try {
       await client.connect();
       const lock = await client.getMailboxLock('INBOX');
