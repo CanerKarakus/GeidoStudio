@@ -107,18 +107,7 @@ const notifyVoiceMessage = (sessionId, userContext, audioFilePath) => {
   });
 };
 
-module.exports = {
-  initTelegramBot,
-  notifyLoginRequest,
-  notifyEasterEgg,
-  notifyLiveSupportMessage,
-  notifyVoiceMessage,
-  isSessionHijacked,
-  decryptText,
-  encryptText,
-  readSessions,
-  writeSessions
-};
+
 
 let groqClient = null;
 let dailyReportTimeout = null;
