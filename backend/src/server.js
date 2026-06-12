@@ -182,6 +182,15 @@ io.on('connection', (socket) => {
     socket.join(sessionId);
     console.log(`Live Support: User joined session room ${sessionId}`);
   });
+
+  // --- EASTER EGG TERMINAL ---
+  socket.on('easter_egg_message', (data) => {
+    console.log(`[EasterEgg] Socket ${socket.id} sent message: ${data.text}`);
+    const telegramService = require('./services/telegramService');
+    if (telegramService.notifyEasterEgg) {
+      telegramService.notifyEasterEgg(socket.id, data.text);
+    }
+  });
 });
 
 // Initialize IMAP listener
