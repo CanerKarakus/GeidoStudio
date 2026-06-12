@@ -3,7 +3,7 @@ const rateLimit = require('express-rate-limit');
 const Groq = require('groq-sdk');
 const { sendEmail } = require('../services/emailService');
 const authMiddleware = require('../middleware/auth');
-const { isSessionHijacked, notifyLiveSupportMessage, notifyVoiceMessage } = require('../services/telegramService');
+const { isSessionHijacked, notifyLiveSupportMessage, notifyVoiceMessage, notifyHumanRequest } = require('../services/telegramService');
 const multer = require('multer');
 const fs = require('fs');
 const os = require('os');
@@ -40,7 +40,12 @@ Hizmetlerimiz:
 - Web & Mobil Geliştirme: Web siteleri, E-ticaret, iOS/Android uygulamaları. (Caner tarafından yönetilir)
 - Sistem & Otomasyon: Script hazırlama, API entegrasyonu. (Caner tarafından yönetilir)
 
-Fiyatlarla ilgili doğrudan net bir rakam vermekten kaçın, bunun yerine onları projenin detaylarını konuşmak için iletişim formunu doldurmaya veya ekibe yönlendirmeye teşvik et.`;
+Fiyatlarla ilgili doğrudan net bir rakam vermekten kaçın, bunun yerine onları projenin detaylarını konuşmak için iletişim formunu doldurmaya veya ekibe yönlendirmeye teşvik et.
+
+İNSAN DESTEĞİ KURALLARI:
+Eğer kullanıcı seninle konuşurken bir insan/müşteri temsilcisi ile görüşmek veya canlı desteğe bağlanmak isterse:
+1. İLK İSTEKTE: "Ben Geido Studio'nun yapay zeka asistanıyım. Size ben de yardımcı olabilirim, lütfen sorununuzu bana iletin." şeklinde cevap ver.
+2. İKİNCİ KEZ ısrar ederse VEYA acil bir durumu olduğunu söylerse SADECE ve TAM OLARAK "[CALL_HUMAN] Sizi canlı desteğe yönlendiriyorum, lütfen bekleyin." yaz. Başka hiçbir şey yazma.`;
 
 router.post('/', async (req, res) => {
   try {
@@ -86,7 +91,16 @@ router.post('/', async (req, res) => {
       max_tokens: 1024,
     });
 
-    const aiResponse = chatCompletion.choices[0]?.message?.content || 'Üzgünüm, şu an yanıt veremiyorum.';
+    let aiResponse = chatCompletion.choices[0]?.message?.content || 'Üzgünüm, şu an yanıt veremiyorum.';
+
+    if (aiResponse.includes('[CALL_HUMAN]')) {
+      aiResponse = aiResponse.replace('[CALL_HUMAN]', '').trim();
+      if (!aiResponse) aiResponse = 'Sizi canlı desteğe yönlendiriyorum, lütfen bekleyin.';
+      
+      if (sessionId) {
+        notifyHumanRequest(sessionId, userContext);
+      }
+    }
 
     if (sessionId && lastMessage?.sender === 'user') {
       notifyLiveSupportMessage(sessionId, userContext, lastMessage.text, aiResponse);
@@ -186,7 +200,16 @@ router.post('/voice', upload.single('audio'), async (req, res) => {
       max_tokens: 1024,
     });
 
-    const aiResponse = chatCompletion.choices[0]?.message?.content || 'Üzgünüm, şu an yanıt veremiyorum.';
+    let aiResponse = chatCompletion.choices[0]?.message?.content || 'Üzgünüm, şu an yanıt veremiyorum.';
+
+    if (aiResponse.includes('[CALL_HUMAN]')) {
+      aiResponse = aiResponse.replace('[CALL_HUMAN]', '').trim();
+      if (!aiResponse) aiResponse = 'Sizi canlı desteğe yönlendiriyorum, lütfen bekleyin.';
+      
+      if (sessionId) {
+        notifyHumanRequest(sessionId, parsedContext);
+      }
+    }
 
     // Admin'e de yazılı olarak bildir
     if (sessionId) {

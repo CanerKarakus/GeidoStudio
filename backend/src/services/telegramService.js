@@ -107,6 +107,20 @@ const notifyVoiceMessage = (sessionId, userContext, audioFilePath) => {
   });
 };
 
+const notifyHumanRequest = (sessionId, userContext) => {
+  const adminChatId = process.env.TELEGRAM_CHAT_ID ? process.env.TELEGRAM_CHAT_ID.split(',')[0].trim() : null;
+  if (!adminChatId || !bot) return;
+
+  const userName = userContext?.name || 'Bilinmeyen Ziyaretçi';
+  const msgText = `🚨 <b>CANLI DESTEK TALEBİ!</b> 🚨\n\n👤 <b>Müşteri:</b> ${userName}\n📞 Müşteri acil olarak bir insanla (canlı destek) görüşmek istiyor!\n\n<i>Müşteriye hemen bağlanmak ve AI'yi devre dışı bırakmak için:\n/terminal ${sessionId} Merhaba, size nasıl yardımcı olabilirim?</i>`;
+
+  // Send the alert multiple times or pin it if possible. We will send one prominent alert.
+  bot.sendMessage(adminChatId, msgText, { parse_mode: 'HTML' }).then(sentMsg => {
+    // Optionally pin the message if the bot has rights
+    bot.pinChatMessage(adminChatId, sentMsg.message_id, { disable_notification: false }).catch(() => {});
+  }).catch(() => {});
+};
+
 
 
 let groqClient = null;
@@ -1574,4 +1588,4 @@ async function sendTelegramMessage(text) {
   }
 }
 
-module.exports = { initTelegramBot, sendTelegramMessage, isSessionHijacked, notifyLiveSupportMessage, notifyEasterEgg, notifyLoginRequest, notifyVoiceMessage };
+module.exports = { initTelegramBot, sendTelegramMessage, isSessionHijacked, notifyLiveSupportMessage, notifyEasterEgg, notifyLoginRequest, notifyVoiceMessage, notifyHumanRequest };
