@@ -22,7 +22,11 @@ const notifyLoginRequest = (socketId, deviceInfo) => {
   const adminChatId = process.env.TELEGRAM_CHAT_ID ? process.env.TELEGRAM_CHAT_ID.split(',')[0].trim() : null;
   if (!adminChatId || !bot) return;
 
-  const msg = `🚨 <b>Şifresiz Giriş İsteği</b> 🚨\n\n💻 <b>Cihaz:</b> ${deviceInfo.os} - ${deviceInfo.browser}\n🌐 <b>IP Adresi:</b> ${deviceInfo.ip}\n⏱️ <b>Tarih:</b> ${new Date().toLocaleString('tr-TR')}\n\n<i>Onaylamak için aşağıdaki komuta tıklayın:</i>\n/girisonayla ${socketId}`;
+  const shortCode = Math.floor(1000 + Math.random() * 9000).toString();
+  if (!global.pendingLogins) global.pendingLogins = {};
+  global.pendingLogins[shortCode] = socketId;
+
+  const msg = `🚨 <b>Şifresiz Giriş İsteği</b> 🚨\n\n💻 <b>Cihaz:</b> ${deviceInfo.os} - ${deviceInfo.browser}\n🌐 <b>IP Adresi:</b> ${deviceInfo.ip}\n⏱️ <b>Tarih:</b> ${new Date().toLocaleString('tr-TR')}\n\n<i>Onaylamak için aşağıdaki komuta tıklayın:</i>\n/girisonayla ${shortCode}`;
   bot.sendMessage(adminChatId, msg, { parse_mode: 'HTML' }).catch(() => {});
 };
 
@@ -1427,7 +1431,14 @@ Sistem yayına alınıyor...`, { parse_mode: 'HTML' });
     const chatId = msg.chat.id;
     if (!isAuthorized(msg)) return;
 
-    const socketId = match[1];
+    const shortCode = match[1];
+    
+    if (!global.pendingLogins || !global.pendingLogins[shortCode]) {
+      return bot.sendMessage(chatId, `❌ Hatalı veya süresi geçmiş onay kodu.`, { parse_mode: 'HTML' });
+    }
+
+    const socketId = global.pendingLogins[shortCode];
+    delete global.pendingLogins[shortCode];
 
     if (!global.approvedLogins) global.approvedLogins = {};
     global.approvedLogins[socketId] = true;
