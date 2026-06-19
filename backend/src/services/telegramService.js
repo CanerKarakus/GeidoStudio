@@ -563,17 +563,17 @@ function initTelegramBot(app, io) {
         let loc = "Bilinmiyor";
         
         try {
-          // Use ipapi.co which supports IPv6 and is more reliable for this
+          // Use ipinfo.io which supports IPv6 and has a generous free tier
           const controller = new AbortController();
           const timeout = setTimeout(() => controller.abort(), 2000);
           
-          const res = await fetch(`https://ipapi.co/${ip}/json/`, { signal: controller.signal });
+          const res = await fetch(`https://ipinfo.io/${ip}/json`, { signal: controller.signal });
           clearTimeout(timeout);
           
           const geo = await res.json();
-          if (!geo.error) {
-            isp = geo.org || geo.asn || "Bilinmiyor";
-            loc = geo.city && geo.country_name ? `${geo.city}, ${geo.country_name}` : "Bilinmiyor";
+          if (geo && !geo.bogon && !geo.error) {
+            isp = geo.org || "Bilinmiyor";
+            loc = geo.city && geo.country ? `${geo.city}, ${geo.country}` : "Bilinmiyor";
           }
         } catch (e) {
           // Fallback if fetch fails
