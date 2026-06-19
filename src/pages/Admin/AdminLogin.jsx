@@ -41,6 +41,7 @@ const AdminLogin = () => {
       };
     } else {
       setTelegramCodeHint('');
+    }
   }, [isWaitingTelegram, telegramLogin, navigate]);
 
   if (isAdmin && !isLoading) {
