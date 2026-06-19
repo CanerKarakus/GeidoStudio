@@ -20,17 +20,68 @@ const AdminLogin = () => {
   const [isWaitingTelegram, setIsWaitingTelegram] = useState(false);
   const [telegramCodeHint, setTelegramCodeHint] = useState('');
   const [isTrap, setIsTrap] = useState(false);
-  const [userIp, setUserIp] = useState('Yükleniyor...');
+  const [deviceInfo, setDeviceInfo] = useState(null);
   const [cfToken, setCfToken] = useState(null);
-  
-  const { telegramLogin, isAdmin, isLoading } = useCmsStore();
   const navigate = useNavigate();
+  const { isAdmin, isLoading, telegramLogin } = useCmsStore();
 
   useEffect(() => {
-    fetch('https://api.ipify.org?format=json')
+    // Get browser/os info from user agent
+    const ua = navigator.userAgent;
+    let browser = "Bilinmeyen Tarayıcı";
+    let browserVersion = "";
+    if (ua.includes("Firefox")) { browser = "Firefox"; browserVersion = ua.match(/Firefox\/([\d.]+)/)?.[1] || ""; }
+    else if (ua.includes("Chrome") && !ua.includes("Edg") && !ua.includes("OPR")) { browser = "Chrome"; browserVersion = ua.match(/Chrome\/([\d.]+)/)?.[1] || ""; }
+    else if (ua.includes("Safari") && !ua.includes("Chrome")) { browser = "Safari"; browserVersion = ua.match(/Version\/([\d.]+)/)?.[1] || ""; }
+    else if (ua.includes("Edg")) { browser = "Edge"; browserVersion = ua.match(/Edg\/([\d.]+)/)?.[1] || ""; }
+    else if (ua.includes("OPR")) { browser = "Opera"; browserVersion = ua.match(/OPR\/([\d.]+)/)?.[1] || ""; }
+
+    let os = "Bilinmeyen OS";
+    let osVersion = "";
+    if (ua.includes("Win")) {
+      os = "Windows";
+      osVersion = ua.match(/Windows NT ([\d.]+)/)?.[1] || "";
+      if (osVersion === "10.0") osVersion = "10/11";
+    }
+    else if (ua.includes("Mac OS X")) {
+      os = "MacOS";
+      osVersion = ua.match(/Mac OS X ([\d_]+)/)?.[1]?.replace(/_/g, '.') || "";
+    }
+    else if (ua.includes("Android")) {
+      os = "Android";
+      osVersion = ua.match(/Android ([\d.]+)/)?.[1] || "";
+    }
+    else if (ua.includes("iPhone") || ua.includes("iPad")) {
+      os = "iOS";
+      osVersion = ua.match(/OS ([\d_]+) like/)?.[1]?.replace(/_/g, '.') || "";
+    }
+
+    const browserStr = browserVersion ? `${browser} (v${browserVersion})` : browser;
+    const osStr = osVersion ? `${os} (v${osVersion})` : os;
+    const screenRes = `${window.screen.width}x${window.screen.height}`;
+    const language = navigator.language || "Bilinmiyor";
+    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || "Bilinmiyor";
+
+    setDeviceInfo({
+      browserStr, osStr, screenRes, language, timeZone, userAgent: ua,
+      ip: 'Yükleniyor...', isp: 'Yükleniyor...'
+    });
+
+    fetch('https://ipinfo.io/json')
       .then(res => res.json())
-      .then(data => setUserIp(data.ip))
-      .catch(() => setUserIp('Bilinmiyor'));
+      .then(data => {
+        setDeviceInfo(prev => ({
+          ...prev,
+          ip: data.ip || 'Bilinmiyor',
+          isp: data.org || 'Bilinmiyor'
+        }));
+      })
+      .catch(() => {
+        fetch('https://api64.ipify.org?format=json')
+          .then(res => res.json())
+          .then(data => setDeviceInfo(prev => ({ ...prev, ip: data.ip || 'Bilinmiyor' })))
+          .catch(() => setDeviceInfo(prev => ({ ...prev, ip: 'Bilinmiyor' })));
+      });
   }, []);
 
   useEffect(() => {
@@ -239,14 +290,25 @@ const AdminLogin = () => {
           alignItems: 'center',
           gap: '8px'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'rgba(255,255,255,0.5)', fontSize: '0.85rem', fontFamily: 'monospace' }}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="14" height="14">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'rgba(255,255,255,0.8)', fontSize: '0.85rem', fontFamily: 'monospace', fontWeight: 'bold', marginBottom: '4px' }}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="16" height="16">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
             </svg>
-            <span>IP: {userIp}</span>
+            <span>Güvenlik Protokolü Devrede</span>
           </div>
-          <p style={{ margin: 0, fontSize: '0.75rem', color: 'rgba(255,255,255,0.3)', lineHeight: '1.4' }}>
-            Bu sayfadaki işlemler yüksek güvenlik protokolleri ile izlenmektedir.<br/>Giriş denemeleriniz ve cihaz bilgileriniz güvenlik ihlali durumlarında yetkili mercilerle paylaşılabilir.
+          
+          {deviceInfo && (
+            <div style={{ width: '100%', textAlign: 'left', fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)', fontFamily: 'monospace', margin: '8px 0', padding: '12px', backgroundColor: 'rgba(0,0,0,0.3)', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.02)' }}>
+              <div style={{ marginBottom: '4px' }}><span style={{ color: '#fff', opacity: 0.8 }}>💻 Cihaz:</span> {deviceInfo.osStr} - {deviceInfo.browserStr}</div>
+              <div style={{ marginBottom: '4px' }}><span style={{ color: '#fff', opacity: 0.8 }}>🖥 Çözünürlük:</span> {deviceInfo.screenRes}</div>
+              <div style={{ marginBottom: '4px' }}><span style={{ color: '#fff', opacity: 0.8 }}>🌍 Dil/Bölge:</span> {deviceInfo.language} ({deviceInfo.timeZone})</div>
+              <div style={{ marginBottom: '4px' }}><span style={{ color: '#ef4444', opacity: 0.8 }}>🌐 IP Adresi:</span> {deviceInfo.ip}</div>
+              <div><span style={{ color: '#fff', opacity: 0.8 }}>🏢 ISP:</span> {deviceInfo.isp}</div>
+            </div>
+          )}
+
+          <p style={{ margin: 0, fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', lineHeight: '1.4' }}>
+            Bu sayfadaki işlemler yüksek güvenlik protokolleri ile izlenmektedir.<br/>Giriş denemeleriniz ve yukarıdaki cihaz bilgileriniz, güvenlik ihlali veya yetkisiz erişim durumunda adli mercilerle paylaşılabilir.
           </p>
         </div>
       </motion.div>
