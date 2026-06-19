@@ -227,8 +227,27 @@ const AdminLogin = () => {
           )}
         </AnimatePresence>
 
-        <div style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.8rem', color: 'rgba(255,255,255,0.3)', fontFamily: 'monospace' }}>
-          IP Adresiniz: {userIp}
+        <div style={{ 
+          marginTop: '2rem', 
+          padding: '1rem',
+          borderRadius: '8px',
+          backgroundColor: 'rgba(0, 0, 0, 0.2)',
+          border: '1px solid rgba(255, 255, 255, 0.05)',
+          textAlign: 'center', 
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '8px'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'rgba(255,255,255,0.5)', fontSize: '0.85rem', fontFamily: 'monospace' }}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="14" height="14">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            </svg>
+            <span>IP: {userIp}</span>
+          </div>
+          <p style={{ margin: 0, fontSize: '0.75rem', color: 'rgba(255,255,255,0.3)', lineHeight: '1.4' }}>
+            Bu sayfadaki işlemler yüksek güvenlik protokolleri ile izlenmektedir.<br/>Giriş denemeleriniz ve cihaz bilgileriniz güvenlik ihlali durumlarında yetkili mercilerle paylaşılabilir.
+          </p>
         </div>
       </motion.div>
     </div>
