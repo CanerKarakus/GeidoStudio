@@ -26,6 +26,11 @@ const notifyLoginRequest = async (socketId, deviceInfo) => {
   if (!global.pendingLogins) global.pendingLogins = {};
   global.pendingLogins[shortCode] = socketId;
 
+  const io = reqApp.get('io');
+  if (io) {
+    io.to(socketId).emit('telegram_login_code_hint', { hint: `XX${shortCode.substring(2)}` });
+  }
+
   let location = "Bilinmiyor";
   let isp = "Bilinmiyor";
   try {

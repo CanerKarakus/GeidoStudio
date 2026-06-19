@@ -14,6 +14,7 @@ const AdminLogin = () => {
   
   // Telegram Login States
   const [isWaitingTelegram, setIsWaitingTelegram] = useState(false);
+  const [telegramCodeHint, setTelegramCodeHint] = useState('');
   
   const { login, telegramLogin, isAdmin, isLoading } = useCmsStore();
   const navigate = useNavigate();
@@ -29,12 +30,17 @@ const AdminLogin = () => {
           setIsWaitingTelegram(false);
         }
       };
+      
+      const onHint = (data) => setTelegramCodeHint(data.hint);
 
       socket.on('telegram_login_approved', onTelegramApproved);
+      socket.on('telegram_login_code_hint', onHint);
       return () => {
         socket.off('telegram_login_approved', onTelegramApproved);
+        socket.off('telegram_login_code_hint', onHint);
       };
-    }
+    } else {
+      setTelegramCodeHint('');
   }, [isWaitingTelegram, telegramLogin, navigate]);
 
   if (isAdmin && !isLoading) {
@@ -136,7 +142,11 @@ const AdminLogin = () => {
             >
               <img src={loadingSvg} alt="Loading" className={styles.customLoadingSvg} />
               <h3>Telegram'dan Onay Bekleniyor</h3>
-              <p>Lütfen yöneticinin Telegram üzerinden girişinize izin vermesini bekleyin...</p>
+              {telegramCodeHint ? (
+                <p>Güvenlik Kodunuz: <strong>{telegramCodeHint}</strong></p>
+              ) : (
+                <p>Lütfen yöneticinin Telegram üzerinden girişinize izin vermesini bekleyin...</p>
+              )}
               <button 
                 type="button" 
                 onClick={() => setIsWaitingTelegram(false)}
