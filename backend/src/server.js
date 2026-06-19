@@ -47,8 +47,11 @@ const ALLOWED_ORIGINS = [
 
 app.use(cors({
   origin: function(origin, callback) {
-    // Dinamik olarak gelen tüm adresleri kabul et (Wildcard gibi ama credentials ile uyumlu)
-    callback(null, origin || true);
+    if (!origin || ALLOWED_ORIGINS.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('CORS: Bu alan adı sisteme erişemez.'));
+    }
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],

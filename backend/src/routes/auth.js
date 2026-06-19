@@ -36,45 +36,7 @@ const COOKIE_OPTIONS = {
 };
 
 // ── POST /api/auth/login ─────────────────────────────────────────────────────
-router.post('/login', loginLimiter, async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    // Validate input
-    if (!email || !password) {
-      return res.status(400).json({ error: 'E-posta ve şifre gereklidir.' });
-    }
-
-    // Constant-time email comparison to prevent timing attacks
-    const adminEmail = process.env.ADMIN_EMAIL;
-    const emailMatch = email === adminEmail;
-
-    // Always run bcrypt compare (even if email wrong) to prevent timing attacks
-    const passwordHash = process.env.ADMIN_PASSWORD_HASH || '$2a$12$invalidhashtopreventtimingattacks0000000000000000000';
-    const passwordMatch = await bcrypt.compare(password, passwordHash);
-
-    if (!emailMatch || !passwordMatch) {
-      // Generic error — don't reveal which field was wrong
-      return res.status(401).json({ error: 'E-posta veya şifre hatalı.' });
-    }
-
-    // Generate JWT — no sensitive data in payload
-    const token = jwt.sign(
-      { role: 'admin', iat: Date.now() },
-      process.env.JWT_SECRET,
-      { expiresIn: '8h', algorithm: 'HS256' }
-    );
-
-    // Set httpOnly cookie — frontend NEVER sees the token
-    res.cookie('geido_token', token, COOKIE_OPTIONS);
-
-    return res.json({ success: true, message: 'Giriş başarılı.' });
-  } catch (err) {
-    console.error('[Auth] Login error:', err.message);
-    return res.status(500).json({ error: 'Sunucu hatası.' });
-  }
-});
-
+// Removed for security. Telegram passwordless login is now the only way.
 
 // ── POST /api/auth/telegram-login ──────────────────────────────────────────────
 router.post('/telegram-login', async (req, res) => {
@@ -89,9 +51,16 @@ router.post('/telegram-login', async (req, res) => {
     // Clear the approval so it cannot be reused
     delete global.approvedLogins[socketId];
 
+    const clientIP = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1';
+    const clientUA = req.headers['user-agent'] || 'Unknown';
+
     // Generate JWT
     const token = jwt.sign(
-      { role: 'admin', iat: Date.now() },
+      { 
+        role: 'admin', 
+        ip: clientIP,
+        ua: clientUA 
+      },
       process.env.JWT_SECRET,
       { expiresIn: '8h', algorithm: 'HS256' }
     );
@@ -100,7 +69,6 @@ router.post('/telegram-login', async (req, res) => {
     res.cookie('geido_token', token, COOKIE_OPTIONS);
     
     // Notify telegram
-    const clientIP = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
     if (notifyLoginSuccess) notifyLoginSuccess(clientIP);
 
     return res.json({ success: true, message: 'Telegram onayı ile giriş başarılı.' });

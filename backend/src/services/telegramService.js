@@ -456,6 +456,21 @@ function initTelegramBot(app, io) {
     triggerNetlifyBuild(chatId, `✅ <b>Hacker Kapanı Yayında!</b> Artık /wp-admin adresine girenler otomatik banlanacak.`);
   });
 
+  // Command: /tumunukapat
+  bot.onText(/^\/tumunukapat/, (msg) => {
+    const chatId = msg.chat.id;
+    if (!isAuthorized(msg)) return;
+
+    const cms = readCMS();
+    if (!cms.settings) cms.settings = {};
+    
+    // Geçerli saniye (Unix Timestamp)
+    cms.settings.jwtRevokeTimestamp = Math.floor(Date.now() / 1000);
+    writeCMS(cms);
+    
+    bot.sendMessage(chatId, `🚨 <b>Acil Çıkış Aktif!</b>\nŞu ana kadar panele giriş yapmış tüm cihazların oturumları anında iptal edildi.`, { parse_mode: 'HTML' });
+  });
+
   // Command: /banla
   bot.onText(/^\/banla\s+(.+)$/, (msg, match) => {
     const chatId = msg.chat.id;
@@ -1617,6 +1632,7 @@ Sistem yayına alınıyor...`, { parse_mode: 'HTML' });
     const chatId = msg.chat.id;
     if (!isAuthorized(msg)) return;
     const helpMsg = `📖 <b>Komut Rehberi:</b>\n
+<b>/tumunukapat</b>: (Panik Butonu) Açık olan tüm oturumları iptal eder, cihazlardan çıkış yapar.
 <b>/bakim</b>: Sitenin bakım modunu açar/kapatır ve anında Netlify'ı tetikler.
 <b>/sahtewp</b>: Hacker kapanını açar/kapatır (Sahte wp-admin sayfası oluşturur).
 <b>/rapor</b>: Sitenize giren dünkü, bugünkü ve toplam ziyaretçi sayısını söyler.

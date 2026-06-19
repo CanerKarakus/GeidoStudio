@@ -7,16 +7,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import loadingSvg from '../../assets/loading/admin-loading.svg';
 
 const AdminLogin = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
   
   // Telegram Login States
   const [isWaitingTelegram, setIsWaitingTelegram] = useState(false);
   const [telegramCodeHint, setTelegramCodeHint] = useState('');
   
-  const { login, telegramLogin, isAdmin, isLoading } = useCmsStore();
+  const { telegramLogin, isAdmin, isLoading } = useCmsStore();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -54,19 +51,6 @@ const AdminLogin = () => {
     return <Navigate to="/admin" replace />;
   }
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-    try {
-      await login(email, password);
-      navigate('/admin');
-    } catch (err) {
-      setError(err.message || 'Giriş yapılamadı.');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleTelegramLogin = () => {
     if (!socket.connected) {
@@ -163,44 +147,15 @@ const AdminLogin = () => {
               </button>
             </motion.div>
           ) : (
-            <motion.form 
+            <motion.div 
               key="form"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              onSubmit={handleSubmit} 
               className={styles.form}
             >
               {error && <div className={styles.error}>{error}</div>}
               
-              <div className={styles.inputGroup}>
-                <label>E-posta</label>
-                <input 
-                  type="email" 
-                  required 
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@geidostudio.com"
-                />
-              </div>
-
-              <div className={styles.inputGroup}>
-                <label>Şifre</label>
-                <input 
-                  type="password" 
-                  required 
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                />
-              </div>
-
-              <button type="submit" disabled={loading} className={styles.submitBtn}>
-                {loading ? 'Giriş Yapılıyor...' : 'Giriş Yap'}
-              </button>
-
-              <div className={styles.divider}>veya</div>
-
               <button 
                 type="button" 
                 className={styles.telegramBtn}
@@ -211,7 +166,7 @@ const AdminLogin = () => {
                 </svg>
                 Telegram ile Şifresiz Giriş Yap
               </button>
-            </motion.form>
+            </motion.div>
           )}
         </AnimatePresence>
       </motion.div>
