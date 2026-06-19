@@ -496,8 +496,14 @@ function initTelegramBot(app, io) {
       if (io) {
         io.sockets.sockets.forEach(socket => {
           let clientIP = socket.handshake.headers['x-forwarded-for'] || socket.handshake.address;
-          if (typeof clientIP === 'string') clientIP = clientIP.split(',')[0].trim();
-          if (clientIP === ipToBan) {
+          let ip = clientIP;
+          if (typeof ip === 'string') {
+            ip = ip.split(',')[0].trim();
+          }
+          if (ip === '::1' || ip === '::ffff:127.0.0.1') {
+            ip = '127.0.0.1';
+          }
+          if (ip === ipToBan) {
             socket.emit('telegram_banned_trap');
             setTimeout(() => socket.disconnect(true), 1000);
           }
@@ -531,7 +537,7 @@ function initTelegramBot(app, io) {
   });
 
   // Command: /banlist
-  bot.onText(/^\/banlist$/, (msg) => {
+  bot.onText(/^\/banlist/, (msg) => {
     const chatId = msg.chat.id;
     if (!isAuthorized(msg)) return;
 
