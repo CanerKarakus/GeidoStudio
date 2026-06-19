@@ -28,10 +28,10 @@ const loginLimiter = rateLimit({
 // Cookie config — httpOnly means JS can NEVER read this cookie
 const IS_PROD = process.env.NODE_ENV === 'production';
 const COOKIE_OPTIONS = {
-  httpOnly: true,                // JS cannot access — XSS protection
-  secure: IS_PROD,               // HTTPS only in production
-  sameSite: IS_PROD ? 'none' : 'lax', // 'none' for cross-domain prod, 'lax' for same-host dev
-  maxAge: 8 * 60 * 60 * 1000,   // 8 hours
+  httpOnly: true,                
+  secure: true,               
+  sameSite: 'none', 
+  maxAge: 8 * 60 * 60 * 1000,   
   path: '/',
 };
 
