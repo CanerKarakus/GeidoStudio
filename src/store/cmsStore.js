@@ -35,7 +35,7 @@ const useCmsStore = create((set) => ({
 
       set({ cms: cmsData, isAdmin: authStatus, messages: msgs, subscribers: subs, isLoading: false });
     } catch (err) {
-      if (err.message.includes('403') || err.message.includes('Access Denied') || err.message.includes('Failed to fetch')) {
+      if (err.message.includes('403') || err.message.includes('Access Denied')) {
         set({ isBanned: true, isLoading: false });
       } else {
         set({ error: err.message, isLoading: false });
