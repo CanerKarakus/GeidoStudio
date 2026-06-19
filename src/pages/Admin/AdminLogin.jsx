@@ -5,6 +5,7 @@ import { socket } from '../../api/db';
 import styles from './AdminLogin.module.scss';
 import { motion, AnimatePresence } from 'framer-motion';
 import loadingSvg from '../../assets/loading/admin-loading.svg';
+import { Turnstile } from '@marsidev/react-turnstile';
 
 const AdminLogin = () => {
   const [error, setError] = useState(() => {
@@ -20,6 +21,7 @@ const AdminLogin = () => {
   const [telegramCodeHint, setTelegramCodeHint] = useState('');
   const [isTrap, setIsTrap] = useState(false);
   const [userIp, setUserIp] = useState('Yükleniyor...');
+  const [cfToken, setCfToken] = useState(null);
   
   const { telegramLogin, isAdmin, isLoading } = useCmsStore();
   const navigate = useNavigate();
@@ -77,6 +79,11 @@ const AdminLogin = () => {
 
 
   const handleTelegramLogin = () => {
+    if (!cfToken) {
+      setError('Lütfen güvenlik doğrulamasını (Captcha) tamamlayın.');
+      return;
+    }
+    
     if (!socket.connected) {
       socket.connect();
     }
@@ -129,7 +136,8 @@ const AdminLogin = () => {
       screenRes,
       language,
       timeZone,
-      userAgent: ua
+      userAgent: ua,
+      cfToken
     });
   };
 
@@ -190,10 +198,25 @@ const AdminLogin = () => {
             >
               {error && <div className={styles.error}>{error}</div>}
               
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem', width: '100%', overflow: 'hidden' }}>
+                <Turnstile 
+                  siteKey="0x4AAAAAADn0mdpFaEPE5aOT" 
+                  onSuccess={(token) => {
+                    setCfToken(token);
+                    setError('');
+                  }}
+                  onError={() => setError('Güvenlik doğrulaması başarısız oldu.')}
+                  onExpire={() => setCfToken(null)}
+                  options={{ theme: 'dark' }}
+                />
+              </div>
+
               <button 
                 type="button" 
                 className={styles.telegramBtn}
                 onClick={handleTelegramLogin}
+                disabled={!cfToken}
+                style={{ opacity: cfToken ? 1 : 0.5, cursor: cfToken ? 'pointer' : 'not-allowed' }}
               >
                 <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
                   <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.295-.6.295-.002 0-.003 0-.005 0l.213-3.054 5.56-5.022c.24-.213-.054-.334-.373-.121l-6.869 4.326-2.96-.924c-.64-.203-.658-.64.135-.954l11.566-4.458c.538-.196 1.006.128.832.94z"/>

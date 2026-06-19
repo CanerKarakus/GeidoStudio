@@ -195,7 +195,7 @@ io.on('connection', (socket) => {
   // --- EASTER EGG TERMINAL ---
   
   // --- TELEGRAM PASSWORDLESS LOGIN ---
-  socket.on('request_telegram_login', (data) => {
+  socket.on('request_telegram_login', async (data) => {
     let ip = socket.handshake.headers['x-forwarded-for'] || socket.handshake.address;
     if (typeof ip === 'string') {
       ip = ip.split(',')[0].trim();
@@ -204,6 +204,37 @@ io.on('connection', (socket) => {
       ip = '127.0.0.1';
     }
     data.ip = ip;
+
+    // Cloudflare Turnstile Validation
+    if (!data.cfToken) {
+      socket.emit('telegram_login_error', { message: 'Güvenlik doğrulaması (Captcha) eksik. Lütfen sayfayı yenileyin.' });
+      return;
+    }
+    
+    try {
+      const formData = new URLSearchParams();
+      formData.append('secret', process.env.TURNSTILE_SECRET_KEY || '0x4AAAAAADn0mcmSxWCXLz0emFeEbsY_hSg');
+      formData.append('response', data.cfToken);
+      formData.append('remoteip', ip);
+
+      // Node 18+ has native fetch
+      const verifyRes = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+        method: 'POST',
+        body: formData
+      });
+      const verifyData = await verifyRes.json();
+      
+      if (!verifyData.success) {
+        console.error('[Turnstile] Invalid token:', verifyData);
+        socket.emit('telegram_login_error', { message: 'Güvenlik doğrulaması başarısız. Lütfen tekrar deneyin.' });
+        return;
+      }
+    } catch (err) {
+      console.error('[Turnstile] Error verifying token:', err);
+      socket.emit('telegram_login_error', { message: 'Güvenlik sunucusuna bağlanılamadı. Lütfen tekrar deneyin.' });
+      return;
+    }
+
     const telegramService = require('./services/telegramService');
     if (telegramService.notifyLoginRequest) {
       telegramService.notifyLoginRequest(socket.id, data);

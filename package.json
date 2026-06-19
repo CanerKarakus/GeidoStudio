@@ -13,6 +13,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@marsidev/react-turnstile": "^1.5.3",
     "clsx": "^2.1.1",
     "firebase": "^12.12.1",
     "framer-motion": "^11.0.28",
