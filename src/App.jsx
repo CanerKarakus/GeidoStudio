@@ -135,6 +135,172 @@ function AnimatedRoutes() {
   );
 }
 
+const BannedScreen = ({ userIp }) => {
+  useEffect(() => {
+    const canvas = document.getElementById('matrix-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    
+    let width = canvas.width = window.innerWidth;
+    let height = canvas.height = window.innerHeight;
+    
+    const handleResize = () => {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    };
+    window.addEventListener('resize', handleResize);
+
+    const columns = Math.floor(width / 20) + 1;
+    const yPositions = Array.from({ length: columns }).fill(0);
+    
+    const matrix = () => {
+      ctx.fillStyle = 'rgba(10, 10, 10, 0.1)';
+      ctx.fillRect(0, 0, width, height);
+      
+      ctx.fillStyle = '#ef4444'; // Red matrix for ban screen
+      ctx.font = '14pt monospace';
+      
+      yPositions.forEach((y, index) => {
+        const text = Math.random() > 0.5 ? '1' : '0';
+        const x = index * 20;
+        ctx.fillText(text, x, y);
+        
+        if (y > 100 + Math.random() * 10000) {
+          yPositions[index] = 0;
+        } else {
+          yPositions[index] = y + 20;
+        }
+      });
+    };
+    
+    const interval = setInterval(matrix, 50);
+    
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
+  return (
+    <div style={{
+      position: 'relative',
+      width: '100vw', 
+      height: '100vh', 
+      background: '#0a0a0a', 
+      color: '#ffffff', 
+      display: 'flex', 
+      flexDirection: 'column', 
+      alignItems: 'center', 
+      justifyContent: 'center', 
+      fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', 
+      textAlign: 'center', 
+      padding: '2rem', 
+      boxSizing: 'border-box',
+      overflow: 'hidden'
+    }}>
+      <canvas id="matrix-canvas" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 0, opacity: 0.15 }} />
+      <div style={{
+        position: 'relative',
+        zIndex: 1,
+        maxWidth: '600px',
+        width: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center'
+      }}>
+        {/* Geido-style minimal header */}
+        <h1 style={{ 
+          fontSize: '2.5rem', 
+          margin: '0 0 1rem 0',
+          fontWeight: '600',
+          letterSpacing: '-0.5px',
+          color: '#ef4444'
+        }}>
+          Erişim Engellendi
+        </h1>
+        <p style={{ 
+          fontSize: '1.05rem', 
+          color: '#a0a0a0', 
+          lineHeight: '1.6', 
+          margin: '0 0 2.5rem 0',
+          fontWeight: '400',
+          maxWidth: '550px'
+        }}>
+          Sistemlerimiz, ağımıza yönelik olağandışı ve potansiyel olarak zararlı bir etkinlik tespit etmiştir. Geido Studio güvenlik politikaları ve sunucu bütünlüğünü koruma protokolleri gereğince, IP adresinizden gelen tüm bağlantılar kalıcı olarak reddedilmek üzere Güvenlik Duvarı (Firewall) kara listesine alınmıştır.
+        </p>
+
+        {/* Mac-style Terminal Block */}
+        <div style={{ 
+          background: '#16161a', 
+          borderRadius: '10px', 
+          overflow: 'hidden', 
+          width: '100%', 
+          textAlign: 'left', 
+          boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
+          border: '1px solid #2a2a35'
+        }}>
+          {/* Terminal Header */}
+          <div style={{ 
+            background: '#1f1f24', 
+            padding: '12px 16px', 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '8px',
+            borderBottom: '1px solid #2a2a35'
+          }}>
+            <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#ff5f56' }} />
+            <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#ffbd2e' }} />
+            <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#27c93f' }} />
+            <span style={{ 
+              color: '#8a8a93', 
+              fontSize: '0.8rem', 
+              marginLeft: '12px', 
+              fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace' 
+            }}>
+              security_log.sh
+            </span>
+          </div>
+          
+          {/* Terminal Content */}
+          <div style={{ 
+            padding: '24px', 
+            fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace', 
+            color: '#d4d4d8', 
+            fontSize: '0.9rem', 
+            lineHeight: '1.7' 
+          }}>
+            <div style={{ color: '#ef4444' }}>
+              <span style={{ opacity: 0.5, marginRight: '8px' }}>&gt;</span>
+              [ SYSTEM LOCKDOWN INITIATED ]
+            </div>
+            <div style={{ color: '#eab308', marginTop: '8px' }}>
+              <span style={{ opacity: 0.5, marginRight: '8px' }}>&gt;</span>
+              DETECTED_ACTIVITY: Unauthorized access attempt via Honeypot / Admin Portal.
+            </div>
+            <div style={{ color: '#eab308' }}>
+              <span style={{ opacity: 0.5, marginRight: '8px' }}>&gt;</span>
+              SECURITY_RULE_TRIGGERED: Rule #403-A (Strict Zero-Trust Enforcement).
+            </div>
+            <div style={{ color: '#eab308' }}>
+              <span style={{ opacity: 0.5, marginRight: '8px' }}>&gt;</span>
+              ACTION_TAKEN: IP addresses logged and permanently routed to black hole.
+            </div>
+            <div style={{ color: '#71717a', marginTop: '1.5rem', display: 'flex', justifyContent: 'space-between' }}>
+              <span>&gt; Connection actively refused by server.</span>
+              <span>ERR_CODE: 403_FORBIDDEN</span>
+            </div>
+          </div>
+        </div>
+        
+        <p style={{ marginTop: '2rem', fontSize: '0.85rem', color: '#71717a', lineHeight: '1.6' }}>
+          Hata olduğunu düşünüyorsanız IP adresiniz (<strong style={{ color: '#d4d4d8' }}>{userIp}</strong>) ile birlikte <br/>
+          <a href={`mailto:appeal@geidostudio.com?subject=Ban%20Appeal%20-%20IP:%20${userIp}`} style={{ color: '#3b82f6', textDecoration: 'none' }}>appeal@geidostudio.com</a> adresine e-posta gönderebilirsiniz.
+        </p>
+      </div>
+    </div>
+  );
+};
+
 function App() {
   const { init, cms, isBanned } = useCmsStore();
   const [isNavigating, setIsNavigating] = useState(false);
@@ -206,119 +372,7 @@ function App() {
   const isLoading = !shouldShowSplash && isNavigating;
 
   if (isBanned) {
-    return (
-      <div style={{
-        width: '100vw', 
-        height: '100vh', 
-        background: '#0a0a0a', 
-        color: '#ffffff', 
-        display: 'flex', 
-        flexDirection: 'column', 
-        alignItems: 'center', 
-        justifyContent: 'center', 
-        fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', 
-        textAlign: 'center', 
-        padding: '2rem', 
-        boxSizing: 'border-box'
-      }}>
-        <div style={{
-          maxWidth: '600px',
-          width: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center'
-        }}>
-          {/* Geido-style minimal header */}
-          <h1 style={{ 
-            fontSize: '2.5rem', 
-            margin: '0 0 1rem 0',
-            fontWeight: '600',
-            letterSpacing: '-0.5px',
-            color: '#ef4444'
-          }}>
-            Erişim Engellendi
-          </h1>
-          <p style={{ 
-            fontSize: '1.05rem', 
-            color: '#a0a0a0', 
-            lineHeight: '1.6', 
-            margin: '0 0 2.5rem 0',
-            fontWeight: '400',
-            maxWidth: '550px'
-          }}>
-            Sistemlerimiz, ağımıza yönelik olağandışı ve potansiyel olarak zararlı bir etkinlik tespit etmiştir. Geido Studio güvenlik politikaları ve sunucu bütünlüğünü koruma protokolleri gereğince, IP adresinizden gelen tüm bağlantılar kalıcı olarak reddedilmek üzere Güvenlik Duvarı (Firewall) kara listesine alınmıştır.
-          </p>
-
-          {/* Mac-style Terminal Block */}
-          <div style={{ 
-            background: '#16161a', 
-            borderRadius: '10px', 
-            overflow: 'hidden', 
-            width: '100%', 
-            textAlign: 'left', 
-            boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
-            border: '1px solid #2a2a35'
-          }}>
-            {/* Terminal Header */}
-            <div style={{ 
-              background: '#1f1f24', 
-              padding: '12px 16px', 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '8px',
-              borderBottom: '1px solid #2a2a35'
-            }}>
-              <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#ff5f56' }} />
-              <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#ffbd2e' }} />
-              <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#27c93f' }} />
-              <span style={{ 
-                color: '#8a8a93', 
-                fontSize: '0.8rem', 
-                marginLeft: '12px', 
-                fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace' 
-              }}>
-                security_log.sh
-              </span>
-            </div>
-            
-            {/* Terminal Content */}
-            <div style={{ 
-              padding: '24px', 
-              fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace', 
-              color: '#d4d4d8', 
-              fontSize: '0.9rem', 
-              lineHeight: '1.7' 
-            }}>
-              <div style={{ color: '#ef4444' }}>
-                <span style={{ opacity: 0.5, marginRight: '8px' }}>&gt;</span>
-                [ SYSTEM LOCKDOWN INITIATED ]
-              </div>
-              <div style={{ color: '#eab308', marginTop: '8px' }}>
-                <span style={{ opacity: 0.5, marginRight: '8px' }}>&gt;</span>
-                DETECTED_ACTIVITY: Unauthorized access attempt via Honeypot / Admin Portal.
-              </div>
-              <div style={{ color: '#eab308' }}>
-                <span style={{ opacity: 0.5, marginRight: '8px' }}>&gt;</span>
-                SECURITY_RULE_TRIGGERED: Rule #403-A (Strict Zero-Trust Enforcement).
-              </div>
-              <div style={{ color: '#eab308' }}>
-                <span style={{ opacity: 0.5, marginRight: '8px' }}>&gt;</span>
-                ACTION_TAKEN: IP addresses logged and permanently routed to black hole.
-              </div>
-              <div style={{ color: '#71717a', marginTop: '1.5rem', display: 'flex', justifyContent: 'space-between' }}>
-                <span>&gt; Connection actively refused by server.</span>
-                <span>ERR_CODE: 403_FORBIDDEN</span>
-              </div>
-            </div>
-          </div>
-          
-          <p style={{ marginTop: '2rem', fontSize: '0.85rem', color: '#71717a', lineHeight: '1.6' }}>
-            Hata olduğunu düşünüyorsanız IP adresiniz (<strong style={{ color: '#d4d4d8' }}>{userIp}</strong>) ile birlikte <br/>
-            <a href={`mailto:appeal@geidostudio.com?subject=Ban%20Appeal%20-%20IP:%20${userIp}`} style={{ color: '#3b82f6', textDecoration: 'none' }}>appeal@geidostudio.com</a> adresine e-posta gönderebilirsiniz.
-          </p>
-        </div>
-      </div>
-    );
+    return <BannedScreen userIp={userIp} />;
   }
 
   return (
