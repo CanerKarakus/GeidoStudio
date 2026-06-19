@@ -72,7 +72,7 @@ app.set('trust proxy', 1);
 // ── IP Blocking Middleware (Honeypot) ──────────────────────────────────────
 // ── IP Blocking Middleware (Honeypot) ──────────────────────────────────────
 const fs = require('fs');
-const cmsPath = path.join(__dirname, '../../data/cms.json');
+const cmsPath = path.join(__dirname, '../data/cms.json');
 
 const readCMS = () => {
   try {
