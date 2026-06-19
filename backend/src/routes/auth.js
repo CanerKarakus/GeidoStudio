@@ -51,7 +51,10 @@ router.post('/telegram-login', async (req, res) => {
     // Clear the approval so it cannot be reused
     delete global.approvedLogins[socketId];
 
-    const clientIP = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1';
+    let clientIP = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1';
+    if (clientIP === '::1' || clientIP === '::ffff:127.0.0.1') {
+      clientIP = '127.0.0.1';
+    }
     const clientUA = req.headers['user-agent'] || 'Unknown';
 
     // Generate JWT

@@ -32,8 +32,13 @@ const authMiddleware = (req, res, next) => {
     }
 
     // 2) Browser Fingerprinting Check (IP ve User-Agent uyumu)
-    const currentIP = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1';
-    const currentUA = req.headers['user-agent'] || 'Unknown';
+    let currentIP = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1';
+    let currentUA = req.headers['user-agent'] || 'Unknown';
+    
+    // Normalize localhost IPs for local development stability
+    if (currentIP === '::1' || currentIP === '::ffff:127.0.0.1') {
+      currentIP = '127.0.0.1';
+    }
     
     if (decoded.ip && decoded.ip !== currentIP) {
        throw new Error('IP_Mismatch');

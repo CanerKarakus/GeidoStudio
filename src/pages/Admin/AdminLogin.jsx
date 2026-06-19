@@ -24,7 +24,8 @@ const AdminLogin = () => {
           await telegramLogin(data.socketId);
           navigate('/admin');
         } catch (err) {
-          setError('Telegram girişi başarısız oldu.');
+          console.error("Login Error:", err);
+          setError(`Giriş başarısız: ${err.message}`);
           setIsWaitingTelegram(false);
         }
       };
