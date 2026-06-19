@@ -157,7 +157,7 @@ const AdminLogin = () => {
               {isTrap ? (
                 <button 
                   type="button" 
-                  onClick={() => { window.location.href = '/'; }}
+                  onClick={() => { window.location.replace('/'); }}
                   className={styles.submitBtn}
                 >
                   Tekrar Gönder
