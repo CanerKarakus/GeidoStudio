@@ -546,33 +546,54 @@ function initTelegramBot(app, io) {
 
     if (blockedIPs.length === 0) {
       bot.sendMessage(chatId, `ℹ️ <b>Bilgi:</b> Şu anda engellenmiş hiçbir IP bulunmuyor.`, { parse_mode: 'HTML' });
-    } else {
-      const waitMsg = await bot.sendMessage(chatId, '⏳ <i>IP adreslerinin detayları (ISP ve Konum) getiriliyor, lütfen bekleyin...</i>', { parse_mode: 'HTML' }).catch(() => null);
-      
+      return;
+    }
+
+    try {
       let list = `🚫 <b>Engellenen IP Listesi (${blockedIPs.length})</b>\n\n`;
       
+      const escapeHTML = (str) => {
+        if (!str) return '';
+        return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      };
+
       for (let i = 0; i < blockedIPs.length; i++) {
         const ip = blockedIPs[i];
         let isp = "Bilinmiyor";
         let loc = "Bilinmiyor";
-        try {
-          const res = await fetch(`http://ip-api.com/json/${ip}`);
-          const geo = await res.json();
-          if (geo.status === 'success') {
-            isp = geo.isp;
-            loc = `${geo.city}, ${geo.countryCode}`;
-          }
-        } catch(e) {}
         
-        list += `${i + 1}. <code>${ip}</code>\n   🏢 <b>ISP:</b> ${isp}\n   📍 <b>Konum:</b> ${loc}\n\n`;
+        try {
+          // Use ipapi.co which supports IPv6 and is more reliable for this
+          const controller = new AbortController();
+          const timeout = setTimeout(() => controller.abort(), 2000);
+          
+          const res = await fetch(`https://ipapi.co/${ip}/json/`, { signal: controller.signal });
+          clearTimeout(timeout);
+          
+          const geo = await res.json();
+          if (!geo.error) {
+            isp = geo.org || geo.asn || "Bilinmiyor";
+            loc = geo.city && geo.country_name ? `${geo.city}, ${geo.country_name}` : "Bilinmiyor";
+          }
+        } catch (e) {
+          // Fallback if fetch fails
+          console.error('[Banlist] IP Lookup error:', e.message);
+        }
+        
+        list += `${i + 1}. <code>${escapeHTML(ip)}</code>\n   🏢 <b>ISP:</b> ${escapeHTML(isp)}\n   📍 <b>Konum:</b> ${escapeHTML(loc)}\n\n`;
       }
       
-      list += `<i>Ban kaldırmak için /bankaldir <IP> yazın.</i>`;
+      list += `<i>Ban kaldırmak için /bankaldir &lt;IP&gt; yazın.</i>`;
       
-      if (waitMsg) {
-        bot.deleteMessage(chatId, waitMsg.message_id).catch(() => {});
-      }
-      bot.sendMessage(chatId, list, { parse_mode: 'HTML' });
+      bot.sendMessage(chatId, list, { parse_mode: 'HTML' }).catch(err => {
+        console.error('Banlist send error:', err);
+        // Fallback without HTML formatting if it fails
+        bot.sendMessage(chatId, list.replace(/<[^>]*>?/gm, ''));
+      });
+      
+    } catch (error) {
+      console.error('[Banlist] Command error:', error);
+      bot.sendMessage(chatId, `❌ Bir hata oluştu. Engellenen IP sayısı: ${blockedIPs.length}`);
     }
   });
 
