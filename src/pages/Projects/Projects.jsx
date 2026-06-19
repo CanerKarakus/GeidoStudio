@@ -69,6 +69,8 @@ const Projects = () => {
                   transition={{ duration: 0.3 }}
                   key={project.slug || project.id}
                   className={styles.projectCard}
+                  onClick={() => project.externalLink && window.open(project.externalLink, '_blank')}
+                  style={{ cursor: project.externalLink ? 'pointer' : 'default' }}
                 >
                   <div className={styles.imageWrapper}>
                     <img src={project.image} alt={project.title} loading="lazy" />

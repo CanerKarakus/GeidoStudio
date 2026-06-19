@@ -159,7 +159,12 @@ const Home = () => {
           <div className={styles.projectsGrid}>
             {projects.length > 0 ? (
               projects.slice(0, 4).map((p, i) => (
-                <div key={p.id || p.slug} className={styles.projectCard}>
+                <div 
+                  key={p.id || p.slug} 
+                  className={styles.projectCard}
+                  onClick={() => p.externalLink && window.open(p.externalLink, '_blank')}
+                  style={{ cursor: p.externalLink ? 'pointer' : 'default' }}
+                >
                   <div className={styles.projectImageWrapper}>
                     <div className={styles.projectImage} style={{ backgroundImage: `url(${p.image})` }}></div>
                   </div>

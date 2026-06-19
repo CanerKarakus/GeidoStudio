@@ -24,13 +24,14 @@ const AdminProjects = () => {
     description: '',
     image: '',
     category: '',
+    externalLink: '',
   });
 
   const categories = ['Grafik', 'Mobil', 'Web', 'Sosyal Medya', 'Kurumsal Kimlik', 'Web Yazılım'];
 
   const handleAddNew = () => {
     setCurrentProject(null);
-    setFormData({ title: '', description: '', image: '', category: 'Web' });
+    setFormData({ title: '', description: '', image: '', category: 'Web', externalLink: '' });
     setIsEditing(true);
   };
 
@@ -41,6 +42,7 @@ const AdminProjects = () => {
       description: project.description,
       image: project.image,
       category: project.category || 'Web',
+      externalLink: project.externalLink || '',
     });
     setIsEditing(true);
   };
@@ -66,6 +68,7 @@ const AdminProjects = () => {
       description: formData.description,
       image: formData.image,
       category: formData.category,
+      externalLink: formData.externalLink,
       date: currentProject && currentProject.date ? currentProject.date : new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })
     };
 
@@ -100,6 +103,16 @@ const AdminProjects = () => {
               onChange={e => setFormData({ ...formData, title: e.target.value })} 
               required
               placeholder="Örn: Aura Kozmetik"
+            />
+          </div>
+
+          <div className={styles.inputGroup}>
+            <label>Proje Bağlantısı (İsteğe Bağlı)</label>
+            <input 
+              type="url" 
+              value={formData.externalLink} 
+              onChange={e => setFormData({ ...formData, externalLink: e.target.value })} 
+              placeholder="Örn: https://vanta.geidostudio.com"
             />
           </div>
           
