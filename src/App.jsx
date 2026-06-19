@@ -196,10 +196,86 @@ function App() {
 
   if (isBanned) {
     return (
-      <div style={{ width: '100vw', height: '100vh', background: '#000', color: '#ff3333', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontFamily: 'monospace', textAlign: 'center', padding: '2rem', boxSizing: 'border-box' }}>
-        <h1 style={{ fontSize: '3rem', marginBottom: '1rem' }}>ERİŞİM ENGELLENDİ</h1>
-        <p style={{ fontSize: '1.2rem', opacity: 0.8 }}>IP adresiniz güvenlik politikalarımız gereği sistemden kalıcı olarak yasaklanmıştır.</p>
-        <p style={{ fontSize: '1rem', opacity: 0.5, marginTop: '2rem' }}>Error Code: 403 Forbidden</p>
+      <div style={{
+        width: '100vw', 
+        height: '100vh', 
+        background: '#050000', 
+        color: '#ff3333', 
+        display: 'flex', 
+        flexDirection: 'column', 
+        alignItems: 'center', 
+        justifyContent: 'center', 
+        fontFamily: '"Courier New", Courier, monospace', 
+        textAlign: 'center', 
+        padding: '2rem', 
+        boxSizing: 'border-box',
+        overflow: 'hidden',
+        position: 'relative'
+      }}>
+        {/* Scanline overlay */}
+        <div style={{
+          position: 'absolute',
+          top: 0, left: 0, right: 0, bottom: 0,
+          background: 'linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06))',
+          backgroundSize: '100% 4px, 3px 100%',
+          pointerEvents: 'none',
+          zIndex: 10
+        }} />
+        
+        <div style={{
+          border: '2px solid #ff0000',
+          padding: '3rem 4rem',
+          backgroundColor: 'rgba(20, 0, 0, 0.8)',
+          boxShadow: '0 0 30px rgba(255, 0, 0, 0.4), inset 0 0 20px rgba(255, 0, 0, 0.2)',
+          position: 'relative',
+          zIndex: 20,
+          maxWidth: '800px',
+          width: '90%'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', marginBottom: '2rem' }}>
+            <span style={{ fontSize: '2rem' }}>⚠️</span>
+            <h1 style={{ 
+              fontSize: '2.5rem', 
+              margin: 0,
+              textShadow: '0 0 10px rgba(255, 0, 0, 0.8)',
+              fontWeight: 'bold',
+              letterSpacing: '2px'
+            }}>
+              GEIDO SECURITY PROTOCOL
+            </h1>
+            <span style={{ fontSize: '2rem' }}>⚠️</span>
+          </div>
+
+          <div style={{
+            background: 'rgba(255, 0, 0, 0.1)',
+            padding: '1rem',
+            borderLeft: '4px solid #ff0000',
+            marginBottom: '2rem',
+            textAlign: 'left'
+          }}>
+            <p style={{ margin: '0 0 0.5rem 0', fontWeight: 'bold' }}>[ STATUS: SYSTEM LOCKDOWN INITIATED ]</p>
+            <p style={{ margin: '0 0 0.5rem 0' }}>REASON: MALICIOUS ACTIVITY DETECTED</p>
+            <p style={{ margin: '0' }}>TARGET: FIREWALL BLACKLISTED IP</p>
+          </div>
+
+          <h2 style={{ fontSize: '1.8rem', marginBottom: '1rem', color: '#fff' }}>ERİŞİM KALICI OLARAK ENGELLENDİ</h2>
+          <p style={{ fontSize: '1.1rem', opacity: 0.9, lineHeight: '1.6', marginBottom: '2rem' }}>
+            IP adresiniz güvenlik politikalarımızın ciddi ihlali sebebiyle sistem tarafından kalıcı olarak engellenmiştir. 
+            Ağa erişim denemeleriniz kayıt altına alınmakta ve reddedilmektedir.
+          </p>
+          
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            borderTop: '1px solid rgba(255, 0, 0, 0.3)', 
+            paddingTop: '1rem',
+            fontSize: '0.9rem',
+            opacity: 0.7
+          }}>
+            <span>ERROR_CODE: 403_FORBIDDEN</span>
+            <span>CONNECTION: TERMINATED</span>
+          </div>
+        </div>
       </div>
     );
   }
