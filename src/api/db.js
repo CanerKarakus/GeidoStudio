@@ -7,9 +7,9 @@
 
 import { io } from 'socket.io-client';
 
-const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3001';
+export const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3001';
 
-export const socket = io(BASE_URL, {
+export const socket = io(API_URL, {
   autoConnect: false,
   withCredentials: true,
 });
@@ -23,7 +23,7 @@ const request = async (method, endpoint, body = null) => {
 
   if (body) options.body = JSON.stringify(body);
 
-  const res = await fetch(`${BASE_URL}${endpoint}`, options);
+  const res = await fetch(`${API_URL}${endpoint}`, options);
   const data = await res.json().catch(() => ({}));
 
   if (!res.ok) {
