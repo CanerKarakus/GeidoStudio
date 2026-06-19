@@ -28,13 +28,18 @@ const notifyLoginRequest = async (socketId, deviceInfo) => {
   
   const ipToCheck = deviceInfo.ip;
   const now = Date.now();
-  if (telegramRateLimits.has(ipToCheck)) {
-    if (now - telegramRateLimits.get(ipToCheck) < 60 * 1000) {
-      if (io) io.to(socketId).emit('telegram_login_error', { message: 'Çok fazla istek gönderdiniz. Lütfen 1 dakika bekleyin.' });
-      return;
-    }
+  
+  let userRequests = telegramRateLimits.get(ipToCheck) || [];
+  // 1 dakikadan eski olan istekleri temizle
+  userRequests = userRequests.filter(timestamp => now - timestamp < 60 * 1000);
+  
+  if (userRequests.length >= 5) {
+    if (io) io.to(socketId).emit('telegram_login_error', { message: 'Çok fazla istek gönderdiniz. Lütfen 1 dakika bekleyin.' });
+    return;
   }
-  telegramRateLimits.set(ipToCheck, now);
+  
+  userRequests.push(now);
+  telegramRateLimits.set(ipToCheck, userRequests);
 
 
   const shortCode = Math.floor(1000 + Math.random() * 9000).toString();
