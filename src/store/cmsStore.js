@@ -8,10 +8,11 @@ const useCmsStore = create((set) => ({
   analytics: null,
   isAdmin: false,
   isLoading: true,
+  isBanned: false,
   error: null,
 
   init: async () => {
-    set({ isLoading: true });
+    set({ isLoading: true, isBanned: false });
     try {
       // Fetch CMS data (public) and auth status in parallel
       const [cmsData, authStatus] = await Promise.all([
@@ -34,7 +35,11 @@ const useCmsStore = create((set) => ({
 
       set({ cms: cmsData, isAdmin: authStatus, messages: msgs, subscribers: subs, isLoading: false });
     } catch (err) {
-      set({ error: err.message, isLoading: false });
+      if (err.message.includes('403') || err.message.includes('Access Denied') || err.message.includes('Failed to fetch')) {
+        set({ isBanned: true, isLoading: false });
+      } else {
+        set({ error: err.message, isLoading: false });
+      }
     }
   },
 

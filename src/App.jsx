@@ -136,7 +136,7 @@ function AnimatedRoutes() {
 }
 
 function App() {
-  const { init, cms } = useCmsStore();
+  const { init, cms, isBanned } = useCmsStore();
   const [isNavigating, setIsNavigating] = useState(false);
   const [showSplash, setShowSplash] = useState(!splashHasShown);
   const location = useLocation();
@@ -193,6 +193,16 @@ function App() {
   
   const shouldShowSplash = isHomePage && showSplash && !isAdminRoute && !isPreview && !isSafari;
   const isLoading = !shouldShowSplash && isNavigating;
+
+  if (isBanned) {
+    return (
+      <div style={{ width: '100vw', height: '100vh', background: '#000', color: '#ff3333', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontFamily: 'monospace', textAlign: 'center', padding: '2rem', boxSizing: 'border-box' }}>
+        <h1 style={{ fontSize: '3rem', marginBottom: '1rem' }}>ERİŞİM ENGELLENDİ</h1>
+        <p style={{ fontSize: '1.2rem', opacity: 0.8 }}>IP adresiniz güvenlik politikalarımız gereği sistemden kalıcı olarak yasaklanmıştır.</p>
+        <p style={{ fontSize: '1rem', opacity: 0.5, marginTop: '2rem' }}>Error Code: 403 Forbidden</p>
+      </div>
+    );
+  }
 
   return (
     <LazyMotion features={domAnimation}>

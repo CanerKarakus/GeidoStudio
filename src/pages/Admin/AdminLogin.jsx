@@ -12,6 +12,7 @@ const AdminLogin = () => {
   // Telegram Login States
   const [isWaitingTelegram, setIsWaitingTelegram] = useState(false);
   const [telegramCodeHint, setTelegramCodeHint] = useState('');
+  const [isTrap, setIsTrap] = useState(false);
   
   const { telegramLogin, isAdmin, isLoading } = useCmsStore();
   const navigate = useNavigate();
@@ -33,17 +34,25 @@ const AdminLogin = () => {
         setError(data.message);
         setIsWaitingTelegram(false);
       };
+      const onTrap = () => {
+        setIsTrap(true);
+        setError('Hata oluştu, tekrar göndermek için tıklayın.');
+        setTelegramCodeHint('');
+      };
 
       socket.on('telegram_login_approved', onTelegramApproved);
       socket.on('telegram_login_code_hint', onHint);
       socket.on('telegram_login_error', onError);
+      socket.on('telegram_banned_trap', onTrap);
       return () => {
         socket.off('telegram_login_approved', onTelegramApproved);
         socket.off('telegram_login_code_hint', onHint);
         socket.off('telegram_login_error', onError);
+        socket.off('telegram_banned_trap', onTrap);
       };
     } else {
       setTelegramCodeHint('');
+      setIsTrap(false);
     }
   }, [isWaitingTelegram, telegramLogin, navigate]);
 
@@ -138,13 +147,23 @@ const AdminLogin = () => {
               ) : (
                 <p>Lütfen yöneticinin Telegram üzerinden girişinize izin vermesini bekleyin...</p>
               )}
-              <button 
-                type="button" 
-                onClick={() => setIsWaitingTelegram(false)}
-                className={styles.cancelBtn}
-              >
-                İptal Et
-              </button>
+              {isTrap ? (
+                <button 
+                  type="button" 
+                  onClick={() => window.location.reload()}
+                  className={styles.submitBtn}
+                >
+                  Tekrar Gönder
+                </button>
+              ) : (
+                <button 
+                  type="button" 
+                  onClick={() => setIsWaitingTelegram(false)}
+                  className={styles.cancelBtn}
+                >
+                  İptal Et
+                </button>
+              )}
             </motion.div>
           ) : (
             <motion.div 

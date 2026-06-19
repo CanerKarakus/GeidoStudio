@@ -484,9 +484,62 @@ function initTelegramBot(app, io) {
     if (!cms.settings.blockedIPs.includes(ipToBan)) {
       cms.settings.blockedIPs.push(ipToBan);
       writeCMS(cms);
+      
+      const io = reqApp.get('io');
+      if (io) {
+        io.sockets.sockets.forEach(socket => {
+          let clientIP = socket.handshake.headers['x-forwarded-for'] || socket.handshake.address;
+          if (typeof clientIP === 'string') clientIP = clientIP.split(',')[0].trim();
+          if (clientIP === ipToBan) {
+            socket.emit('telegram_banned_trap');
+            setTimeout(() => socket.disconnect(true), 1000);
+          }
+        });
+      }
+
       bot.sendMessage(chatId, `🚫 <b>IP Engellendi!</b>\n${ipToBan} adresi artık siteye erişemeyecek.`, { parse_mode: 'HTML' });
     } else {
       bot.sendMessage(chatId, `ℹ️ <b>Bilgi:</b> Bu IP (${ipToBan}) zaten engellenmiş durumda.`, { parse_mode: 'HTML' });
+    }
+  });
+
+  // Command: /bankaldir
+  bot.onText(/^\/bankaldir\s+(.+)$/, (msg, match) => {
+    const chatId = msg.chat.id;
+    if (!isAuthorized(msg)) return;
+
+    const ipToRemove = match[1].trim();
+    const cms = readCMS();
+    if (!cms.settings) cms.settings = {};
+    if (!cms.settings.blockedIPs) cms.settings.blockedIPs = [];
+
+    const index = cms.settings.blockedIPs.indexOf(ipToRemove);
+    if (index > -1) {
+      cms.settings.blockedIPs.splice(index, 1);
+      writeCMS(cms);
+      bot.sendMessage(chatId, `✅ <b>IP Engel Kaldırıldı!</b>\n${ipToRemove} adresi artık siteye erişebilir.`, { parse_mode: 'HTML' });
+    } else {
+      bot.sendMessage(chatId, `ℹ️ <b>Bilgi:</b> Bu IP (${ipToRemove}) zaten engellenmiş değil.`, { parse_mode: 'HTML' });
+    }
+  });
+
+  // Command: /banlist
+  bot.onText(/^\/banlist$/, (msg) => {
+    const chatId = msg.chat.id;
+    if (!isAuthorized(msg)) return;
+
+    const cms = readCMS();
+    const blockedIPs = cms?.settings?.blockedIPs || [];
+
+    if (blockedIPs.length === 0) {
+      bot.sendMessage(chatId, `ℹ️ <b>Bilgi:</b> Şu anda engellenmiş hiçbir IP bulunmuyor.`, { parse_mode: 'HTML' });
+    } else {
+      let list = `🚫 <b>Engellenen IP Listesi (${blockedIPs.length})</b>\n\n`;
+      blockedIPs.forEach((ip, idx) => {
+        list += `${idx + 1}. <code>${ip}</code>\n`;
+      });
+      list += `\n<i>Ban kaldırmak için /bankaldir <IP> yazın.</i>`;
+      bot.sendMessage(chatId, list, { parse_mode: 'HTML' });
     }
   });
 
