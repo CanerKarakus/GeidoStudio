@@ -32,12 +32,18 @@ const AdminLogin = () => {
       };
       
       const onHint = (data) => setTelegramCodeHint(data.hint);
+      const onError = (data) => {
+        setError(data.message);
+        setIsWaitingTelegram(false);
+      };
 
       socket.on('telegram_login_approved', onTelegramApproved);
       socket.on('telegram_login_code_hint', onHint);
+      socket.on('telegram_login_error', onError);
       return () => {
         socket.off('telegram_login_approved', onTelegramApproved);
         socket.off('telegram_login_code_hint', onHint);
+        socket.off('telegram_login_error', onError);
       };
     } else {
       setTelegramCodeHint('');

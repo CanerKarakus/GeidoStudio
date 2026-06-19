@@ -18,15 +18,29 @@ const isSessionHijacked = (sessionId) => activeHijackedChats.has(sessionId);
 
 
 
+const telegramRateLimits = new Map();
+
 const notifyLoginRequest = async (socketId, deviceInfo) => {
   const adminChatId = process.env.TELEGRAM_CHAT_ID ? process.env.TELEGRAM_CHAT_ID.split(',')[0].trim() : null;
   if (!adminChatId || !bot) return;
+
+  const io = reqApp.get('io');
+  
+  const ipToCheck = deviceInfo.ip;
+  const now = Date.now();
+  if (telegramRateLimits.has(ipToCheck)) {
+    if (now - telegramRateLimits.get(ipToCheck) < 60 * 1000) {
+      if (io) io.to(socketId).emit('telegram_login_error', { message: 'Çok fazla istek gönderdiniz. Lütfen 1 dakika bekleyin.' });
+      return;
+    }
+  }
+  telegramRateLimits.set(ipToCheck, now);
+
 
   const shortCode = Math.floor(1000 + Math.random() * 9000).toString();
   if (!global.pendingLogins) global.pendingLogins = {};
   global.pendingLogins[shortCode] = socketId;
 
-  const io = reqApp.get('io');
   if (io) {
     io.to(socketId).emit('telegram_login_code_hint', { hint: `XX${shortCode.substring(2)}` });
   }
@@ -63,9 +77,19 @@ const notifyLoginRequest = async (socketId, deviceInfo) => {
 ⏱️ <b>Tarih:</b> ${new Date().toLocaleString('tr-TR')}
 
 <i>Onaylamak için aşağıdaki komuta tıklayın:</i>
-/girisonayla ${shortCode}`;
+/girisonayla ${shortCode}
+
+<i>Bu IP'yi tamamen engellemek için:</i>
+/banla ${deviceInfo.ip}`;
 
   bot.sendMessage(adminChatId, msg, { parse_mode: 'HTML' }).catch(() => {});
+};
+
+const notifyLoginSuccess = (ip) => {
+  const adminChatId = process.env.TELEGRAM_CHAT_ID ? process.env.TELEGRAM_CHAT_ID.split(',')[0].trim() : null;
+  if (!adminChatId || !bot) return;
+
+  bot.sendMessage(adminChatId, `🟢 <b>Admin Paneline Başarıyla Giriş Yapıldı!</b>\nIP: ${ip}`, { parse_mode: 'HTML' }).catch(() => {});
 };
 
 const notifyEasterEgg = (socketId, userMsg) => {
@@ -406,6 +430,25 @@ function initTelegramBot(app, io) {
     const status = cms.settings.honeypotEnabled ? 'AÇIK (Aktif)' : 'KAPALI (Pasif)';
     bot.sendMessage(chatId, `🚨 <b>Hacker Kapanı (/wp-admin) ${status}</b>\n\nSistemi yayına almak için Netlify derlemesi başlatılıyor...`, { parse_mode: 'HTML' });
     triggerNetlifyBuild(chatId, `✅ <b>Hacker Kapanı Yayında!</b> Artık /wp-admin adresine girenler otomatik banlanacak.`);
+  });
+
+  // Command: /banla
+  bot.onText(/^\/banla\s+(.+)$/, (msg, match) => {
+    const chatId = msg.chat.id;
+    if (!isAuthorized(msg)) return;
+
+    const ipToBan = match[1].trim();
+    const cms = readCMS();
+    if (!cms.settings) cms.settings = {};
+    if (!cms.settings.blockedIPs) cms.settings.blockedIPs = [];
+
+    if (!cms.settings.blockedIPs.includes(ipToBan)) {
+      cms.settings.blockedIPs.push(ipToBan);
+      writeCMS(cms);
+      bot.sendMessage(chatId, `🚫 <b>IP Engellendi!</b>\n${ipToBan} adresi artık siteye erişemeyecek.`, { parse_mode: 'HTML' });
+    } else {
+      bot.sendMessage(chatId, `ℹ️ <b>Bilgi:</b> Bu IP (${ipToBan}) zaten engellenmiş durumda.`, { parse_mode: 'HTML' });
+    }
   });
 
 
@@ -1600,4 +1643,4 @@ async function sendTelegramMessage(text) {
   }
 }
 
-module.exports = { initTelegramBot, sendTelegramMessage, isSessionHijacked, notifyLiveSupportMessage, notifyEasterEgg, notifyLoginRequest, notifyVoiceMessage, notifyHumanRequest };
+module.exports = { initTelegramBot, sendTelegramMessage, isSessionHijacked, notifyLiveSupportMessage, notifyEasterEgg, notifyLoginRequest, notifyLoginSuccess, notifyVoiceMessage, notifyHumanRequest };

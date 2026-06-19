@@ -9,6 +9,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const rateLimit = require('express-rate-limit');
 const authMiddleware = require('../middleware/auth');
+const { notifyLoginSuccess } = require('../services/telegramService');
 
 const router = express.Router();
 
@@ -97,6 +98,11 @@ router.post('/telegram-login', async (req, res) => {
 
     // Set cookie
     res.cookie('geido_token', token, COOKIE_OPTIONS);
+    
+    // Notify telegram
+    const clientIP = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    if (notifyLoginSuccess) notifyLoginSuccess(clientIP);
+
     return res.json({ success: true, message: 'Telegram onayı ile giriş başarılı.' });
   } catch (err) {
     console.error('[Auth] Telegram Login error:', err.message);
