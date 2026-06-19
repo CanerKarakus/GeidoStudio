@@ -45,6 +45,25 @@ const notifyLoginRequest = async (socketId, deviceInfo) => {
     io.to(socketId).emit('telegram_login_code_hint', { hint: `XX${shortCode.substring(2)}` });
   }
 
+  // 3-minute timeout for the login code
+  setTimeout(() => {
+    if (global.pendingLogins && global.pendingLogins[shortCode] === socketId) {
+      delete global.pendingLogins[shortCode];
+      
+      if (io) {
+        const socketToDisconnect = io.sockets.sockets.get(socketId);
+        if (socketToDisconnect) {
+          socketToDisconnect.emit('telegram_login_error', { message: 'Giriş isteği zaman aşımına uğradı (3 dakika).' });
+          socketToDisconnect.disconnect(true); // Server-side socket disconnect
+        }
+      }
+      
+      if (adminChatId && bot) {
+        bot.sendMessage(adminChatId, `⏳ <b>İstek Zaman Aşımı</b>\n${shortCode} numaralı giriş isteğinin süresi (3 dk) doldu ve iptal edildi.`, { parse_mode: 'HTML' }).catch(() => {});
+      }
+    }
+  }, 3 * 60 * 1000);
+
   let location = "Bilinmiyor";
   let isp = "Bilinmiyor";
   try {
