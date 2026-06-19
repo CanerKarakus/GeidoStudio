@@ -52,6 +52,9 @@ router.post('/telegram-login', async (req, res) => {
     delete global.approvedLogins[socketId];
 
     let clientIP = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1';
+    if (typeof clientIP === 'string') {
+      clientIP = clientIP.split(',')[0].trim();
+    }
     if (clientIP === '::1' || clientIP === '::ffff:127.0.0.1') {
       clientIP = '127.0.0.1';
     }
