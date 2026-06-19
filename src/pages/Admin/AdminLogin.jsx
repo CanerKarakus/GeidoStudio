@@ -7,7 +7,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import loadingSvg from '../../assets/loading/admin-loading.svg';
 
 const AdminLogin = () => {
-  const [error, setError] = useState('');
+  const [error, setError] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('error') === 'revoked') {
+      return 'Güvenlik gereği tüm oturumlar kapatıldı. Lütfen tekrar giriş yapın.';
+    }
+    return '';
+  });
   
   // Telegram Login States
   const [isWaitingTelegram, setIsWaitingTelegram] = useState(false);

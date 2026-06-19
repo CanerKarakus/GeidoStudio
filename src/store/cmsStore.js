@@ -139,4 +139,12 @@ const useCmsStore = create((set) => ({
   },
 }));
 
+socket.on('force_logout', async () => {
+  try {
+    await useCmsStore.getState().logout();
+  } finally {
+    window.location.href = '/admin/login?error=revoked';
+  }
+});
+
 export default useCmsStore;

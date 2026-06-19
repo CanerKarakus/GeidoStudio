@@ -6,7 +6,7 @@ const jwt = require('jsonwebtoken');
 const fs = require('fs');
 const path = require('path');
 
-const cmsPath = path.join(__dirname, '..', '..', '..', 'cms.json');
+const cmsPath = path.join(__dirname, '../../data/cms.json');
 
 const authMiddleware = (req, res, next) => {
   // Token comes from httpOnly cookie ONLY (never from Authorization header or body)
@@ -23,7 +23,7 @@ const authMiddleware = (req, res, next) => {
     try {
       const cmsData = JSON.parse(fs.readFileSync(cmsPath, 'utf8'));
       const revokeTimestamp = cmsData.settings?.jwtRevokeTimestamp || 0;
-      if (decoded.iat < revokeTimestamp) {
+      if (decoded.iat <= revokeTimestamp) {
         throw new Error('Revoked');
       }
     } catch (e) {

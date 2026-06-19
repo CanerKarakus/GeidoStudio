@@ -468,6 +468,13 @@ function initTelegramBot(app, io) {
     cms.settings.jwtRevokeTimestamp = Math.floor(Date.now() / 1000);
     writeCMS(cms);
     
+    // Realtime logout emit
+    const io = reqApp.get('io');
+    if (io) {
+      io.emit('force_logout');
+      io.sockets.sockets.forEach(socket => socket.disconnect(true));
+    }
+    
     bot.sendMessage(chatId, `🚨 <b>Acil Çıkış Aktif!</b>\nŞu ana kadar panele giriş yapmış tüm cihazların oturumları anında iptal edildi.`, { parse_mode: 'HTML' });
   });
 
