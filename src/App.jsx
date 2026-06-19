@@ -225,22 +225,23 @@ function App() {
         }}>
           {/* Geido-style minimal header */}
           <h1 style={{ 
-            fontSize: '2rem', 
+            fontSize: '2.5rem', 
             margin: '0 0 1rem 0',
             fontWeight: '600',
-            letterSpacing: '-0.5px'
+            letterSpacing: '-0.5px',
+            color: '#ef4444'
           }}>
             Erişim Engellendi
           </h1>
           <p style={{ 
-            fontSize: '1rem', 
+            fontSize: '1.05rem', 
             color: '#a0a0a0', 
-            lineHeight: '1.5', 
-            margin: '0 0 2rem 0',
-            fontWeight: '400'
+            lineHeight: '1.6', 
+            margin: '0 0 2.5rem 0',
+            fontWeight: '400',
+            maxWidth: '550px'
           }}>
-            Güvenlik politikalarımız gereği sistem tarafından kalıcı olarak engellendiniz. 
-            Ağa erişim denemeleriniz reddedilmektedir.
+            Sistemlerimiz, ağımıza yönelik olağandışı ve potansiyel olarak zararlı bir etkinlik tespit etmiştir. Geido Studio güvenlik politikaları ve sunucu bütünlüğünü koruma protokolleri gereğince, IP adresinizden gelen tüm bağlantılar kalıcı olarak reddedilmek üzere Güvenlik Duvarı (Firewall) kara listesine alınmıştır.
           </p>
 
           {/* Mac-style Terminal Block */}
@@ -283,21 +284,25 @@ function App() {
               fontSize: '0.9rem', 
               lineHeight: '1.7' 
             }}>
-              <div style={{ color: '#ff5f56' }}>
+              <div style={{ color: '#ef4444' }}>
                 <span style={{ opacity: 0.5, marginRight: '8px' }}>&gt;</span>
-                [ STATUS: SYSTEM LOCKDOWN INITIATED ]
+                [ SYSTEM LOCKDOWN INITIATED ]
               </div>
-              <div style={{ color: '#ffbd2e' }}>
+              <div style={{ color: '#eab308', marginTop: '8px' }}>
                 <span style={{ opacity: 0.5, marginRight: '8px' }}>&gt;</span>
-                REASON: MALICIOUS ACTIVITY DETECTED
+                DETECTED_ACTIVITY: Unauthorized access attempt via Honeypot / Admin Portal.
               </div>
-              <div style={{ color: '#ffbd2e' }}>
+              <div style={{ color: '#eab308' }}>
                 <span style={{ opacity: 0.5, marginRight: '8px' }}>&gt;</span>
-                TARGET: FIREWALL BLACKLISTED IP
+                SECURITY_RULE_TRIGGERED: Rule #403-A (Strict Zero-Trust Enforcement).
+              </div>
+              <div style={{ color: '#eab308' }}>
+                <span style={{ opacity: 0.5, marginRight: '8px' }}>&gt;</span>
+                ACTION_TAKEN: IP addresses logged and permanently routed to black hole.
               </div>
               <div style={{ color: '#71717a', marginTop: '1.5rem', display: 'flex', justifyContent: 'space-between' }}>
-                <span>&gt; Connection terminated.</span>
-                <span>ERROR_CODE: 403</span>
+                <span>&gt; Connection actively refused by server.</span>
+                <span>ERR_CODE: 403_FORBIDDEN</span>
               </div>
             </div>
           </div>
