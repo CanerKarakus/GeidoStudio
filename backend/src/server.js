@@ -161,6 +161,18 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// ── Get IP ───────────────────────────────────────────────────────────────────
+app.get('/api/ip', (req, res) => {
+  let ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+  if (typeof ip === 'string') {
+    ip = ip.split(',')[0].trim();
+  }
+  if (ip === '::1' || ip === '::ffff:127.0.0.1') {
+    ip = '127.0.0.1';
+  }
+  res.json({ ip });
+});
+
 
 // ── Start ─────────────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 3001;

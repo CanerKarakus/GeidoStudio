@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import useCmsStore from '../../store/cmsStore';
-import { socket } from '../../api/db';
+import { socket, API_URL } from '../../api/db';
 import styles from './AdminLogin.module.scss';
 import { motion, AnimatePresence } from 'framer-motion';
 import loadingSvg from '../../assets/loading/admin-loading.svg';
@@ -67,20 +67,29 @@ const AdminLogin = () => {
       ip: 'Yükleniyor...', isp: 'Yükleniyor...'
     });
 
-    fetch('https://ipinfo.io/json')
+    fetch(`${API_URL}/api/ip`)
       .then(res => res.json())
-      .then(data => {
-        setDeviceInfo(prev => ({
-          ...prev,
-          ip: data.ip || 'Bilinmiyor',
-          isp: data.org || 'Bilinmiyor'
-        }));
+      .then(apiData => {
+        const trueIp = apiData.ip;
+        
+        fetch(`https://ipapi.co/${trueIp}/json/`)
+          .then(res => res.json())
+          .then(geoData => {
+            setDeviceInfo(prev => ({
+              ...prev,
+              ip: trueIp,
+              isp: geoData.org || 'Bilinmiyor'
+            }));
+          })
+          .catch(() => {
+            setDeviceInfo(prev => ({ ...prev, ip: trueIp, isp: 'Bilinmiyor' }));
+          });
       })
       .catch(() => {
         fetch('https://api64.ipify.org?format=json')
           .then(res => res.json())
-          .then(data => setDeviceInfo(prev => ({ ...prev, ip: data.ip || 'Bilinmiyor' })))
-          .catch(() => setDeviceInfo(prev => ({ ...prev, ip: 'Bilinmiyor' })));
+          .then(data => setDeviceInfo(prev => ({ ...prev, ip: data.ip || 'Bilinmiyor', isp: 'Bilinmiyor' })))
+          .catch(() => setDeviceInfo(prev => ({ ...prev, ip: 'Bilinmiyor', isp: 'Bilinmiyor' })));
       });
   }, []);
 

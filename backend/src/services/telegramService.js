@@ -537,7 +537,7 @@ function initTelegramBot(app, io) {
   });
 
   // Command: /banlist
-  bot.onText(/^\/banlist/, (msg) => {
+  bot.onText(/^\/banlist/, async (msg) => {
     const chatId = msg.chat.id;
     if (!isAuthorized(msg)) return;
 
@@ -547,11 +547,31 @@ function initTelegramBot(app, io) {
     if (blockedIPs.length === 0) {
       bot.sendMessage(chatId, `ℹ️ <b>Bilgi:</b> Şu anda engellenmiş hiçbir IP bulunmuyor.`, { parse_mode: 'HTML' });
     } else {
+      const waitMsg = await bot.sendMessage(chatId, '⏳ <i>IP adreslerinin detayları (ISP ve Konum) getiriliyor, lütfen bekleyin...</i>', { parse_mode: 'HTML' }).catch(() => null);
+      
       let list = `🚫 <b>Engellenen IP Listesi (${blockedIPs.length})</b>\n\n`;
-      blockedIPs.forEach((ip, idx) => {
-        list += `${idx + 1}. <code>${ip}</code>\n`;
-      });
-      list += `\n<i>Ban kaldırmak için /bankaldir <IP> yazın.</i>`;
+      
+      for (let i = 0; i < blockedIPs.length; i++) {
+        const ip = blockedIPs[i];
+        let isp = "Bilinmiyor";
+        let loc = "Bilinmiyor";
+        try {
+          const res = await fetch(`http://ip-api.com/json/${ip}`);
+          const geo = await res.json();
+          if (geo.status === 'success') {
+            isp = geo.isp;
+            loc = `${geo.city}, ${geo.countryCode}`;
+          }
+        } catch(e) {}
+        
+        list += `${i + 1}. <code>${ip}</code>\n   🏢 <b>ISP:</b> ${isp}\n   📍 <b>Konum:</b> ${loc}\n\n`;
+      }
+      
+      list += `<i>Ban kaldırmak için /bankaldir <IP> yazın.</i>`;
+      
+      if (waitMsg) {
+        bot.deleteMessage(chatId, waitMsg.message_id).catch(() => {});
+      }
       bot.sendMessage(chatId, list, { parse_mode: 'HTML' });
     }
   });

@@ -54,7 +54,7 @@ const AdminTracking = lazy(() => import('./pages/Admin/AdminTracking'));
 const AdminHeatmap = lazy(() => import('./pages/Admin/AdminHeatmap'));
 
 import useCmsStore from './store/cmsStore';
-import { api } from './api/db';
+import { api, API_URL } from './api/db';
 
 // Module-level flag — survives re-renders, resets on full page refresh
 let splashHasShown = false;
@@ -148,10 +148,15 @@ function App() {
 
   // Initialize Lenis Smooth Scroll
   useEffect(() => {
-    fetch('https://api.ipify.org?format=json')
+    fetch(`${API_URL}/api/ip`)
       .then(res => res.json())
       .then(data => setUserIp(data.ip))
-      .catch(() => setUserIp('Bilinmiyor'));
+      .catch(() => {
+        fetch('https://api64.ipify.org?format=json')
+          .then(res => res.json())
+          .then(data => setUserIp(data.ip))
+          .catch(() => setUserIp('Bilinmiyor'));
+      });
 
     if (isAdminRoute) return; // Don't use smooth scroll in admin panel
 
