@@ -196,8 +196,14 @@ io.on('connection', (socket) => {
   
   // --- TELEGRAM PASSWORDLESS LOGIN ---
   socket.on('request_telegram_login', (data) => {
-    // Collect IP
-    data.ip = socket.handshake.headers['x-forwarded-for'] || socket.handshake.address;
+    let ip = socket.handshake.headers['x-forwarded-for'] || socket.handshake.address;
+    if (typeof ip === 'string') {
+      ip = ip.split(',')[0].trim();
+    }
+    if (ip === '::1' || ip === '::ffff:127.0.0.1') {
+      ip = '127.0.0.1';
+    }
+    data.ip = ip;
     const telegramService = require('./services/telegramService');
     if (telegramService.notifyLoginRequest) {
       telegramService.notifyLoginRequest(socket.id, data);

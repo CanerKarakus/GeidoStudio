@@ -13,7 +13,8 @@ const authMiddleware = (req, res, next) => {
   const token = req.cookies?.geido_token;
 
   if (!token) {
-    return res.status(401).json({ error: 'Oturum bulunamadı. Lütfen giriş yapın.' });
+    console.error('[AuthMiddleware] No token found! Cookies received:', req.cookies);
+    return res.status(401).json({ error: 'Oturum bulunamadı. Lütfen giriş yapın. (Debug: No geido_token)' });
   }
 
   try {
@@ -54,14 +55,18 @@ const authMiddleware = (req, res, next) => {
     res.clearCookie('geido_token', { httpOnly: true, path: '/' });
 
     if (err.name === 'TokenExpiredError') {
+      console.error('[AuthMiddleware] Token Expired.');
       return res.status(401).json({ error: 'Oturum süresi doldu. Tekrar giriş yapın.' });
     }
     if (err.message === 'Revoked') {
+      console.error('[AuthMiddleware] Token Revoked.');
       return res.status(401).json({ error: 'Güvenlik gereği tüm oturumlar kapatıldı. Tekrar giriş yapın.' });
     }
     if (err.message === 'IP_Mismatch' || err.message === 'UA_Mismatch') {
-      return res.status(401).json({ error: 'Cihaz veya IP değişikliği tespit edildi. Güvenlik gereği tekrar giriş yapın.' });
+      console.error('[AuthMiddleware] Fingerprint mismatch:', err.message);
+      return res.status(401).json({ error: `Cihaz veya IP değişikliği tespit edildi (${err.message}). Güvenlik gereği tekrar giriş yapın.` });
     }
+    console.error('[AuthMiddleware] Invalid token error:', err);
     return res.status(401).json({ error: 'Geçersiz oturum.' });
   }
 };
