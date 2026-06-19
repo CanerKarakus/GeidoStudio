@@ -103,6 +103,9 @@ app.use((req, res, next) => {
     if (typeof clientIP === 'string') {
       clientIP = clientIP.split(',')[0].trim();
     }
+    if (clientIP === '::1' || clientIP === '::ffff:127.0.0.1') {
+      clientIP = '127.0.0.1';
+    }
     
     if (blockedIPs.includes(clientIP)) {
       return res.status(403).send('Access Denied');
@@ -120,6 +123,9 @@ app.post('/api/honeypot', (req, res) => {
     let clientIP = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
     if (typeof clientIP === 'string') {
       clientIP = clientIP.split(',')[0].trim();
+    }
+    if (clientIP === '::1' || clientIP === '::ffff:127.0.0.1') {
+      clientIP = '127.0.0.1';
     }
 
     if (!cms.settings.blockedIPs) {
