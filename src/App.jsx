@@ -199,81 +199,101 @@ function App() {
       <div style={{
         width: '100vw', 
         height: '100vh', 
-        background: '#050000', 
-        color: '#ff3333', 
+        background: '#0a0a0a', 
+        color: '#ffffff', 
         display: 'flex', 
         flexDirection: 'column', 
         alignItems: 'center', 
         justifyContent: 'center', 
-        fontFamily: '"Courier New", Courier, monospace', 
+        fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', 
         textAlign: 'center', 
         padding: '2rem', 
-        boxSizing: 'border-box',
-        overflow: 'hidden',
-        position: 'relative'
+        boxSizing: 'border-box'
       }}>
-        {/* Scanline overlay */}
         <div style={{
-          position: 'absolute',
-          top: 0, left: 0, right: 0, bottom: 0,
-          background: 'linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06))',
-          backgroundSize: '100% 4px, 3px 100%',
-          pointerEvents: 'none',
-          zIndex: 10
-        }} />
-        
-        <div style={{
-          border: '2px solid #ff0000',
-          padding: '3rem 4rem',
-          backgroundColor: 'rgba(20, 0, 0, 0.8)',
-          boxShadow: '0 0 30px rgba(255, 0, 0, 0.4), inset 0 0 20px rgba(255, 0, 0, 0.2)',
-          position: 'relative',
-          zIndex: 20,
-          maxWidth: '800px',
-          width: '90%'
+          maxWidth: '600px',
+          width: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', marginBottom: '2rem' }}>
-            <span style={{ fontSize: '2rem' }}>⚠️</span>
-            <h1 style={{ 
-              fontSize: '2.5rem', 
-              margin: 0,
-              textShadow: '0 0 10px rgba(255, 0, 0, 0.8)',
-              fontWeight: 'bold',
-              letterSpacing: '2px'
-            }}>
-              GEIDO SECURITY PROTOCOL
-            </h1>
-            <span style={{ fontSize: '2rem' }}>⚠️</span>
-          </div>
-
-          <div style={{
-            background: 'rgba(255, 0, 0, 0.1)',
-            padding: '1rem',
-            borderLeft: '4px solid #ff0000',
-            marginBottom: '2rem',
-            textAlign: 'left'
+          {/* Geido-style minimal header */}
+          <h1 style={{ 
+            fontSize: '2rem', 
+            margin: '0 0 1rem 0',
+            fontWeight: '600',
+            letterSpacing: '-0.5px'
           }}>
-            <p style={{ margin: '0 0 0.5rem 0', fontWeight: 'bold' }}>[ STATUS: SYSTEM LOCKDOWN INITIATED ]</p>
-            <p style={{ margin: '0 0 0.5rem 0' }}>REASON: MALICIOUS ACTIVITY DETECTED</p>
-            <p style={{ margin: '0' }}>TARGET: FIREWALL BLACKLISTED IP</p>
-          </div>
-
-          <h2 style={{ fontSize: '1.8rem', marginBottom: '1rem', color: '#fff' }}>ERİŞİM KALICI OLARAK ENGELLENDİ</h2>
-          <p style={{ fontSize: '1.1rem', opacity: 0.9, lineHeight: '1.6', marginBottom: '2rem' }}>
-            IP adresiniz güvenlik politikalarımızın ciddi ihlali sebebiyle sistem tarafından kalıcı olarak engellenmiştir. 
-            Ağa erişim denemeleriniz kayıt altına alınmakta ve reddedilmektedir.
+            Erişim Engellendi
+          </h1>
+          <p style={{ 
+            fontSize: '1rem', 
+            color: '#a0a0a0', 
+            lineHeight: '1.5', 
+            margin: '0 0 2rem 0',
+            fontWeight: '400'
+          }}>
+            Güvenlik politikalarımız gereği sistem tarafından kalıcı olarak engellendiniz. 
+            Ağa erişim denemeleriniz reddedilmektedir.
           </p>
-          
+
+          {/* Mac-style Terminal Block */}
           <div style={{ 
-            display: 'flex', 
-            justifyContent: 'space-between', 
-            borderTop: '1px solid rgba(255, 0, 0, 0.3)', 
-            paddingTop: '1rem',
-            fontSize: '0.9rem',
-            opacity: 0.7
+            background: '#16161a', 
+            borderRadius: '10px', 
+            overflow: 'hidden', 
+            width: '100%', 
+            textAlign: 'left', 
+            boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
+            border: '1px solid #2a2a35'
           }}>
-            <span>ERROR_CODE: 403_FORBIDDEN</span>
-            <span>CONNECTION: TERMINATED</span>
+            {/* Terminal Header */}
+            <div style={{ 
+              background: '#1f1f24', 
+              padding: '12px 16px', 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '8px',
+              borderBottom: '1px solid #2a2a35'
+            }}>
+              <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#ff5f56' }} />
+              <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#ffbd2e' }} />
+              <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#27c93f' }} />
+              <span style={{ 
+                color: '#8a8a93', 
+                fontSize: '0.8rem', 
+                marginLeft: '12px', 
+                fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace' 
+              }}>
+                security_log.sh
+              </span>
+            </div>
+            
+            {/* Terminal Content */}
+            <div style={{ 
+              padding: '24px', 
+              fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace', 
+              color: '#d4d4d8', 
+              fontSize: '0.9rem', 
+              lineHeight: '1.7' 
+            }}>
+              <div style={{ color: '#ff5f56' }}>
+                <span style={{ opacity: 0.5, marginRight: '8px' }}>&gt;</span>
+                [ STATUS: SYSTEM LOCKDOWN INITIATED ]
+              </div>
+              <div style={{ color: '#ffbd2e' }}>
+                <span style={{ opacity: 0.5, marginRight: '8px' }}>&gt;</span>
+                REASON: MALICIOUS ACTIVITY DETECTED
+              </div>
+              <div style={{ color: '#ffbd2e' }}>
+                <span style={{ opacity: 0.5, marginRight: '8px' }}>&gt;</span>
+                TARGET: FIREWALL BLACKLISTED IP
+              </div>
+              <div style={{ color: '#71717a', marginTop: '1.5rem', display: 'flex', justifyContent: 'space-between' }}>
+                <span>&gt; Connection terminated.</span>
+                <span>ERROR_CODE: 403</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
