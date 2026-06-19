@@ -19,9 +19,17 @@ const AdminLogin = () => {
   const [isWaitingTelegram, setIsWaitingTelegram] = useState(false);
   const [telegramCodeHint, setTelegramCodeHint] = useState('');
   const [isTrap, setIsTrap] = useState(false);
+  const [userIp, setUserIp] = useState('Yükleniyor...');
   
   const { telegramLogin, isAdmin, isLoading } = useCmsStore();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    fetch('https://api.ipify.org?format=json')
+      .then(res => res.json())
+      .then(data => setUserIp(data.ip))
+      .catch(() => setUserIp('Bilinmiyor'));
+  }, []);
 
   useEffect(() => {
     if (isWaitingTelegram) {
@@ -195,6 +203,10 @@ const AdminLogin = () => {
             </motion.div>
           )}
         </AnimatePresence>
+
+        <div style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.8rem', color: 'rgba(255,255,255,0.3)', fontFamily: 'monospace' }}>
+          IP Adresiniz: {userIp}
+        </div>
       </motion.div>
     </div>
   );

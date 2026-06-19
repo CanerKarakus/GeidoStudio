@@ -139,6 +139,7 @@ function App() {
   const { init, cms, isBanned } = useCmsStore();
   const [isNavigating, setIsNavigating] = useState(false);
   const [showSplash, setShowSplash] = useState(!splashHasShown);
+  const [userIp, setUserIp] = useState('Yükleniyor...');
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
   const isHomePage = location.pathname === '/';
@@ -147,6 +148,11 @@ function App() {
 
   // Initialize Lenis Smooth Scroll
   useEffect(() => {
+    fetch('https://api.ipify.org?format=json')
+      .then(res => res.json())
+      .then(data => setUserIp(data.ip))
+      .catch(() => setUserIp('Bilinmiyor'));
+
     if (isAdminRoute) return; // Don't use smooth scroll in admin panel
 
     const lenis = new Lenis({
@@ -295,6 +301,11 @@ function App() {
               </div>
             </div>
           </div>
+          
+          <p style={{ marginTop: '2rem', fontSize: '0.85rem', color: '#71717a', lineHeight: '1.6' }}>
+            Hata olduğunu düşünüyorsanız IP adresiniz (<strong style={{ color: '#d4d4d8' }}>{userIp}</strong>) ile birlikte <br/>
+            <a href={`mailto:appeal@geidostudio.com?subject=Ban%20Appeal%20-%20IP:%20${userIp}`} style={{ color: '#3b82f6', textDecoration: 'none' }}>appeal@geidostudio.com</a> adresine e-posta gönderebilirsiniz.
+          </p>
         </div>
       </div>
     );
