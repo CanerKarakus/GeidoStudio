@@ -299,26 +299,60 @@ const AdminLogin = () => {
           alignItems: 'center',
           gap: '8px'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'rgba(255,255,255,0.8)', fontSize: '0.85rem', fontFamily: 'monospace', fontWeight: 'bold', marginBottom: '4px' }}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="16" height="16">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+          <div style={{
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '8px', 
+            marginBottom: '1rem',
+            color: '#a1a1aa',
+            fontSize: '0.85rem',
+            fontWeight: '600',
+            borderBottom: '1px solid rgba(255,255,255,0.05)',
+            paddingBottom: '0.5rem'
+          }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/>
             </svg>
-            <span>Güvenlik Protokolü Devrede</span>
+            Session Bilgileri
           </div>
-          
+
           {deviceInfo && (
-            <div style={{ width: '100%', textAlign: 'left', fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)', fontFamily: 'monospace', margin: '8px 0', padding: '12px', backgroundColor: 'rgba(0,0,0,0.3)', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.02)' }}>
-              <div style={{ marginBottom: '4px' }}><span style={{ color: '#fff', opacity: 0.8 }}>💻 Cihaz:</span> {deviceInfo.osStr} - {deviceInfo.browserStr}</div>
-              <div style={{ marginBottom: '4px' }}><span style={{ color: '#fff', opacity: 0.8 }}>🖥 Çözünürlük:</span> {deviceInfo.screenRes}</div>
-              <div style={{ marginBottom: '4px' }}><span style={{ color: '#fff', opacity: 0.8 }}>🌍 Dil/Bölge:</span> {deviceInfo.language} ({deviceInfo.timeZone})</div>
-              <div style={{ marginBottom: '4px' }}><span style={{ color: '#ef4444', opacity: 0.8 }}>🌐 IP Adresi:</span> {deviceInfo.ip}</div>
-              <div><span style={{ color: '#fff', opacity: 0.8 }}>🏢 ISP:</span> {deviceInfo.isp}</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', textAlign: 'left', width: '100%', fontSize: '0.8rem', color: '#fff' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                <span style={{ fontSize: '1rem' }}>💻</span>
+                <span style={{ wordBreak: 'break-word', lineHeight: '1.4' }}>
+                  <span style={{ color: '#a1a1aa' }}>Cihaz:</span> {deviceInfo.osStr} - {deviceInfo.browserStr}
+                </span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '1rem' }}>🖥️</span>
+                <span><span style={{ color: '#a1a1aa' }}>Çözünürlük:</span> {deviceInfo.screenRes}</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '1rem' }}>🌍</span>
+                <span><span style={{ color: '#a1a1aa' }}>Dil/Bölge:</span> {deviceInfo.language} ({deviceInfo.timeZone})</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '1rem' }}>🌐</span>
+                <span><span style={{ color: '#a1a1aa' }}>IP Adresi:</span> {deviceInfo.ip}</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '1rem' }}>🏢</span>
+                <span><span style={{ color: '#a1a1aa' }}>ISP:</span> {deviceInfo.isp}</span>
+              </div>
             </div>
           )}
 
-          <p style={{ margin: 0, fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', lineHeight: '1.4' }}>
-            Bu sayfadaki işlemler yüksek güvenlik protokolleri ile izlenmektedir.<br/>Giriş denemeleriniz ve yukarıdaki cihaz bilgileriniz, güvenlik ihlali veya yetkisiz erişim durumunda adli mercilerle paylaşılabilir.
-          </p>
+          <div style={{ 
+            marginTop: '1.2rem', 
+            fontSize: '0.75rem', 
+            color: '#71717a', 
+            textAlign: 'center',
+            lineHeight: '1.5'
+          }}>
+            Bu sayfadaki işlemler sistem tarafından kaydedilmektedir.<br/>
+            Giriş denemeleriniz ve yukarıdaki cihaz bilgileriniz, yetkisiz erişim durumunda incelenmek üzere Geido Studio sistem yöneticilerine raporlanmaktadır.
+          </div>
         </div>
       </motion.div>
     </div>
