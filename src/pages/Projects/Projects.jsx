@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { m, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
+import { m, AnimatePresence, useScroll } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import styles from './Projects.module.scss';
 import useCmsStore from '../../store/cmsStore';
