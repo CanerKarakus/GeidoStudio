@@ -8,6 +8,7 @@ import { ArrowUpRight, Webcam, Eye, EyeOff, Box } from 'lucide-react';
 import projectsHeroImg from '../../assets/images/projects_hero.png';
 import SEO from '../../components/SEO/SEO';
 import WebcamTracker from '../../components/AILogo/WebcamTracker';
+import AILogo from '../../components/AILogo/AILogo';
 import ARViewer from '../../components/ARViewer/ARViewer';
 
 const Projects = () => {
@@ -118,6 +119,7 @@ const Projects = () => {
       </div>
 
       <WebcamTracker />
+      <AILogo />
       <ARViewer isOpen={isAROpen} onClose={() => setIsAROpen(false)} />
       
       {/* Floating Action Buttons Container */}

@@ -8,8 +8,6 @@ import Button from '../Button/Button';
 import styles from './Navbar.module.scss';
 import logoImg from '../../assets/logo/geido_logo.png';
 import useChatStore from '../../store/chatStore';
-import useAiStore from '../../store/aiStore';
-import AILogo from '../AILogo/AILogo';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -19,7 +17,6 @@ const Navbar = () => {
   const location = useLocation();
   const { t, i18n } = useTranslation();
   const { setIsOpen: setChatOpen, setIsMinimized: setChatMinimized } = useChatStore();
-  const { isAiModeEnabled } = useAiStore();
 
   const toggleLanguage = () => {
     const nextLang = i18n.language.startsWith('tr') ? 'en' : 'tr';
@@ -70,13 +67,9 @@ const Navbar = () => {
         [styles.hidden]: hidden
       })}>
         <div className={styles.container}>
-          {isAiModeEnabled ? (
-            <AILogo />
-          ) : (
-            <Link to="/" className={styles.logo} onClick={closeMenu}>
-              <img src={logoImg} alt="Geido Studio" style={{ height: '36px', filter: 'brightness(0) invert(1)', marginLeft: '16px' }} />
-            </Link>
-          )}
+          <Link to="/" className={styles.logo} onClick={closeMenu}>
+            <img src={logoImg} alt="Geido Studio" style={{ height: '36px', filter: 'brightness(0) invert(1)', marginLeft: '16px' }} />
+          </Link>
 
           {/* Desktop nav */}
           <nav className={styles.nav}>

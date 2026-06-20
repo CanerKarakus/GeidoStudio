@@ -56,8 +56,23 @@ class ErrorBoundary extends Component {
 }
 
 const AILogo = () => {
+  const { isAiModeEnabled } = useAiStore();
+  
+  if (!isAiModeEnabled) return null;
+
   return (
-    <div style={{ width: '150px', height: '50px', marginLeft: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <div style={{ 
+      position: 'fixed', 
+      top: 0, 
+      left: 0, 
+      width: '100vw', 
+      height: '100vh', 
+      zIndex: 10, // above background, below modal/navbar if possible
+      pointerEvents: 'none', // click through
+      display: 'flex', 
+      alignItems: 'center', 
+      justifyContent: 'center' 
+    }}>
       <ErrorBoundary>
         <Canvas camera={{ position: [0, 0, 5], fov: 45 }}>
           <ambientLight intensity={0.5} />
