@@ -1,12 +1,16 @@
-import React, { useRef } from 'react';
+import React, { useRef, Suspense } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { Text3D, Center, Float, Environment, ContactShadows } from '@react-three/drei';
+import { useGLTF, Center, Float, Environment } from '@react-three/drei';
 import * as THREE from 'three';
 import useAiStore from '../../store/aiStore';
 
-const AnimatedLogoText = () => {
+// Preload the model to prevent suspense flashes
+useGLTF.preload('/3dmodels/zeus.glb');
+
+const AnimatedZeusModel = () => {
   const meshRef = useRef();
   const { facePosition } = useAiStore();
+  const { scene } = useGLTF('/3dmodels/zeus.glb');
   
   // Smoothly interpolate the rotation towards the face position
   useFrame((state, delta) => {
@@ -24,25 +28,8 @@ const AnimatedLogoText = () => {
     <Float speed={2} rotationIntensity={0.2} floatIntensity={0.5}>
       <Center>
         <group ref={meshRef}>
-          <Text3D
-            font="/fonts/helvetiker_bold.typeface.json"
-            size={1.2}
-            height={0.4}
-            curveSegments={12}
-            bevelEnabled
-            bevelThickness={0.05}
-            bevelSize={0.02}
-            bevelOffset={0}
-            bevelSegments={5}
-          >
-            GEIDO
-            <meshStandardMaterial 
-              color="#ffffff" 
-              metalness={0.8} 
-              roughness={0.2} 
-              envMapIntensity={2}
-            />
-          </Text3D>
+          {/* We scale the model dynamically since we don't know its exact size, but standardizing to 1.5 helps */}
+          <primitive object={scene} scale={1.5} />
         </group>
       </Center>
     </Float>
@@ -56,7 +43,9 @@ const AILogo = () => {
         <ambientLight intensity={0.5} />
         <directionalLight position={[10, 10, 5]} intensity={1} />
         <Environment preset="city" />
-        <AnimatedLogoText />
+        <Suspense fallback={null}>
+          <AnimatedZeusModel />
+        </Suspense>
       </Canvas>
     </div>
   );

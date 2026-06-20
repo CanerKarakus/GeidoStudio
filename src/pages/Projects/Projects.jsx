@@ -4,10 +4,11 @@ import { useTranslation } from 'react-i18next';
 import styles from './Projects.module.scss';
 import useCmsStore from '../../store/cmsStore';
 import useAiStore from '../../store/aiStore';
-import { ArrowUpRight, Webcam, Eye, EyeOff } from 'lucide-react';
+import { ArrowUpRight, Webcam, Eye, EyeOff, Box } from 'lucide-react';
 import projectsHeroImg from '../../assets/images/projects_hero.png';
 import SEO from '../../components/SEO/SEO';
 import WebcamTracker from '../../components/AILogo/WebcamTracker';
+import ARViewer from '../../components/ARViewer/ARViewer';
 
 const Projects = () => {
   const { t } = useTranslation();
@@ -26,6 +27,8 @@ const Projects = () => {
   const { isAiModeEnabled, setAiMode } = useAiStore();
   const projectsData = cms?.projects || [];
   const heroImage = cms?.projectsHeroImage || projectsHeroImg;
+
+  const [isAROpen, setIsAROpen] = useState(false);
 
   // Track scroll for dynamic button positioning
   const { scrollY } = useScroll();
@@ -115,40 +118,75 @@ const Projects = () => {
       </div>
 
       <WebcamTracker />
+      <ARViewer isOpen={isAROpen} onClose={() => setIsAROpen(false)} />
       
-      {/* AI Eye Contact Toggle Button */}
-      <m.button
-        animate={{ 
-          bottom: isScrolled ? '80px' : '20px',
-          scale: isAiModeEnabled ? 1.05 : 1
-        }}
-        transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-        onClick={() => setAiMode(!isAiModeEnabled)}
-        style={{
-          position: 'fixed',
-          right: '20px',
-          zIndex: 50,
-          background: isAiModeEnabled ? 'linear-gradient(135deg, #ef4444, #b91c1c)' : 'rgba(20, 20, 25, 0.8)',
-          backdropFilter: 'blur(10px)',
-          border: `1px solid ${isAiModeEnabled ? '#f87171' : 'rgba(255,255,255,0.1)'}`,
-          color: '#fff',
-          padding: '12px 20px',
-          borderRadius: '30px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-          cursor: 'pointer',
-          boxShadow: isAiModeEnabled ? '0 0 20px rgba(239, 68, 68, 0.4)' : '0 10px 30px rgba(0,0,0,0.5)',
-          fontFamily: 'system-ui, sans-serif',
-          fontWeight: '500',
-          fontSize: '0.9rem'
-        }}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-      >
-        {isAiModeEnabled ? <Eye size={18} /> : <EyeOff size={18} />}
-        {isAiModeEnabled ? 'AI Takibi Kapat' : 'AI Göz Teması Aç'}
-      </m.button>
+      {/* Floating Action Buttons Container */}
+      <div style={{
+        position: 'fixed',
+        right: '20px',
+        bottom: isScrolled ? '80px' : '20px',
+        zIndex: 50,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '12px',
+        transition: 'bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+      }}>
+        {/* AR View Toggle Button */}
+        <m.button
+          onClick={() => setIsAROpen(true)}
+          style={{
+            background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid #60a5fa',
+            color: '#fff',
+            padding: '12px 20px',
+            borderRadius: '30px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            cursor: 'pointer',
+            boxShadow: '0 10px 30px rgba(59, 130, 246, 0.4)',
+            fontFamily: 'system-ui, sans-serif',
+            fontWeight: '500',
+            fontSize: '0.9rem'
+          }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <Box size={18} />
+          Odamda Gör (AR)
+        </m.button>
+
+        {/* AI Eye Contact Toggle Button */}
+        <m.button
+          animate={{ 
+            scale: isAiModeEnabled ? 1.05 : 1
+          }}
+          transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+          onClick={() => setAiMode(!isAiModeEnabled)}
+          style={{
+            background: isAiModeEnabled ? 'linear-gradient(135deg, #ef4444, #b91c1c)' : 'rgba(20, 20, 25, 0.8)',
+            backdropFilter: 'blur(10px)',
+            border: `1px solid ${isAiModeEnabled ? '#f87171' : 'rgba(255,255,255,0.1)'}`,
+            color: '#fff',
+            padding: '12px 20px',
+            borderRadius: '30px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            cursor: 'pointer',
+            boxShadow: isAiModeEnabled ? '0 0 20px rgba(239, 68, 68, 0.4)' : '0 10px 30px rgba(0,0,0,0.5)',
+            fontFamily: 'system-ui, sans-serif',
+            fontWeight: '500',
+            fontSize: '0.9rem'
+          }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          {isAiModeEnabled ? <Eye size={18} /> : <EyeOff size={18} />}
+          {isAiModeEnabled ? 'AI Takibi Kapat' : 'AI Göz Teması Aç'}
+        </m.button>
+      </div>
     </div>
   );
 };
