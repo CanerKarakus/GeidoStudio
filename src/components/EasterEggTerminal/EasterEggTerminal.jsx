@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Eye, EyeOff, Box } from 'lucide-react';
 import { socket } from '../../api/db';
+import useAiStore from '../../store/aiStore';
 import './EasterEggTerminal.css';
 
 const EasterEggTerminal = () => {
@@ -13,6 +15,7 @@ const EasterEggTerminal = () => {
   ]);
   const endOfHistoryRef = useRef(null);
   const inputRef = useRef(null);
+  const { isAiModeEnabled, setAiMode, isAROpen, setAROpen } = useAiStore();
   
   // Secret code sequence: G E I D O
   const secretCode = ['g', 'e', 'i', 'd', 'o'];
@@ -102,7 +105,25 @@ const EasterEggTerminal = () => {
           onClick={(e) => e.stopPropagation()}
         >
           <div className="terminal-header">
-            GEIDO TERMINAL // [SECURE CONNECTION]
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+              <span>GEIDO TERMINAL // [SECURE CONNECTION]</span>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button 
+                  onClick={() => setAiMode(!isAiModeEnabled)}
+                  style={{ background: 'transparent', border: '1px solid #33ff33', color: '#33ff33', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10px' }}
+                >
+                  {isAiModeEnabled ? <Eye size={12} /> : <EyeOff size={12} />}
+                  AI TAKIP
+                </button>
+                <button 
+                  onClick={() => setAROpen(true)}
+                  style={{ background: 'transparent', border: '1px solid #33ff33', color: '#33ff33', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10px' }}
+                >
+                  <Box size={12} />
+                  AR MODU
+                </button>
+              </div>
+            </div>
           </div>
           
           <div className="terminal-history">

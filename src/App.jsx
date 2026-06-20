@@ -17,6 +17,11 @@ import HeatmapTracker from './components/HeatmapTracker/HeatmapTracker';
 import LiveSupport from './components/LiveSupport/LiveSupport';
 import EasterEggTerminal from './components/EasterEggTerminal/EasterEggTerminal';
 
+import WebcamTracker from './components/AILogo/WebcamTracker';
+import AILogo from './components/AILogo/AILogo';
+import ARViewer from './components/ARViewer/ARViewer';
+import useAiStore from './store/aiStore';
+
 // Lazy loaded pages
 const Home = lazy(() => import('./pages/Home/Home'));
 const Projects = lazy(() => import('./pages/Projects/Projects'));
@@ -303,6 +308,7 @@ const BannedScreen = ({ userIp }) => {
 
 function App() {
   const { init, cms, isBanned } = useCmsStore();
+  const { isAROpen, setAROpen } = useAiStore();
   const [isNavigating, setIsNavigating] = useState(false);
   const [showSplash, setShowSplash] = useState(!splashHasShown);
   const [userIp, setUserIp] = useState('Yükleniyor...');
@@ -379,6 +385,9 @@ function App() {
     <LazyMotion features={domAnimation}>
       <div className="app">
         {!isAdminRoute && !isMaintenanceMode && <ScrollFeatures />}
+        <WebcamTracker />
+        <AILogo />
+        <ARViewer isOpen={isAROpen} onClose={() => setAROpen(false)} />
         {!isAdminRoute && !isMaintenanceMode && <Navbar />}
         <main className="main-content">
           <ScrollToTop />
