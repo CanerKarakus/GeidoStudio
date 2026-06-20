@@ -1,4 +1,4 @@
-import React, { useRef, Suspense } from 'react';
+import React, { useRef, Suspense, Component } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { useGLTF, Center, Float, Environment } from '@react-three/drei';
 import * as THREE from 'three';
@@ -36,17 +36,38 @@ const AnimatedZeusModel = () => {
   );
 };
 
+class ErrorBoundary extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true };
+  }
+  componentDidCatch(error, errorInfo) {
+    console.error("3D Model Error:", error, errorInfo);
+  }
+  render() {
+    if (this.state.hasError) {
+      return <div style={{ color: '#ef4444', fontSize: '12px' }}>Model Yüklenemedi</div>;
+    }
+    return this.props.children;
+  }
+}
+
 const AILogo = () => {
   return (
     <div style={{ width: '150px', height: '50px', marginLeft: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <Canvas camera={{ position: [0, 0, 5], fov: 45 }}>
-        <ambientLight intensity={0.5} />
-        <directionalLight position={[10, 10, 5]} intensity={1} />
-        <Environment preset="city" />
-        <Suspense fallback={null}>
-          <AnimatedZeusModel />
-        </Suspense>
-      </Canvas>
+      <ErrorBoundary>
+        <Canvas camera={{ position: [0, 0, 5], fov: 45 }}>
+          <ambientLight intensity={0.5} />
+          <directionalLight position={[10, 10, 5]} intensity={1} />
+          <Environment preset="city" />
+          <Suspense fallback={null}>
+            <AnimatedZeusModel />
+          </Suspense>
+        </Canvas>
+      </ErrorBoundary>
     </div>
   );
 };
