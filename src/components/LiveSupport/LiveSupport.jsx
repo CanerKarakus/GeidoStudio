@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import clsx from 'clsx';
 import useChatStore from '../../store/chatStore';
 import styles from './LiveSupport.module.scss';
-import { socket } from '../../api/db';
+import { socket, API_URL } from '../../api/db';
 
 const Typewriter = ({ text, onComplete, onTyping, forceStop }) => {
   const [displayedText, setDisplayedText] = useState('');
@@ -658,13 +658,27 @@ const LiveSupport = () => {
               
               <div className={styles.airdropPreview}>
                 {airdropData.type === 'image' ? (
-                  <img src={airdropData.url} alt={airdropData.filename} className={styles.previewImg} />
+                  <img 
+                    src={airdropData.url.startsWith('/') ? `${API_URL}${airdropData.url}` : airdropData.url} 
+                    alt={airdropData.filename} 
+                    className={styles.previewImg} 
+                    onClick={() => window.open(airdropData.url.startsWith('/') ? `${API_URL}${airdropData.url}` : airdropData.url, '_blank')}
+                    style={{ cursor: 'pointer' }}
+                    title="Büyütmek için tıkla"
+                  />
                 ) : (
                   <div className={styles.documentIcon}>📄 {airdropData.filename}</div>
                 )}
               </div>
               
-              <a href={airdropData.url} download={airdropData.filename} target="_blank" rel="noopener noreferrer" className={styles.downloadBtn} onClick={() => setAirdropData(null)}>
+              <a 
+                href={airdropData.url.startsWith('/') ? `${API_URL}${airdropData.url}` : airdropData.url} 
+                download={airdropData.filename} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className={styles.downloadBtn} 
+                onClick={() => setAirdropData(null)}
+              >
                 <Download size={20} />
                 Hemen İndir
               </a>
