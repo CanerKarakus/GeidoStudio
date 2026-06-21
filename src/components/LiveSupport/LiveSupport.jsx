@@ -101,17 +101,20 @@ const LiveSupport = () => {
           // Navigate to the base path
           navigate(`/${pathname}`);
           
-          // If there is a hash, wait for page transition and scroll to the element
+          // If there is a hash, poll for the element and scroll
           if (hash) {
-            setTimeout(() => {
+            let attempts = 0;
+            const scrollInterval = setInterval(() => {
               const element = document.getElementById(hash);
               if (element) {
-                // Determine offset for fixed navbar
                 const yOffset = -100; 
                 const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
                 window.scrollTo({ top: y, behavior: 'smooth' });
+                clearInterval(scrollInterval);
               }
-            }, 600); // 600ms wait to ensure React renders the new page
+              attempts++;
+              if (attempts > 30) clearInterval(scrollInterval); // Give up after 3 seconds
+            }, 100);
           }
         }
       };
