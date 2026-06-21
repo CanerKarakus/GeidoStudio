@@ -52,6 +52,7 @@ const LiveSupport = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
   const [airdropData, setAirdropData] = useState(null);
+  const [expandedImage, setExpandedImage] = useState(null);
   const [isWaitingForAPI, setIsWaitingForAPI] = useState(false);
   const [activeTypingId, setActiveTypingId] = useState(null);
   const [forceStopTyping, setForceStopTyping] = useState(false);
@@ -153,6 +154,29 @@ const LiveSupport = () => {
     addMessage({ id: Date.now().toString(), text: formData.message, sender: 'user', isNew: false });
     
     await sendToAI([{ text: formData.message, sender: 'user' }], { name: formData.name, email: formData.email });
+  };
+
+  const handleDownload = async (url, filename, e) => {
+    e.preventDefault();
+    try {
+      // Create a temporary anchor to force download
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Network response was not ok');
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = blobUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(blobUrl);
+      document.body.removeChild(a);
+    } catch (err) {
+      console.error('Download failed:', err);
+      window.open(url, '_blank'); // fallback
+    }
+    setAirdropData(null); // Kapat
   };
 
   const handleSendMessage = async (e) => {
@@ -662,8 +686,8 @@ const LiveSupport = () => {
                     src={airdropData.url.startsWith('/') ? `${API_URL}${airdropData.url}` : airdropData.url} 
                     alt={airdropData.filename} 
                     className={styles.previewImg} 
-                    onClick={() => window.open(airdropData.url.startsWith('/') ? `${API_URL}${airdropData.url}` : airdropData.url, '_blank')}
-                    style={{ cursor: 'pointer' }}
+                    onClick={() => setExpandedImage(airdropData.url.startsWith('/') ? `${API_URL}${airdropData.url}` : airdropData.url)}
+                    style={{ cursor: 'zoom-in' }}
                     title="Büyütmek için tıkla"
                   />
                 ) : (
@@ -671,18 +695,44 @@ const LiveSupport = () => {
                 )}
               </div>
               
-              <a 
-                href={airdropData.url.startsWith('/') ? `${API_URL}${airdropData.url}` : airdropData.url} 
-                download={airdropData.filename} 
-                target="_blank" 
-                rel="noopener noreferrer" 
+              <button 
                 className={styles.downloadBtn} 
-                onClick={() => setAirdropData(null)}
+                onClick={(e) => handleDownload(
+                  airdropData.url.startsWith('/') ? `${API_URL}${airdropData.url}` : airdropData.url, 
+                  airdropData.filename, 
+                  e
+                )}
               >
                 <Download size={20} />
                 Hemen İndir
-              </a>
+              </button>
             </m.div>
+          </m.div>
+        )}
+      </AnimatePresence>
+
+      {/* Expanded Image Lightbox */}
+      <AnimatePresence>
+        {expandedImage && (
+          <m.div
+            className={styles.lightboxOverlay}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setExpandedImage(null)}
+          >
+            <m.img 
+              src={expandedImage} 
+              className={styles.lightboxImg}
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 300, damping: 25 }}
+              onClick={(e) => e.stopPropagation()} // Prevent closing when clicking the image itself
+            />
+            <button className={styles.lightboxCloseBtn} onClick={() => setExpandedImage(null)}>
+              <X size={32} />
+            </button>
           </m.div>
         )}
       </AnimatePresence>
