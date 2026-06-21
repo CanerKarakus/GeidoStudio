@@ -1953,4 +1953,12 @@ const sendScreenshotToTelegram = async (adminChatId, base64Data, sessionId) => {
   }
 };
 
-module.exports = { initTelegramBot, sendTelegramMessage, sendScreenshotToTelegram, isSessionHijacked, notifyLiveSupportMessage, notifyEasterEgg, notifyLoginRequest, notifyLoginSuccess, notifyVoiceMessage, notifyHumanRequest };
+const notifyScreenshotRejected = (adminChatId, sessionId) => {
+  try {
+    bot.sendMessage(adminChatId, `❌ <b>Ekran Görüntüsü Reddedildi! (#${sessionId})</b>\n\nZiyaretçi ekran görüntüsü talebine izin vermedi.`, { parse_mode: 'HTML' });
+  } catch (err) {
+    console.error('Screenshot reject notify error', err);
+  }
+};
+
+module.exports = { initTelegramBot, sendTelegramMessage, sendScreenshotToTelegram, notifyScreenshotRejected, isSessionHijacked, notifyLiveSupportMessage, notifyEasterEgg, notifyLoginRequest, notifyLoginSuccess, notifyVoiceMessage, notifyHumanRequest };

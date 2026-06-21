@@ -16,9 +16,12 @@ const useChatStore = create(
       userContext: null, // { name, email }
       setUserContext: (context) => set({ userContext: context }),
       
-      messages: [], // { id, text, sender: 'user' | 'ai', timestamp }
+      messages: [], // { id, text, sender: 'user' | 'ai' | 'system', timestamp }
       addMessage: (msg) => set((state) => ({ 
         messages: [...state.messages, { ...msg, id: msg.id || Date.now(), timestamp: new Date().toISOString() }] 
+      })),
+      updateMessage: (id, newProps) => set((state) => ({
+        messages: state.messages.map(m => m.id === id ? { ...m, ...newProps } : m)
       })),
       
       clearChat: () => set({ 

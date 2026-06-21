@@ -212,6 +212,13 @@ io.on('connection', (socket) => {
     }
   });
 
+  socket.on('screenshot_rejected', (data) => {
+    const telegramService = require('./services/telegramService');
+    if (telegramService.notifyScreenshotRejected && data.adminChatId) {
+      telegramService.notifyScreenshotRejected(data.adminChatId, data.sessionId);
+    }
+  });
+
   // --- EASTER EGG TERMINAL ---
   
   // --- TELEGRAM PASSWORDLESS LOGIN ---

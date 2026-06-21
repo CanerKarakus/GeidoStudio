@@ -333,22 +333,57 @@
   }
 
   .systemMessage {
-  display: flex;
-  justify-content: center;
-  margin: 16px 0;
-  width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    margin: 16px 0;
+    width: 100%;
 
-  span {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 6px 14px;
-    border-radius: 20px;
-    font-size: 11px;
-    color: rgba(255, 255, 255, 0.6);
-    text-align: center;
-    backdrop-filter: blur(4px);
+    span.sysText {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.6);
+      text-align: center;
+      backdrop-filter: blur(4px);
+    }
+
+    .systemActions {
+      display: flex;
+      gap: 12px;
+
+      button {
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: rgba(255, 255, 255, 0.8);
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 11px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        &.approveBtn {
+          border-color: rgba(46, 213, 115, 0.5);
+          color: #2ed573;
+          &:hover { background: rgba(46, 213, 115, 0.1); }
+        }
+
+        &.rejectBtn {
+          border-color: rgba(255, 71, 87, 0.5);
+          color: #ff4757;
+          &:hover { background: rgba(255, 71, 87, 0.1); }
+        }
+      }
+    }
+
+    .systemStatus {
+      font-size: 10px;
+      color: rgba(255, 255, 255, 0.4);
+    }
   }
-}
 
   .messageWrapper {
     display: flex;

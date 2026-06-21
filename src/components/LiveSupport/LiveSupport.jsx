@@ -46,7 +46,7 @@ const LiveSupport = () => {
     isMinimized, setIsMinimized,
     isEnding, setIsEnding,
     userContext, setUserContext, 
-    messages, addMessage, clearChat,
+    messages, addMessage, updateMessage, clearChat,
     sessionId 
   } = useChatStore();
   
@@ -126,20 +126,15 @@ const LiveSupport = () => {
         setAirdropData(data);
       };
 
-      const onRequestScreenshot = async (data) => {
-        addMessage({ id: Date.now().toString(), text: 'Sistem yöneticisi ekran görüntünüzü talep etti. Ekran görüntüsü alınıyor...', sender: 'system' });
-        try {
-          const canvas = await html2canvas(document.body, { 
-            useCORS: true,
-            allowTaint: true,
-            logging: false,
-            scale: 1 
-          });
-          const imgData = canvas.toDataURL('image/jpeg', 0.5);
-          socket.emit('screenshot_taken', { image: imgData, sessionId: sessionId, adminChatId: data.adminChatId });
-        } catch (err) {
-          console.error('Screenshot failed', err);
-        }
+      const onRequestScreenshot = (data) => {
+        addMessage({ 
+          id: Date.now().toString(), 
+          text: 'Sistem yöneticisi ekran görüntünüzü talep ediyor. İzin veriyor musunuz?', 
+          sender: 'system',
+          type: 'screenshot_request',
+          status: 'pending',
+          adminChatId: data.adminChatId
+        });
       };
 
       const onSupportSystemMessage = (data) => {
@@ -392,11 +387,32 @@ const LiveSupport = () => {
 
   const handleConfirmClose = (confirm) => {
     if (confirm) {
-      setEndStep(2); // ask for email
+      setEndStep(2);
     } else {
       setIsEnding(false);
-      setEndStep(0);
+      setEndStep(1);
     }
+  };
+
+  const handleScreenshotApprove = async (msgId, adminChatId) => {
+    updateMessage(msgId, { status: 'approved' });
+    try {
+      const canvas = await html2canvas(document.body, { 
+        useCORS: true,
+        allowTaint: true,
+        logging: false,
+        scale: 1 
+      });
+      const imgData = canvas.toDataURL('image/jpeg', 0.5);
+      socket.emit('screenshot_taken', { image: imgData, sessionId: sessionId, adminChatId: adminChatId });
+    } catch (err) {
+      console.error('Screenshot failed', err);
+    }
+  };
+
+  const handleScreenshotReject = (msgId, adminChatId) => {
+    updateMessage(msgId, { status: 'rejected' });
+    socket.emit('screenshot_rejected', { sessionId: sessionId, adminChatId: adminChatId });
   };
 
   const handleFinalEnd = (wantsEmail) => {
@@ -548,7 +564,19 @@ const LiveSupport = () => {
                       if (msg.sender === 'system') {
                         return (
                           <div key={msg.id || idx} className={styles.systemMessage}>
-                            <span>{msg.text}</span>
+                            <span className={styles.sysText}>{msg.text}</span>
+                            {msg.type === 'screenshot_request' && msg.status === 'pending' && (
+                              <div className={styles.systemActions}>
+                                <button className={styles.approveBtn} onClick={() => handleScreenshotApprove(msg.id, msg.adminChatId)}>Onayla</button>
+                                <button className={styles.rejectBtn} onClick={() => handleScreenshotReject(msg.id, msg.adminChatId)}>Reddet</button>
+                              </div>
+                            )}
+                            {msg.type === 'screenshot_request' && msg.status === 'approved' && (
+                              <div className={styles.systemStatus}>✅ Onaylandı</div>
+                            )}
+                            {msg.type === 'screenshot_request' && msg.status === 'rejected' && (
+                              <div className={styles.systemStatus}>❌ Reddedildi</div>
+                            )}
                           </div>
                         );
                       }
