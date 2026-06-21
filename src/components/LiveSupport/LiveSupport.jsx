@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
 import { MessageSquare, X, Send, User, ChevronDown, Minus, Square, Mic, Trash2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import clsx from 'clsx';
 import useChatStore from '../../store/chatStore';
 import styles from './LiveSupport.module.scss';
@@ -48,6 +49,7 @@ const LiveSupport = () => {
     sessionId 
   } = useChatStore();
   
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
   const [isWaitingForAPI, setIsWaitingForAPI] = useState(false);
   const [activeTypingId, setActiveTypingId] = useState(null);
@@ -93,17 +95,26 @@ const LiveSupport = () => {
         addMessage({ id: Date.now().toString() + '-admin', text: data.text, sender: 'ai', isNew: false });
       };
 
+      const onForceNavigate = (data) => {
+        if (data && data.path) {
+          // Play a small sound or notify if desired, then navigate
+          navigate(`/${data.path}`);
+        }
+      };
+
       socket.on('support_chat_hijacked', onHijacked);
       socket.on('support_chat_released', onReleased);
       socket.on('support_chat_message', onMessage);
+      socket.on('force_navigate', onForceNavigate);
 
       return () => {
         socket.off('support_chat_hijacked', onHijacked);
         socket.off('support_chat_released', onReleased);
         socket.off('support_chat_message', onMessage);
+        socket.off('force_navigate', onForceNavigate);
       };
     }
-  }, [isOpen, isMinimized, userContext, sessionId, addMessage]);
+  }, [isOpen, isMinimized, userContext, sessionId, addMessage, navigate]);
 
   useEffect(() => {
     scrollToBottom();

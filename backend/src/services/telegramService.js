@@ -642,6 +642,38 @@ function initTelegramBot(app, io) {
     bot.sendMessage(chatId, `🔌 <b>Sohbetten Ayrıldınız. (#${sessionId})</b>\n\nYapay zeka kontrolü geri aldı.`, { parse_mode: 'HTML' });
   });
 
+  // Command: /yonlendir
+  bot.onText(/^\/yonlendir\s+([^\s]+)(?:\s+(.+))?$/, (msg, match) => {
+    const chatId = msg.chat.id;
+    if (!isAuthorized(msg)) return;
+
+    let targetSessionId = null;
+    let targetPage = null;
+
+    // Eğer admin bir canlı destek oturumundaysa ve sadece sayfa adı girdiyse
+    // Örn: /yonlendir projeler
+    if (adminCurrentSupportSession && !match[2]) {
+      targetSessionId = adminCurrentSupportSession;
+      targetPage = match[1];
+    } else {
+      // Örn: /yonlendir A7B9X projeler
+      targetSessionId = match[1];
+      targetPage = match[2];
+    }
+
+    if (!targetSessionId || !targetPage) {
+      return bot.sendMessage(chatId, `Hatalı kullanım. Lütfen şu formatı kullanın:\n/yonlendir [ID] [sayfa]\nveya halihazırda bağlıysanız:\n/yonlendir [sayfa]`);
+    }
+
+    const io = reqApp.get('io');
+    if (io) {
+      io.to(targetSessionId).emit('force_navigate', { path: targetPage });
+      bot.sendMessage(chatId, `🚀 <b>Yönlendirme Başarılı!</b>\n#${targetSessionId} kullanıcısının ekranı <b>/${targetPage}</b> sayfasına yönlendirildi.`, { parse_mode: 'HTML' });
+    } else {
+      bot.sendMessage(chatId, `Soket bağlantısı kurulamadı.`);
+    }
+  });
+
   // Command: /rapor
   bot.onText(/^\/rapor/, (msg, match) => {
     const chatId = msg.chat.id;
