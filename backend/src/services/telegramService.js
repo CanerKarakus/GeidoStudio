@@ -687,7 +687,7 @@ function initTelegramBot(app, io) {
   });
 
   // Command: /gonder (AirDrop)
-  bot.onText(/^\/gonder(?:\s+([^\s]+))?$/, (msg, match) => {
+  bot.onText(/^\/g[oö]nder(?:\s+([^\s]+))?$/, (msg, match) => {
     const chatId = msg.chat.id;
     if (!isAuthorized(msg)) return;
 
