@@ -13,6 +13,7 @@ let bot = null;
 
 const activeHijackedChats = new Set(); // Stores sessionIds that are currently being hijacked by admin
 let adminCurrentSupportSession = null; // Store which session the admin is currently focusing on
+let adminCurrentSupportAgentName = null; // Store which agent is currently connected
 const pendingFileDrops = new Map(); // Stores chatId -> sessionId for pending file uploads
 
 const isSessionHijacked = (sessionId) => activeHijackedChats.has(sessionId);
@@ -612,8 +613,8 @@ function initTelegramBot(app, io) {
       agentFlag = match[1].toLowerCase();
       sessionId = match[2];
     } else {
-      // Has one argument (e.g. /canlidestekbaglan A7B9X)
-      sessionId = match[1];
+      // Has one argument (e.g. /canlidestekbaglan A7B9X) - Not allowed anymore
+      return bot.sendMessage(chatId, `Lütfen kimin bağlandığını belirtin. Örn: /canlidestekbaglan c [ID] veya /canlidestekbaglan y [ID]`);
     }
 
     if (!sessionId) {
@@ -623,20 +624,20 @@ function initTelegramBot(app, io) {
     let agentName = null;
     if (agentFlag === 'c') agentName = 'Caner Karakuş';
     else if (agentFlag === 'y') agentName = 'Yaşarhan Pekergin';
+    else return bot.sendMessage(chatId, `Geçersiz kişi kısaltması. Sadece 'c' (Caner) veya 'y' (Yaşarhan) kullanın.`);
 
     activeHijackedChats.add(sessionId);
     adminCurrentSupportSession = sessionId;
+    adminCurrentSupportAgentName = agentName;
     
     // Broadcast to socket
     const io = reqApp.get('io');
     if (io) {
       io.to(sessionId).emit('support_chat_hijacked');
-      if (agentName) {
-        io.to(sessionId).emit('support_system_message', { text: `${agentName} bağlandı.` });
-      }
+      io.to(sessionId).emit('support_system_message', { text: `${agentName} bağlandı.` });
     }
 
-    bot.sendMessage(chatId, `🔌 <b>Sisteme Bağlanıldı! (#${sessionId})</b>\n\nŞu andan itibaren yapay zeka bu kullanıcıya cevap vermeyecek. Buraya yazdığınız her mesaj DOĞRUDAN müşterinin canlı destek ekranına gidecek.${agentName ? `\n\nKullanıcıya <b>"${agentName} bağlandı."</b> bildirimi gönderildi.` : ''}\n\nAyrılmak için: /canlidestekayril`, { parse_mode: 'HTML' });
+    bot.sendMessage(chatId, `🔌 <b>Sisteme Bağlanıldı! (#${sessionId})</b>\n\nŞu andan itibaren yapay zeka bu kullanıcıya cevap vermeyecek. Buraya yazdığınız her mesaj DOĞRUDAN müşterinin canlı destek ekranına gidecek.\n\nKullanıcıya <b>"${agentName} bağlandı."</b> bildirimi gönderildi.\n\nAyrılmak için: /canlidestekayril`, { parse_mode: 'HTML' });
   });
 
   // Command: /canlidestekayril
@@ -649,16 +650,19 @@ function initTelegramBot(app, io) {
     }
 
     const sessionId = adminCurrentSupportSession;
+    const agentName = adminCurrentSupportAgentName || 'Temsilci';
+    
     activeHijackedChats.delete(sessionId);
     adminCurrentSupportSession = null;
+    adminCurrentSupportAgentName = null;
 
-    // Broadcast to socket
     const io = reqApp.get('io');
     if (io) {
+      io.to(sessionId).emit('support_system_message', { text: `${agentName} ayrıldı. Yapay zeka asistanı ile görüşmeye devam edebilirsiniz.` });
       io.to(sessionId).emit('support_chat_released');
     }
 
-    bot.sendMessage(chatId, `🔌 <b>Sohbetten Ayrıldınız. (#${sessionId})</b>\n\nYapay zeka kontrolü geri aldı.`, { parse_mode: 'HTML' });
+    bot.sendMessage(chatId, `👋 <b>Sistemden Ayrıldınız (#${sessionId})</b>\n\nKullanıcıya <b>"${agentName} ayrıldı."</b> bildirimi gönderildi. Yapay zeka tekrar devreye girdi.`, { parse_mode: 'HTML' });
   });
 
   // Command: /yonlendir
