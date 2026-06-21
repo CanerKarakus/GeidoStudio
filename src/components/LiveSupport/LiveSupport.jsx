@@ -176,7 +176,6 @@ const LiveSupport = () => {
       console.error('Download failed:', err);
       window.open(url, '_blank'); // fallback
     }
-    setAirdropData(null); // Kapat
   };
 
   const handleSendMessage = async (e) => {
