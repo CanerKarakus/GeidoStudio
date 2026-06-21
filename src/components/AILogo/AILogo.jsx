@@ -67,7 +67,7 @@ const AILogo = () => {
       left: 0, 
       width: '100vw', 
       height: '100vh', 
-      zIndex: 10, // above background, below modal/navbar if possible
+      zIndex: 100000, // Above EasterEggTerminal (99999) so Zeus is visible
       pointerEvents: 'none', // click through
       display: 'flex', 
       alignItems: 'center', 

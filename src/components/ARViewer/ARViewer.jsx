@@ -19,7 +19,7 @@ const ARViewer = ({ isOpen, onClose }) => {
           width: '100vw',
           height: '100vh',
           backgroundColor: 'rgba(0, 0, 0, 0.9)',
-          zIndex: 9999,
+          zIndex: 999999, // Above EasterEggTerminal (99999)
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
@@ -43,7 +43,7 @@ const ARViewer = ({ isOpen, onClose }) => {
             alignItems: 'center',
             justifyContent: 'center',
             cursor: 'pointer',
-            zIndex: 10000,
+            zIndex: 1000000,
           }}
         >
           <X size={24} />
