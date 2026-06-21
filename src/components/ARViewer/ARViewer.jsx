@@ -87,8 +87,9 @@ const ARViewer = ({ isOpen, onClose }) => {
           </model-viewer>
         </div>
         
-        <p style={{ color: '#a0a0a0', marginTop: '20px', fontFamily: 'system-ui', textAlign: 'center', padding: '0 20px' }}>
-          Modeli döndürmek için kaydırın. Gerçek dünyada görmek için "AR ile Odamda Gör" butonuna tıklayın.
+        <p style={{ color: '#a0a0a0', marginTop: '20px', fontFamily: 'system-ui', textAlign: 'center', padding: '0 20px', lineHeight: '1.5' }}>
+          Modeli döndürmek için kaydırın.<br/>
+          <span style={{ fontSize: '0.9em', color: '#666' }}>Not: "AR ile Odamda Gör" butonu yalnızca <b>cep telefonlarından</b> (iOS/Android) girildiğinde görünür. Bilgisayarlarda AR desteği yoktur.</span>
         </p>
       </m.div>
     </AnimatePresence>
