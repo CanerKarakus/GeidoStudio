@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Instagram, Linkedin, Github, ArrowUpRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -10,6 +10,27 @@ import logoImg from '../../assets/logo/geido_logo.png';
 
 const Footer = () => {
   const { t } = useTranslation();
+  const clickCountRef = useRef(0);
+  const clickTimeoutRef = useRef(null);
+
+  const handleCopyrightClick = () => {
+    clickCountRef.current += 1;
+    
+    // Clear existing timeout
+    if (clickTimeoutRef.current) clearTimeout(clickTimeoutRef.current);
+    
+    // Reset click count after 2 seconds of inactivity
+    clickTimeoutRef.current = setTimeout(() => {
+      clickCountRef.current = 0;
+    }, 2000);
+
+    // If tapped 5 times rapidly, open the terminal
+    if (clickCountRef.current >= 5) {
+      window.dispatchEvent(new CustomEvent('open-terminal'));
+      clickCountRef.current = 0; // reset
+    }
+  };
+
   return (
     <footer className={styles.footer}>
       <div className={styles.container}>
@@ -65,7 +86,9 @@ const Footer = () => {
 
         {/* Bottom Section */}
         <div className={styles.bottomSection}>
-          <p>© {new Date().getFullYear()} {t('footer.rights')}</p>
+          <p onClick={handleCopyrightClick} style={{ cursor: 'pointer', WebkitTapHighlightColor: 'transparent' }}>
+            © {new Date().getFullYear()} {t('footer.rights')}
+          </p>
           <div className={styles.legalLinks}>
             <Link to="/kvkk">{t('footer.kvkk')}</Link>
             <Link to="/gizlilik-politikasi">{t('footer.privacy')}</Link>
