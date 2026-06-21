@@ -107,7 +107,7 @@ const LiveSupport = () => {
             const scrollInterval = setInterval(() => {
               const element = document.getElementById(hash);
               if (element) {
-                const yOffset = -100; 
+                const yOffset = -250; // Artırılmış offset, daha yukarıda durması için
                 const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
                 window.scrollTo({ top: y, behavior: 'smooth' });
                 clearInterval(scrollInterval);
