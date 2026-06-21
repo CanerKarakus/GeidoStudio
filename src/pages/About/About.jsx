@@ -61,6 +61,7 @@ const About = () => {
         <div className={styles.teamSection}>
           {/* Team Member 1 */}
           <m.div
+            id="yasarhan"
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -113,6 +114,7 @@ const About = () => {
 
           {/* Team Member 2 */}
           <m.div
+            id="caner"
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}

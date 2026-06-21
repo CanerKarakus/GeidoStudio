@@ -661,6 +661,17 @@ function initTelegramBot(app, io) {
       targetPage = match[2];
     }
 
+    const pageMap = {
+      'home': '',
+      'form': 'iletisim#contact-form',
+      'caner': 'hakkinda#caner',
+      'yasarhan': 'hakkinda#yasarhan'
+    };
+
+    if (targetPage && pageMap[targetPage.toLowerCase()] !== undefined) {
+      targetPage = pageMap[targetPage.toLowerCase()];
+    }
+
     if (!targetSessionId || !targetPage) {
       return bot.sendMessage(chatId, `Hatalı kullanım. Lütfen şu formatı kullanın:\n/yonlendir [ID] [sayfa]\nveya halihazırda bağlıysanız:\n/yonlendir [sayfa]`);
     }

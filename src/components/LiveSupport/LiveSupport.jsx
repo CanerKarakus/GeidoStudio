@@ -96,9 +96,23 @@ const LiveSupport = () => {
       };
 
       const onForceNavigate = (data) => {
-        if (data && data.path) {
-          // Play a small sound or notify if desired, then navigate
-          navigate(`/${data.path}`);
+        if (data && data.path !== undefined) {
+          const [pathname, hash] = data.path.split('#');
+          // Navigate to the base path
+          navigate(`/${pathname}`);
+          
+          // If there is a hash, wait for page transition and scroll to the element
+          if (hash) {
+            setTimeout(() => {
+              const element = document.getElementById(hash);
+              if (element) {
+                // Determine offset for fixed navbar
+                const yOffset = -100; 
+                const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                window.scrollTo({ top: y, behavior: 'smooth' });
+              }
+            }, 600); // 600ms wait to ensure React renders the new page
+          }
         }
       };
 
