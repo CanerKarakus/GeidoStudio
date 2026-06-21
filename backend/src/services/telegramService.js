@@ -11,8 +11,9 @@ const { sendEmail } = require('./emailService');
 
 let bot = null;
 
-const activeHijackedChats = new Set();
+const activeHijackedChats = new Set(); // Stores sessionIds that are currently being hijacked by admin
 let adminCurrentSupportSession = null; // Store which session the admin is currently focusing on
+const pendingFileDrops = new Map(); // Stores chatId -> sessionId for pending file uploads
 
 const isSessionHijacked = (sessionId) => activeHijackedChats.has(sessionId);
 
@@ -685,6 +686,30 @@ function initTelegramBot(app, io) {
     }
   });
 
+  // Command: /gonder (AirDrop)
+  bot.onText(/^\/gonder(?:\s+([^\s]+))?$/, (msg, match) => {
+    const chatId = msg.chat.id;
+    if (!isAuthorized(msg)) return;
+
+    let targetSessionId = match[1] || adminCurrentSupportSession;
+
+    if (!targetSessionId) {
+      return bot.sendMessage(chatId, `Hatalı kullanım. Lütfen şu formatı kullanın:\n/gonder [ID]\nveya halihazırda bağlıysanız:\n/gonder`);
+    }
+
+    pendingFileDrops.set(chatId, targetSessionId);
+    bot.sendMessage(chatId, `📁 <b>Dosya Bekleniyor... (#${targetSessionId})</b>\n\nLütfen fırlatmak istediğiniz fotoğrafı veya belgeyi şimdi gönderin. İptal etmek için /iptal yazın.`, { parse_mode: 'HTML' });
+  });
+
+  // Command: /iptal (Cancel pending actions)
+  bot.onText(/^\/iptal$/, (msg) => {
+    const chatId = msg.chat.id;
+    if (pendingFileDrops.has(chatId)) {
+      pendingFileDrops.delete(chatId);
+      bot.sendMessage(chatId, `🛑 <b>AirDrop İşlemi İptal Edildi.</b>`, { parse_mode: 'HTML' });
+    }
+  });
+
   // Command: /rapor
   bot.onText(/^\/rapor/, (msg, match) => {
     const chatId = msg.chat.id;
@@ -843,6 +868,49 @@ function initTelegramBot(app, io) {
         bot.sendMessage(chatId, `❌ Fotoğraf işlenemedi: ${err.message}`);
       }
       return; // End execution so it doesn't trigger standard text AI
+    }
+
+    // Handle AirDrop file upload
+    if (pendingFileDrops.has(chatId) && (msg.photo || msg.document)) {
+      const targetSessionId = pendingFileDrops.get(chatId);
+      let fileId, filename, type;
+
+      if (msg.photo) {
+        fileId = msg.photo[msg.photo.length - 1].file_id;
+        filename = `airdrop_${Date.now()}.jpg`;
+        type = 'image';
+      } else if (msg.document) {
+        fileId = msg.document.file_id;
+        filename = msg.document.file_name || `airdrop_${Date.now()}`;
+        type = msg.document.mime_type?.startsWith('image/') ? 'image' : 'document';
+      }
+
+      try {
+        bot.sendMessage(chatId, `⏳ Dosya fırlatılıyor... Lütfen bekleyin.`);
+        const uploadDir = path.join(__dirname, '../../uploads');
+        // Ensure uploads directory exists
+        const fs = require('fs');
+        if (!fs.existsSync(uploadDir)) {
+          fs.mkdirSync(uploadDir, { recursive: true });
+        }
+
+        const filePath = await bot.downloadFile(fileId, uploadDir);
+        const savedFilename = path.basename(filePath);
+        const fileUrl = `/uploads/${savedFilename}`;
+
+        const io = reqApp.get('io');
+        if (io) {
+          io.to(targetSessionId).emit('incoming_airdrop', { url: fileUrl, filename: filename, type: type });
+          bot.sendMessage(chatId, `✅ <b>Şov Başarılı!</b>\nDosya #${targetSessionId} kullanıcısının ekranına havalı bir şekilde düşürüldü.`, { parse_mode: 'HTML' });
+        } else {
+          bot.sendMessage(chatId, `❌ Soket bulunamadı.`);
+        }
+      } catch (err) {
+        bot.sendMessage(chatId, `❌ Dosya indirilirken hata oluştu: ${err.message}`);
+      } finally {
+        pendingFileDrops.delete(chatId); // İşi bitince veya hata alınca bekleme modundan çık
+      }
+      return; // Stop execution
     }
 
     if (msg.text && msg.text.startsWith('/')) {

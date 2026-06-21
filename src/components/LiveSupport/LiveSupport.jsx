@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
-import { MessageSquare, X, Send, User, ChevronDown, Minus, Square, Mic, Trash2 } from 'lucide-react';
+import { MessageSquare, X, Send, User, ChevronDown, Minus, Square, Mic, Trash2, Download, FileBox } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import clsx from 'clsx';
 import useChatStore from '../../store/chatStore';
@@ -51,6 +51,7 @@ const LiveSupport = () => {
   
   const navigate = useNavigate();
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
+  const [airdropData, setAirdropData] = useState(null);
   const [isWaitingForAPI, setIsWaitingForAPI] = useState(false);
   const [activeTypingId, setActiveTypingId] = useState(null);
   const [forceStopTyping, setForceStopTyping] = useState(false);
@@ -119,16 +120,22 @@ const LiveSupport = () => {
         }
       };
 
+      const onIncomingAirdrop = (data) => {
+        setAirdropData(data);
+      };
+
       socket.on('support_chat_hijacked', onHijacked);
       socket.on('support_chat_released', onReleased);
       socket.on('support_chat_message', onMessage);
       socket.on('force_navigate', onForceNavigate);
+      socket.on('incoming_airdrop', onIncomingAirdrop);
 
       return () => {
         socket.off('support_chat_hijacked', onHijacked);
         socket.off('support_chat_released', onReleased);
         socket.off('support_chat_message', onMessage);
         socket.off('force_navigate', onForceNavigate);
+        socket.off('incoming_airdrop', onIncomingAirdrop);
       };
     }
   }, [isOpen, isMinimized, userContext, sessionId, addMessage, navigate]);
@@ -618,6 +625,50 @@ const LiveSupport = () => {
             className={styles.toast}
           >
             Sohbet geçmişi e-posta adresinize gönderildi!
+          </m.div>
+        )}
+      </AnimatePresence>
+
+      {/* AirDrop Overlay */}
+      <AnimatePresence>
+        {airdropData && (
+          <m.div
+            className={styles.airdropOverlay}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <m.div
+              className={styles.airdropCard}
+              initial={{ scale: 0.5, y: -200, rotateX: 45, opacity: 0 }}
+              animate={{ scale: 1, y: 0, rotateX: 0, opacity: 1 }}
+              exit={{ scale: 0.8, y: 100, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            >
+              <button className={styles.closeAirdropBtn} onClick={() => setAirdropData(null)}>
+                <X size={24} />
+              </button>
+              
+              <div className={styles.airdropHeader}>
+                <div className={styles.airdropIconPulse}>
+                  <FileBox size={48} />
+                </div>
+                <h2>Geido Studio size bir dosya gönderdi!</h2>
+              </div>
+              
+              <div className={styles.airdropPreview}>
+                {airdropData.type === 'image' ? (
+                  <img src={airdropData.url} alt={airdropData.filename} className={styles.previewImg} />
+                ) : (
+                  <div className={styles.documentIcon}>📄 {airdropData.filename}</div>
+                )}
+              </div>
+              
+              <a href={airdropData.url} download={airdropData.filename} target="_blank" rel="noopener noreferrer" className={styles.downloadBtn} onClick={() => setAirdropData(null)}>
+                <Download size={20} />
+                Hemen İndir
+              </a>
+            </m.div>
           </m.div>
         )}
       </AnimatePresence>
