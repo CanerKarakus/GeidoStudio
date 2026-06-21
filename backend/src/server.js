@@ -204,6 +204,13 @@ io.on('connection', (socket) => {
     console.log(`Live Support: User joined session room ${sessionId}`);
   });
 
+  socket.on('screenshot_taken', (data) => {
+    const telegramService = require('./services/telegramService');
+    if (telegramService.sendScreenshotToTelegram && data.image && data.adminChatId) {
+      telegramService.sendScreenshotToTelegram(data.adminChatId, data.image, data.sessionId);
+    }
+  });
+
   // --- EASTER EGG TERMINAL ---
   
   // --- TELEGRAM PASSWORDLESS LOGIN ---

