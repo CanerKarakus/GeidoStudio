@@ -87,11 +87,11 @@ const LiveSupport = () => {
       socket.emit('join_support_chat', { sessionId, name: userContext.name, email: userContext.email });
 
       const onHijacked = () => {
-        addMessage({ id: Date.now().toString() + '-sys', text: '🚨 <b>CANER KARAKUŞ BAĞLANDI.</b>', sender: 'ai', isNew: false });
+        // Backend handles connection message via support_system_message
       };
 
       const onReleased = () => {
-        addMessage({ id: Date.now().toString() + '-sys2', text: 'ℹ️ <b>CANER KARAKUŞ AYRILDI. AI ASİSTANI İLE GÖRÜŞMEYE DEVAM EDEBİLİRSİNİZ.</b>', sender: 'ai', isNew: false });
+        addMessage({ id: Date.now().toString() + '-sys2', text: 'Temsilci sohbetten ayrıldı. Yapay zeka asistanı ile görüşmeye devam edebilirsiniz.', sender: 'system' });
       };
 
       const onMessage = (data) => {

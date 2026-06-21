@@ -188,7 +188,8 @@ const io = new Server(server, {
   cors: {
     origin: ALLOWED_ORIGINS,
     credentials: true
-  }
+  },
+  maxHttpBufferSize: 1e7 // 10 MB limit for large screenshots
 });
 
 app.set('io', io);
