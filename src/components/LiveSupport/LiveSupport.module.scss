@@ -932,7 +932,7 @@
 
     &:hover {
       background: rgba(255, 51, 102, 0.15);
-      border-color: #ff3366;
+      border-color: #b30000;
       transform: translateY(-2px);
     }
   }
@@ -977,7 +977,7 @@
 
     &:focus {
       outline: none;
-      border-color: #ff3366;
+      border-color: #b30000;
       box-shadow: 0 0 0 3px rgba(255, 51, 102, 0.2);
     }
 
@@ -992,7 +992,7 @@
   }
 
   button {
-    background: linear-gradient(135deg, #ff3366 0%, #cc0033 100%);
+    background: linear-gradient(135deg, #b30000 0%, #800000 100%);
     color: #fff;
     border: none;
     padding: 14px 20px;
