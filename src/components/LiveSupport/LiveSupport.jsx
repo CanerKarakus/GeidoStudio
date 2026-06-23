@@ -66,6 +66,7 @@ const LiveSupport = () => {
 
   // Appointment Flow States
   const [channelPhone, setChannelPhone] = useState('');
+  const [showPhoneInput, setShowPhoneInput] = useState(false);
   const [appointmentDate, setAppointmentDate] = useState('');
   const [appointmentTime, setAppointmentTime] = useState('');
   const timeSelectRef = useRef(null);
