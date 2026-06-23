@@ -207,9 +207,11 @@ router.post('/', async (req, res) => {
     // Bulletproof fallback in case AI forgets to output the exact tags
     if (!selectorType) {
       const lowerResp = aiResponse.toLowerCase();
-      if (lowerResp.includes('tarih ve saat') || lowerResp.includes('tarih/saat')) {
+      const isCompletion = lowerResp.includes('oluşturulmuştur') || lowerResp.includes('harika');
+      
+      if ((lowerResp.includes('tarih ve saat') || lowerResp.includes('tarih/saat')) && !isCompletion) {
         selectorType = 'datetime';
-      } else if (lowerResp.includes('iletişim kanal') || lowerResp.includes('iletişim bilgisi')) {
+      } else if ((lowerResp.includes('iletişim kanal') || lowerResp.includes('iletişim bilgisi')) && !isCompletion) {
         selectorType = 'channel';
       }
     }
@@ -335,9 +337,11 @@ router.post('/voice', upload.single('audio'), async (req, res) => {
 
     if (!selectorType) {
       const lowerResp = aiResponse.toLowerCase();
-      if (lowerResp.includes('tarih ve saat') || lowerResp.includes('tarih/saat')) {
+      const isCompletion = lowerResp.includes('oluşturulmuştur') || lowerResp.includes('harika');
+
+      if ((lowerResp.includes('tarih ve saat') || lowerResp.includes('tarih/saat')) && !isCompletion) {
         selectorType = 'datetime';
-      } else if (lowerResp.includes('iletişim kanal') || lowerResp.includes('iletişim bilgisi')) {
+      } else if ((lowerResp.includes('iletişim kanal') || lowerResp.includes('iletişim bilgisi')) && !isCompletion) {
         selectorType = 'channel';
       }
     }

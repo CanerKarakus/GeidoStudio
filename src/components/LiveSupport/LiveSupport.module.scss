@@ -913,20 +913,26 @@
 .channelButtons {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 
   button {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 51, 102, 0.3);
     color: #fff;
-    padding: 10px 15px;
+    padding: 12px 18px;
     border-radius: 8px;
     cursor: pointer;
     font-size: 14px;
-    transition: all 0.2s;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
 
     &:hover {
-      background: rgba(255, 255, 255, 0.2);
+      background: rgba(255, 51, 102, 0.15);
+      border-color: #ff3366;
       transform: translateY(-2px);
     }
   }
@@ -935,33 +941,44 @@
 .phoneForm, .dateTimeForm {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
+  background: rgba(20, 20, 20, 0.4);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 16px;
+  border-radius: 12px;
+  margin-top: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
 
   .inputs {
     display: flex;
-    gap: 10px;
+    gap: 12px;
     flex-wrap: wrap;
   }
 
   input, select {
     flex: 1;
-    background: rgba(0, 0, 0, 0.5);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 51, 102, 0.2);
     color: #fff;
-    padding: 10px 15px;
+    padding: 12px 16px;
     border-radius: 8px;
     font-size: 14px;
-    min-width: 120px;
-    appearance: none;
-    -webkit-appearance: none;
-
-    &::-webkit-calendar-picker-indicator {
+    font-family: inherit;
+    min-width: 140px;
+    transition: all 0.3s ease;
+    
+    &[type="date"]::-webkit-calendar-picker-indicator {
       filter: invert(1);
+      cursor: pointer;
+      opacity: 0.7;
+      &:hover { opacity: 1; }
     }
 
     &:focus {
       outline: none;
       border-color: #ff3366;
+      box-shadow: 0 0 0 3px rgba(255, 51, 102, 0.2);
     }
 
     option {
@@ -970,19 +987,31 @@
     }
   }
 
+  select {
+    cursor: pointer;
+  }
+
   button {
-    background: #ff3366;
+    background: linear-gradient(135deg, #ff3366 0%, #cc0033 100%);
     color: #fff;
     border: none;
-    padding: 10px 15px;
+    padding: 14px 20px;
     border-radius: 8px;
     font-weight: 600;
+    font-size: 14px;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.3s;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 12px rgba(255, 51, 102, 0.3);
 
     &:hover {
-      background: #e6004c;
       transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(255, 51, 102, 0.4);
+    }
+    
+    &:active {
+      transform: translateY(0);
     }
   }
 }
