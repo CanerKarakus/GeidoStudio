@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
 import { MessageSquare, X, Send, User, ChevronDown, Minus, Square, Mic, Trash2, Download, FileBox } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
