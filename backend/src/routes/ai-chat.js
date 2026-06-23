@@ -204,6 +204,16 @@ router.post('/', async (req, res) => {
       aiResponse = aiResponse.replace(/\[SELECTOR:DATETIME\]/g, '').trim();
     }
 
+    // Bulletproof fallback in case AI forgets to output the exact tags
+    if (!selectorType) {
+      const lowerResp = aiResponse.toLowerCase();
+      if (lowerResp.includes('tarih ve saat') || lowerResp.includes('tarih/saat')) {
+        selectorType = 'datetime';
+      } else if (lowerResp.includes('iletişim kanal') || lowerResp.includes('iletişim bilgisi')) {
+        selectorType = 'channel';
+      }
+    }
+
     if (sessionId && lastMessage?.sender === 'user') {
       notifyLiveSupportMessage(sessionId, userContext, lastMessage.text, aiResponse);
     }
@@ -321,6 +331,15 @@ router.post('/voice', upload.single('audio'), async (req, res) => {
     } else if (aiResponse.includes('[SELECTOR:DATETIME]')) {
       selectorType = 'datetime';
       aiResponse = aiResponse.replace(/\[SELECTOR:DATETIME\]/g, '').trim();
+    }
+
+    if (!selectorType) {
+      const lowerResp = aiResponse.toLowerCase();
+      if (lowerResp.includes('tarih ve saat') || lowerResp.includes('tarih/saat')) {
+        selectorType = 'datetime';
+      } else if (lowerResp.includes('iletişim kanal') || lowerResp.includes('iletişim bilgisi')) {
+        selectorType = 'channel';
+      }
     }
 
     // Admin'e de yazılı olarak bildir

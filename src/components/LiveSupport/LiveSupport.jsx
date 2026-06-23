@@ -95,8 +95,16 @@ const LiveSupport = () => {
   const recordingStartTimeRef = useRef(0);
   const isPointerDownRef = useRef(false);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  const scrollToBottom = (force = false) => {
+    const list = messagesEndRef.current?.parentElement;
+    if (list) {
+      const isNearBottom = list.scrollHeight - list.scrollTop - list.clientHeight < 150;
+      if (force === true || isNearBottom) {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }
+    } else {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
   const handleChannelSelect = (channel, msgId) => {
@@ -212,7 +220,7 @@ const LiveSupport = () => {
   }, [isOpen, isMinimized, userContext, sessionId, addMessage, navigate]);
 
   useEffect(() => {
-    scrollToBottom();
+    scrollToBottom(true);
   }, [messages, isWaitingForAPI, endStep, isMinimized, isOpen]);
 
   const handleFormSubmit = async (e) => {
@@ -656,7 +664,7 @@ const LiveSupport = () => {
                                   text={msg.text} 
                                   forceStop={forceStopTyping && activeTypingId === msg.id}
                                   onComplete={(finalText) => handleTypingComplete(msg.id, finalText)} 
-                                  onTyping={scrollToBottom} 
+                                  onTyping={() => scrollToBottom(false)} 
                                 />
                               ) : msg.audioUrl ? (
                                 <div className={styles.audioMessage}>
