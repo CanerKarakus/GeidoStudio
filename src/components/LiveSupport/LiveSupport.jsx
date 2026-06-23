@@ -65,7 +65,7 @@ const LiveSupport = () => {
   const messagesEndRef = useRef(null);
 
   // Appointment Flow States
-  const [channelPhone, setChannelPhone] = useState('');
+  const [channelPhone, setChannelPhone] = useState('+90 ');
   const [showPhoneInput, setShowPhoneInput] = useState(false);
   const [appointmentDate, setAppointmentDate] = useState('');
   const [appointmentTime, setAppointmentTime] = useState('');
@@ -107,9 +107,38 @@ const LiveSupport = () => {
     }
   };
 
+  const formatPhoneNumber = (value) => {
+    if (!value) return '+90 ';
+    let numbers = value.replace(/\D/g, '');
+    if (numbers.startsWith('90')) {
+      numbers = numbers.substring(2);
+    }
+    
+    let formatted = '+90 ';
+    if (numbers.length > 0) {
+      formatted += numbers.substring(0, 3);
+    }
+    if (numbers.length > 3) {
+      formatted += ' ' + numbers.substring(3, 6);
+    }
+    if (numbers.length > 6) {
+      formatted += ' ' + numbers.substring(6, 10);
+    }
+    return formatted;
+  };
+
+  const handlePhoneChange = (e) => {
+    const val = e.target.value;
+    if (val.length < 4 || !val.startsWith('+90')) {
+      setChannelPhone('+90 ');
+      return;
+    }
+    setChannelPhone(formatPhoneNumber(val));
+  };
+
   const handleChannelSelect = (channel, msgId) => {
-    updateMessage(msgId, { selectorAnswered: true });
     if (channel === 'email') {
+      updateMessage(msgId, { selectorAnswered: true });
       const text = `İletişim Kanalı: E-posta (${userContext.email})`;
       addMessage({ id: Date.now().toString(), text, sender: 'user', isNew: false });
       sendToAI([...messages, { text, sender: 'user' }], userContext);
@@ -692,10 +721,11 @@ const LiveSupport = () => {
                                 <form onSubmit={(e) => handlePhoneSubmit(e, msg.id)} className={styles.phoneForm}>
                                   <input 
                                     type="tel" 
-                                    placeholder="05XX XXX XX XX" 
+                                    placeholder="+90 5XX XXX XX XX" 
                                     value={channelPhone}
-                                    onChange={(e) => setChannelPhone(e.target.value)}
+                                    onChange={handlePhoneChange}
                                     required
+                                    maxLength="17"
                                   />
                                   <button type="submit">Onayla</button>
                                 </form>
