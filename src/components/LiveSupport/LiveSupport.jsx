@@ -64,6 +64,12 @@ const LiveSupport = () => {
   const [sendEmailCopy, setSendEmailCopy] = useState(false);
   const messagesEndRef = useRef(null);
 
+  // Appointment Flow States
+  const [channelPhone, setChannelPhone] = useState('');
+  const [showPhoneInput, setShowPhoneInput] = useState(false);
+  const [appointmentDate, setAppointmentDate] = useState('');
+  const [appointmentTime, setAppointmentTime] = useState('');
+
   // Ses Kayıt Stateleri
   const [isRecording, setIsRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState(null);
@@ -77,6 +83,36 @@ const LiveSupport = () => {
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const handleChannelSelect = (channel, msgId) => {
+    updateMessage(msgId, { selectorAnswered: true });
+    if (channel === 'email') {
+      const text = `İletişim Kanalı: E-posta (${userContext.email})`;
+      addMessage({ id: Date.now().toString(), text, sender: 'user', isNew: false });
+      sendToAI([...messages, { text, sender: 'user' }], userContext);
+    } else {
+      setShowPhoneInput(true);
+    }
+  };
+
+  const handlePhoneSubmit = (e, msgId) => {
+    e.preventDefault();
+    if (!channelPhone.trim()) return;
+    updateMessage(msgId, { selectorAnswered: true });
+    const text = `İletişim Kanalı: Telefon (${channelPhone})`;
+    setShowPhoneInput(false);
+    addMessage({ id: Date.now().toString(), text, sender: 'user', isNew: false });
+    sendToAI([...messages, { text, sender: 'user' }], userContext);
+  };
+
+  const handleDateTimeSubmit = (e, msgId) => {
+    e.preventDefault();
+    if (!appointmentDate || !appointmentTime) return;
+    updateMessage(msgId, { selectorAnswered: true });
+    const text = `Seçilen Tarih: ${appointmentDate}, Saat: ${appointmentTime}`;
+    addMessage({ id: Date.now().toString(), text, sender: 'user', isNew: false });
+    sendToAI([...messages, { text, sender: 'user' }], userContext);
   };
 
   useEffect(() => {
@@ -230,8 +266,19 @@ const LiveSupport = () => {
       if (res.ok && data.hijacked) {
         // Sessizce bekle, admin yazacak
       } else if (res.ok && data.reply) {
+        let replyText = data.reply;
+        let selectorType = data.selectorType || null;
+        
+        if (replyText.includes('[SELECTOR:CHANNEL]')) {
+          selectorType = 'channel';
+          replyText = replyText.replace(/\[SELECTOR:CHANNEL\]/g, '').trim();
+        } else if (replyText.includes('[SELECTOR:DATETIME]')) {
+          selectorType = 'datetime';
+          replyText = replyText.replace(/\[SELECTOR:DATETIME\]/g, '').trim();
+        }
+        
         const aiMsgId = Date.now().toString() + '-ai';
-        addMessage({ id: aiMsgId, text: data.reply, sender: 'ai', isNew: true });
+        addMessage({ id: aiMsgId, text: replyText, sender: 'ai', isNew: true, selectorType });
         setActiveTypingId(aiMsgId);
       } else {
         const aiMsgId = Date.now().toString() + '-ai';
@@ -582,28 +629,80 @@ const LiveSupport = () => {
                       }
                       
                       return (
-                        <div key={msg.id || idx} className={clsx(styles.messageWrapper, styles[msg.sender])}>
-                          {msg.sender === 'ai' && (
-                            <div className={styles.msgAvatar}>
-                              <img src="/logo.svg" alt="AI" />
+                        <div key={msg.id || idx} className={styles.messageBlock}>
+                          <div className={clsx(styles.messageWrapper, styles[msg.sender])}>
+                            {msg.sender === 'ai' && (
+                              <div className={styles.msgAvatar}>
+                                <img src="/logo.svg" alt="AI" />
+                              </div>
+                            )}
+                            <div className={styles.messageBubble}>
+                              {(msg.sender === 'ai' && msg.isNew) ? (
+                                <Typewriter 
+                                  text={msg.text} 
+                                  forceStop={forceStopTyping && activeTypingId === msg.id}
+                                  onComplete={(finalText) => handleTypingComplete(msg.id, finalText)} 
+                                  onTyping={scrollToBottom} 
+                                />
+                              ) : msg.audioUrl ? (
+                                <div className={styles.audioMessage}>
+                                  <audio controls src={msg.audioUrl} />
+                                </div>
+                              ) : (
+                                <span dangerouslySetInnerHTML={{ __html: msg.text.replace(/\n/g, '<br/>') }} />
+                              )}
+                            </div>
+                          </div>
+                          
+                          {/* SELECTORS */}
+                          {msg.selectorType === 'channel' && !msg.selectorAnswered && (!msg.isNew || activeTypingId !== msg.id) && (
+                            <div className={styles.selectorContainer}>
+                              {!showPhoneInput ? (
+                                <div className={styles.channelButtons}>
+                                  <button type="button" onClick={() => handleChannelSelect('email', msg.id)}>
+                                    E-posta ile ({userContext.email})
+                                  </button>
+                                  <button type="button" onClick={() => handleChannelSelect('phone', msg.id)}>
+                                    Telefon Numarası ile
+                                  </button>
+                                </div>
+                              ) : (
+                                <form onSubmit={(e) => handlePhoneSubmit(e, msg.id)} className={styles.phoneForm}>
+                                  <input 
+                                    type="tel" 
+                                    placeholder="05XX XXX XX XX" 
+                                    value={channelPhone}
+                                    onChange={(e) => setChannelPhone(e.target.value)}
+                                    required
+                                  />
+                                  <button type="submit">Onayla</button>
+                                </form>
+                              )}
                             </div>
                           )}
-                          <div className={styles.messageBubble}>
-                            {(msg.sender === 'ai' && msg.isNew) ? (
-                              <Typewriter 
-                                text={msg.text} 
-                                forceStop={forceStopTyping && activeTypingId === msg.id}
-                                onComplete={(finalText) => handleTypingComplete(msg.id, finalText)} 
-                                onTyping={scrollToBottom} 
-                              />
-                            ) : msg.audioUrl ? (
-                              <div className={styles.audioMessage}>
-                                <audio controls src={msg.audioUrl} />
-                              </div>
-                            ) : (
-                              <span dangerouslySetInnerHTML={{ __html: msg.text.replace(/\n/g, '<br/>') }} />
-                            )}
-                          </div>
+
+                          {msg.selectorType === 'datetime' && !msg.selectorAnswered && (!msg.isNew || activeTypingId !== msg.id) && (
+                            <div className={styles.selectorContainer}>
+                              <form onSubmit={(e) => handleDateTimeSubmit(e, msg.id)} className={styles.dateTimeForm}>
+                                <div className={styles.inputs}>
+                                  <input 
+                                    type="date" 
+                                    value={appointmentDate}
+                                    onChange={(e) => setAppointmentDate(e.target.value)}
+                                    required
+                                    min={new Date().toISOString().split("T")[0]}
+                                  />
+                                  <input 
+                                    type="time" 
+                                    value={appointmentTime}
+                                    onChange={(e) => setAppointmentTime(e.target.value)}
+                                    required
+                                  />
+                                </div>
+                                <button type="submit">Randevuyu Onayla</button>
+                              </form>
+                            </div>
+                          )}
                         </div>
                       );
                     })}

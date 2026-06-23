@@ -183,6 +183,26 @@ const notifyHumanRequest = (sessionId, userContext) => {
   }
 };
 
+const notifyAppointment = (appointmentData, userContext) => {
+  const adminChatId = process.env.TELEGRAM_CHAT_ID ? process.env.TELEGRAM_CHAT_ID.split(',')[0].trim() : null;
+  if (!adminChatId || !bot) return;
+
+  const userName = userContext?.name || 'Bilinmeyen Ziyaretçi';
+  const userEmail = userContext?.email || 'Belirtilmedi';
+
+  const msgText = `📅 <b>YENİ RANDEVU TALEBİ!</b> 📅\n\n` +
+    `👤 <b>Müşteri:</b> ${userName} (${userEmail})\n` +
+    `📝 <b>Konu:</b> ${appointmentData.topic}\n` +
+    `🗓️ <b>Tarih/Saat:</b> ${appointmentData.date} - ${appointmentData.time}\n` +
+    `📞 <b>İletişim Kanalı:</b> ${appointmentData.channel === 'email' ? 'E-posta' : 'Telefon'}\n` +
+    `📱 <b>İletişim Bilgisi:</b> ${appointmentData.contact_info}\n\n` +
+    `<i>Lütfen müşteriyle seçtiği gün ve saatte iletişime geçin.</i>`;
+
+  bot.sendMessage(adminChatId, msgText, { parse_mode: 'HTML' }).then(sentMsg => {
+    // Optionally pin the message if the bot has rights
+    bot.pinChatMessage(adminChatId, sentMsg.message_id, { disable_notification: false }).catch(() => {});
+  }).catch(() => {});
+};
 
 
 let groqClient = null;
@@ -1961,4 +1981,4 @@ const notifyScreenshotRejected = (adminChatId, sessionId) => {
   }
 };
 
-module.exports = { initTelegramBot, sendTelegramMessage, sendScreenshotToTelegram, notifyScreenshotRejected, isSessionHijacked, notifyLiveSupportMessage, notifyEasterEgg, notifyLoginRequest, notifyLoginSuccess, notifyVoiceMessage, notifyHumanRequest };
+module.exports = { initTelegramBot, sendTelegramMessage, sendScreenshotToTelegram, notifyScreenshotRejected, isSessionHijacked, notifyLiveSupportMessage, notifyEasterEgg, notifyLoginRequest, notifyLoginSuccess, notifyVoiceMessage, notifyHumanRequest, notifyAppointment };

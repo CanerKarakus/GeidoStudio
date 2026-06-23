@@ -3,7 +3,7 @@ const rateLimit = require('express-rate-limit');
 const Groq = require('groq-sdk');
 const { sendEmail } = require('../services/emailService');
 const authMiddleware = require('../middleware/auth');
-const { isSessionHijacked, notifyLiveSupportMessage, notifyVoiceMessage, notifyHumanRequest } = require('../services/telegramService');
+const { isSessionHijacked, notifyLiveSupportMessage, notifyVoiceMessage, notifyHumanRequest, notifyAppointment } = require('../services/telegramService');
 const multer = require('multer');
 const fs = require('fs');
 const os = require('os');
@@ -30,7 +30,14 @@ Görevlerin ve Kuralların:
 8. KESİNLİKLE hiçbir dış bağlantıya (linke/URL) GİRMEYECEK, ANALİZ ETMEYECEK VEYA İÇERİĞİNİ OKUMAYACAKSIN. Kullanıcı link verirse "Güvenlik politikamız gereği dış bağlantıları inceleyemiyorum." diyeceksin.
 9. KESİNLİKLE hiçbir 3. taraf siteye erişmeyecek, hiçbir 3. taraf dosyayı okumayacak, yazmayacak, indirmeyecek veya almayacaksın.
 10. KESİNLİKLE kullanıcı tarafından verilen hiçbir kodu sistemde ÇALIŞTIRMAYACAK ve çalıştırmaya teşebbüs dahi etmeyeceksin.
-11. KESİNLİKLE kullanıcıya KOD ÖRNEĞİ (HTML, CSS, JS, Python vb.) veya GÖRSEL VERMEYECEKSİN. Sen bir müşteri temsilcisisin, yazılımcı değilsin. Kod istenirse "Ben bir müşteri asistanıyım, teknik kod örneği paylaşmam yasaktır." diyeceksin.
+33. KESİNLİKLE kullanıcıya KOD ÖRNEĞİ (HTML, CSS, JS, Python vb.) veya GÖRSEL VERMEYECEKSİN. Sen bir müşteri temsilcisisin, yazılımcı değilsin. Kod istenirse "Ben bir müşteri asistanıyım, teknik kod örneği paylaşmam yasaktır." diyeceksin.
+
+RANDEVU OLUŞTURMA KURALLARI (ÇOK ÖNEMLİ):
+Eğer kullanıcı "randevu oluşturmak", "toplantı ayarlamak", "görüşmek" gibi bir istekte bulunursa adım adım şu akışı izle:
+Adım 1: Kullanıcıya randevuyu hangi konu veya hizmet için istediğini sor. (Eğer zaten belirttiyse bu adımı atla).
+Adım 2: Konuyu öğrendikten sonra iletişim kanalını seçmesi için SADECE şu cümleyi gönder: "[SELECTOR:CHANNEL] Lütfen sizinle iletişim kurabileceğimiz kanalı seçin." Başka hiçbir şey yazma.
+Adım 3: Kullanıcı iletişim kanalını (ve gerekiyorsa numarasını) verdikten sonra tarih ve saat seçmesi için SADECE şu cümleyi gönder: "[SELECTOR:DATETIME] Lütfen uygun olduğunuz tarih ve saati seçin." Başka hiçbir şey yazma.
+Adım 4: Kullanıcı tarih ve saat seçtikten sonra, eğer geçmiş bir tarih veya saat seçtiyse bunu KESİNLİKLE REDDET ve ileri bir tarih/saat iste. Geçerli bir tarih ise, sistem sana tüm bilgileri verdiğinde 'create_appointment' fonksiyonunu (tool) çağır. Bu fonksiyon başarıyla çalıştığında kullanıcıya: "Harika! {Tarih} günü saat {Saat} için {Konu} randevunuz oluşturulmuştur. Seçtiğiniz tarih ve saatte ekibimiz sizinle iletişime geçecektir." şeklinde net bir teyit mesajı ver. "En kısa sürede iletişime geçeceğiz" DEME, çünkü zaten bir saat seçtiler.
 
 Geido Studio Hakkında Bilgiler:
 Geido Studio, markaların dijital dünyada iz bırakmasını sağlayan yenilikçi bir kreatif ajanstır.
@@ -70,6 +77,7 @@ router.post('/', async (req, res) => {
 
     // Optional: userContext might contain { name, email } so AI knows who it is talking to
     let systemInstruction = SYSTEM_PROMPT;
+    systemInstruction += `\nŞu anki sistem tarihi ve saati (Türkiye): ${new Date().toLocaleString('tr-TR')}.`;
     if (userContext && userContext.name) {
       systemInstruction += `\nŞu an konuştuğun müşterinin adı: ${userContext.name}. Ona adıyla hitap edebilirsin.`;
     }
@@ -84,22 +92,100 @@ router.post('/', async (req, res) => {
       }))
     ];
 
-    const chatCompletion = await groq.chat.completions.create({
+    const tools = [
+      {
+        type: "function",
+        function: {
+          name: "create_appointment",
+          description: "Creates an appointment and notifies the admin. Call this ONLY after you have gathered: topic, channel, contact_info, date, and time.",
+          parameters: {
+            type: "object",
+            properties: {
+              topic: { type: "string", description: "The topic or service the appointment is for." },
+              channel: { type: "string", enum: ["email", "phone"], description: "The communication channel selected by the user." },
+              contact_info: { type: "string", description: "The user's email address or phone number." },
+              date: { type: "string", description: "The selected date for the appointment." },
+              time: { type: "string", description: "The selected time for the appointment." }
+            },
+            required: ["topic", "channel", "contact_info", "date", "time"]
+          }
+        }
+      }
+    ];
+
+    let chatCompletion = await groq.chat.completions.create({
       messages: formattedMessages,
       model: 'llama-3.3-70b-versatile',
       temperature: 0.7,
       max_tokens: 1024,
+      tools: tools,
+      tool_choice: "auto"
     });
 
-    let aiResponse = chatCompletion.choices[0]?.message?.content || 'Üzgünüm, şu an yanıt veremiyorum.';
+    let aiResponse = chatCompletion.choices[0]?.message?.content || '';
+
+    // Handle tool call
+    const toolCalls = chatCompletion.choices[0]?.message?.tool_calls;
+    if (toolCalls) {
+      formattedMessages.push(chatCompletion.choices[0].message);
+      
+      for (const toolCall of toolCalls) {
+        if (toolCall.function.name === 'create_appointment') {
+          const args = JSON.parse(toolCall.function.arguments);
+          
+          // Send Telegram Notification
+          notifyAppointment(args, userContext);
+          
+          // Send Email to Admin
+          const emailSubject = `Yeni Randevu Talebi - ${userContext?.name || 'Ziyaretçi'}`;
+          const emailHtml = `<h3>Yeni Randevu Oluşturuldu</h3>
+            <p><strong>Müşteri:</strong> ${userContext?.name || 'Bilinmiyor'} (${userContext?.email || 'Bilinmiyor'})</p>
+            <p><strong>Konu:</strong> ${args.topic}</p>
+            <p><strong>Tarih/Saat:</strong> ${args.date} - ${args.time}</p>
+            <p><strong>İletişim Kanalı:</strong> ${args.channel === 'email' ? 'E-posta' : 'Telefon'}</p>
+            <p><strong>İletişim Bilgisi:</strong> ${args.contact_info}</p>`;
+            
+          sendEmail('admin@geidostudio.com', emailSubject, 'Yeni Randevu: ' + args.topic, emailHtml, userContext?.email || null).catch(e => console.error('[Email Error]:', e.message));
+
+          formattedMessages.push({
+            tool_call_id: toolCall.id,
+            role: "tool",
+            name: "create_appointment",
+            content: JSON.stringify({ success: true, message: "Randevu başarıyla oluşturuldu ve yöneticiye bildirildi." }),
+          });
+        }
+      }
+
+      // Call groq again to get the final response
+      chatCompletion = await groq.chat.completions.create({
+        messages: formattedMessages,
+        model: 'llama-3.3-70b-versatile',
+        temperature: 0.7,
+        max_tokens: 1024
+      });
+      aiResponse = chatCompletion.choices[0]?.message?.content || 'Randevunuz oluşturuldu.';
+    }
+
+    if (!aiResponse && !toolCalls) {
+      aiResponse = 'Üzgünüm, şu an yanıt veremiyorum.';
+    }
 
     if (aiResponse.includes('[CALL_HUMAN]')) {
-      aiResponse = aiResponse.replace('[CALL_HUMAN]', '').trim();
+      aiResponse = aiResponse.replace(/\[CALL_HUMAN\]/g, '').trim();
       if (!aiResponse) aiResponse = 'Sizi canlı desteğe yönlendiriyorum, lütfen bekleyin.';
       
       if (sessionId) {
         notifyHumanRequest(sessionId, userContext);
       }
+    }
+
+    let selectorType = null;
+    if (aiResponse.includes('[SELECTOR:CHANNEL]')) {
+      selectorType = 'channel';
+      aiResponse = aiResponse.replace(/\[SELECTOR:CHANNEL\]/g, '').trim();
+    } else if (aiResponse.includes('[SELECTOR:DATETIME]')) {
+      selectorType = 'datetime';
+      aiResponse = aiResponse.replace(/\[SELECTOR:DATETIME\]/g, '').trim();
     }
 
     if (sessionId && lastMessage?.sender === 'user') {
@@ -108,7 +194,8 @@ router.post('/', async (req, res) => {
 
     res.json({ 
       success: true, 
-      reply: aiResponse 
+      reply: aiResponse,
+      selectorType: selectorType
     });
 
   } catch (error) {
@@ -211,6 +298,15 @@ router.post('/voice', upload.single('audio'), async (req, res) => {
       }
     }
 
+    let selectorType = null;
+    if (aiResponse.includes('[SELECTOR:CHANNEL]')) {
+      selectorType = 'channel';
+      aiResponse = aiResponse.replace(/\[SELECTOR:CHANNEL\]/g, '').trim();
+    } else if (aiResponse.includes('[SELECTOR:DATETIME]')) {
+      selectorType = 'datetime';
+      aiResponse = aiResponse.replace(/\[SELECTOR:DATETIME\]/g, '').trim();
+    }
+
     // Admin'e de yazılı olarak bildir
     if (sessionId) {
       notifyLiveSupportMessage(sessionId, parsedContext, `🎤 Sesli Mesaj: "${userText}"`, aiResponse);
@@ -219,7 +315,8 @@ router.post('/voice', upload.single('audio'), async (req, res) => {
     res.json({
       success: true,
       transcribedText: userText,
-      reply: aiResponse
+      reply: aiResponse,
+      selectorType: selectorType
     });
 
   } catch (error) {

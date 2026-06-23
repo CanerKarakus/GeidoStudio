@@ -895,3 +895,87 @@
     transform: scale(1.1);
   }
 }
+
+/* Appointment Selectors */
+.selectorContainer {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+.channelButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  button {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    padding: 10px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
+    }
+  }
+}
+
+.phoneForm, .dateTimeForm {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  .inputs {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  input {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-size: 14px;
+    min-width: 120px;
+
+    &::-webkit-calendar-picker-indicator {
+      filter: invert(1);
+    }
+
+    &:focus {
+      outline: none;
+      border-color: #ff3366;
+    }
+  }
+
+  button {
+    background: #ff3366;
+    color: #fff;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      background: #e6004c;
+      transform: translateY(-2px);
+    }
+  }
+}
