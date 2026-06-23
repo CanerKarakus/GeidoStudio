@@ -54,6 +54,27 @@ Eğer kullanıcı seninle konuşurken bir insan/müşteri temsilcisi ile görü�
 1. İLK İSTEKTE: "Ben Geido Studio'nun yapay zeka asistanıyım. Size ben de yardımcı olabilirim, lütfen sorununuzu bana iletin." şeklinde cevap ver.
 2. İKİNCİ KEZ ısrar ederse VEYA acil bir durumu olduğunu söylerse SADECE ve TAM OLARAK "[CALL_HUMAN] Sizi canlı desteğe yönlendiriyorum, lütfen bekleyin." yaz. Başka hiçbir şey yazma.`;
 
+async function callGroqWithFallback(options) {
+  const models = [
+    'llama-3.3-70b-versatile',
+    'llama3-70b-8192',
+    'llama-3.1-8b-instant',
+    'gemma2-9b-it'
+  ];
+
+  let lastError;
+  for (const model of models) {
+    try {
+      const attemptOptions = { ...options, model: model };
+      return await groq.chat.completions.create(attemptOptions);
+    } catch (error) {
+      console.warn(`[Groq Fallback] Model ${model} failed: ${error.message}`);
+      lastError = error;
+    }
+  }
+  throw lastError;
+}
+
 router.post('/', async (req, res) => {
   try {
     if (!groq) {
@@ -113,7 +134,7 @@ router.post('/', async (req, res) => {
       }
     ];
 
-    let chatCompletion = await groq.chat.completions.create({
+    let chatCompletion = await callGroqWithFallback({
       messages: formattedMessages,
       model: 'llama-3.1-8b-instant',
       temperature: 0.7,
@@ -173,7 +194,7 @@ router.post('/', async (req, res) => {
       }
 
       // Call groq again to get the final response
-      chatCompletion = await groq.chat.completions.create({
+      chatCompletion = await callGroqWithFallback({
         messages: formattedMessages,
         model: 'llama-3.1-8b-instant',
         temperature: 0.7,
@@ -308,7 +329,7 @@ router.post('/voice', upload.single('audio'), async (req, res) => {
       { role: 'user', content: userText }
     ];
 
-    const chatCompletion = await groq.chat.completions.create({
+    const chatCompletion = await callGroqWithFallback({
       messages: fullMessagesForGroq,
       model: 'llama-3.1-8b-instant',
       temperature: 0.7,
@@ -508,7 +529,7 @@ JSON formatı şu şekilde olmalıdır:
   "keywords": ["seo", "anahtar kelime 1", "anahtar kelime 2"]
 }`;
 
-    const chatCompletion = await groq.chat.completions.create({
+    const chatCompletion = await callGroqWithFallback({
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: `Konu/İpucu: ${prompt}\nLütfen JSON çıktısını ver.` }
