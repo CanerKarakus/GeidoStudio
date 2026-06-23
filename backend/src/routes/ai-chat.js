@@ -115,7 +115,7 @@ router.post('/', async (req, res) => {
 
     let chatCompletion = await groq.chat.completions.create({
       messages: formattedMessages,
-      model: 'llama-3.3-70b-versatile',
+      model: 'llama-3.1-8b-instant',
       temperature: 0.7,
       max_tokens: 1024,
       tools: tools,
@@ -175,7 +175,7 @@ router.post('/', async (req, res) => {
       // Call groq again to get the final response
       chatCompletion = await groq.chat.completions.create({
         messages: formattedMessages,
-        model: 'llama-3.3-70b-versatile',
+        model: 'llama-3.1-8b-instant',
         temperature: 0.7,
         max_tokens: 1024
       });
@@ -310,7 +310,7 @@ router.post('/voice', upload.single('audio'), async (req, res) => {
 
     const chatCompletion = await groq.chat.completions.create({
       messages: fullMessagesForGroq,
-      model: 'llama-3.3-70b-versatile',
+      model: 'llama-3.1-8b-instant',
       temperature: 0.7,
       max_tokens: 1024,
     });
@@ -513,7 +513,7 @@ JSON formatı şu şekilde olmalıdır:
         { role: 'system', content: systemPrompt },
         { role: 'user', content: `Konu/İpucu: ${prompt}\nLütfen JSON çıktısını ver.` }
       ],
-      model: 'llama-3.3-70b-versatile',
+      model: 'llama-3.1-8b-instant',
       temperature: 0.7,
       max_tokens: 2048,
       response_format: { type: 'json_object' }
