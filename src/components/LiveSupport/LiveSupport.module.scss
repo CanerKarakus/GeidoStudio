@@ -943,7 +943,7 @@
     flex-wrap: wrap;
   }
 
-  input {
+  input, select {
     flex: 1;
     background: rgba(0, 0, 0, 0.5);
     border: 1px solid rgba(255, 255, 255, 0.2);
@@ -952,6 +952,8 @@
     border-radius: 8px;
     font-size: 14px;
     min-width: 120px;
+    appearance: none;
+    -webkit-appearance: none;
 
     &::-webkit-calendar-picker-indicator {
       filter: invert(1);
@@ -960,6 +962,11 @@
     &:focus {
       outline: none;
       border-color: #ff3366;
+    }
+
+    option {
+      background: #1a1a1a;
+      color: #fff;
     }
   }
 

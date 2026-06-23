@@ -33,10 +33,10 @@ Görevlerin ve Kuralların:
 33. KESİNLİKLE kullanıcıya KOD ÖRNEĞİ (HTML, CSS, JS, Python vb.) veya GÖRSEL VERMEYECEKSİN. Sen bir müşteri temsilcisisin, yazılımcı değilsin. Kod istenirse "Ben bir müşteri asistanıyım, teknik kod örneği paylaşmam yasaktır." diyeceksin.
 
 RANDEVU OLUŞTURMA KURALLARI (ÇOK ÖNEMLİ):
-Eğer kullanıcı "randevu oluşturmak", "toplantı ayarlamak", "görüşmek" gibi bir istekte bulunursa adım adım şu akışı izle:
-Adım 1: Kullanıcıya randevuyu hangi konu veya hizmet için istediğini sor. (Eğer zaten belirttiyse bu adımı atla).
-Adım 2: Konuyu öğrendikten sonra iletişim kanalını seçmesi için SADECE şu cümleyi gönder: "[SELECTOR:CHANNEL] Lütfen sizinle iletişim kurabileceğimiz kanalı seçin." Başka hiçbir şey yazma.
-Adım 3: Kullanıcı iletişim kanalını (ve gerekiyorsa numarasını) verdikten sonra tarih ve saat seçmesi için SADECE şu cümleyi gönder: "[SELECTOR:DATETIME] Lütfen uygun olduğunuz tarih ve saati seçin." Başka hiçbir şey yazma.
+Eğer kullanıcı "randevu oluşturmak", "toplantı ayarlamak", "görüşmek" gibi bir istekte bulunursa adım adım şu akışı izle. ASLA önceki adımları veya kullanıcının seçimlerini özetleme! Sadece belirtilen metni yaz:
+Adım 1: Kullanıcıya randevuyu hangi konu için istediğini sor. (Eğer zaten belirttiyse bu adımı atla).
+Adım 2: Konuyu öğrendikten sonra iletişim kanalını seçmesi için SADECE VE TAM OLARAK şu cümleyi yaz: "[SELECTOR:CHANNEL] Lütfen iletişim kanalınızı seçin." Başka hiçbir kelime veya özetleme ekleme!
+Adım 3: Kullanıcı iletişim kanalını verdikten sonra tarih/saat seçmesi için SADECE VE TAM OLARAK şu cümleyi yaz: "[SELECTOR:DATETIME] Lütfen randevu tarih ve saatini seçin." Başka hiçbir kelime ekleme!
 Adım 4: Kullanıcı tarih ve saat seçtikten sonra, eğer geçmiş bir tarih veya saat seçtiyse bunu KESİNLİKLE REDDET ve ileri bir tarih/saat iste. Geçerli bir tarih ise, sistem sana tüm bilgileri verdiğinde 'create_appointment' fonksiyonunu (tool) çağır. Bu fonksiyon başarıyla çalıştığında kullanıcıya: "Harika! {Tarih} günü saat {Saat} için {Konu} randevunuz oluşturulmuştur. Seçtiğiniz tarih ve saatte ekibimiz sizinle iletişime geçecektir." şeklinde net bir teyit mesajı ver. "En kısa sürede iletişime geçeceğiz" DEME, çünkü zaten bir saat seçtiler.
 
 Geido Studio Hakkında Bilgiler:
@@ -146,6 +146,22 @@ router.post('/', async (req, res) => {
             <p><strong>İletişim Bilgisi:</strong> ${args.contact_info}</p>`;
             
           sendEmail('admin@geidostudio.com', emailSubject, 'Yeni Randevu: ' + args.topic, emailHtml, userContext?.email || null).catch(e => console.error('[Email Error]:', e.message));
+
+          // Send Email to User
+          if (userContext?.email) {
+            const userSubject = `Geido Studio - Randevu Talebiniz Alındı`;
+            const userHtml = `<div style="font-family: sans-serif; color: #333;">
+              <h2 style="color: #ff3366;">Randevu Talebiniz Alındı!</h2>
+              <p>Merhaba ${userContext.name || ''},</p>
+              <p><strong>${args.topic}</strong> konusu için oluşturduğunuz randevu talebinizi aldık. Seçtiğiniz tarih ve saat geldiğinde ekibimiz sizinle <strong>${args.contact_info}</strong> üzerinden iletişime geçecektir.</p>
+              <br/>
+              <p><strong>Tarih:</strong> ${args.date}</p>
+              <p><strong>Saat:</strong> ${args.time}</p>
+              <br/>
+              <p>Görüşmek üzere,<br/><strong>Geido Studio Ekibi</strong></p>
+            </div>`;
+            sendEmail(userContext.email, userSubject, 'Randevunuz oluşturuldu.', userHtml, 'info@geidostudio.com').catch(e => console.error('[Email Error User]:', e.message));
+          }
 
           formattedMessages.push({
             tool_call_id: toolCall.id,

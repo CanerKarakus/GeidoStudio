@@ -66,9 +66,22 @@ const LiveSupport = () => {
 
   // Appointment Flow States
   const [channelPhone, setChannelPhone] = useState('');
-  const [showPhoneInput, setShowPhoneInput] = useState(false);
   const [appointmentDate, setAppointmentDate] = useState('');
   const [appointmentTime, setAppointmentTime] = useState('');
+  const timeSelectRef = useRef(null);
+
+  const generateTimeOptions = () => {
+    const options = [];
+    for (let h = 9; h <= 18; h++) {
+      for (let m = 0; m < 60; m += 15) {
+        const hour = h.toString().padStart(2, '0');
+        const min = m.toString().padStart(2, '0');
+        options.push(`${hour}:${min}`);
+      }
+    }
+    return options;
+  };
+  const timeOptions = useMemo(() => generateTimeOptions(), []);
 
   // Ses Kayıt Stateleri
   const [isRecording, setIsRecording] = useState(false);
@@ -688,16 +701,26 @@ const LiveSupport = () => {
                                   <input 
                                     type="date" 
                                     value={appointmentDate}
-                                    onChange={(e) => setAppointmentDate(e.target.value)}
+                                    onChange={(e) => {
+                                      setAppointmentDate(e.target.value);
+                                      if (e.target.value && timeSelectRef.current) {
+                                        timeSelectRef.current.focus();
+                                      }
+                                    }}
                                     required
                                     min={new Date().toISOString().split("T")[0]}
                                   />
-                                  <input 
-                                    type="time" 
+                                  <select 
+                                    ref={timeSelectRef}
                                     value={appointmentTime}
                                     onChange={(e) => setAppointmentTime(e.target.value)}
                                     required
-                                  />
+                                  >
+                                    <option value="" disabled>Saat Seçin</option>
+                                    {timeOptions.map(time => (
+                                      <option key={time} value={time}>{time}</option>
+                                    ))}
+                                  </select>
                                 </div>
                                 <button type="submit">Randevuyu Onayla</button>
                               </form>
