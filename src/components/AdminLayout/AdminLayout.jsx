@@ -76,15 +76,18 @@ const AdminLayout = () => {
       {/* SIDEBAR */}
       <aside className={`${styles.sidebar} ${isCollapsed ? styles.sidebarCollapsed : ''}`}>
         <div className={styles.sidebarBrand}>
-          {isCollapsed ? (
-            <img src="/logo.svg" alt="Geido Logo" className={styles.brandLogo} />
-          ) : (
+          <div className={styles.logoContainer}>
+            <img 
+              src="/logo.svg" 
+              alt="Geido Logo" 
+              className={`${styles.brandLogo} ${isCollapsed ? styles.visible : ''}`} 
+            />
             <img 
               src="/assets/geido_logo-BvfYgb4D.png" 
               alt="Geido Studio" 
-              style={{ height: '36px', filter: 'brightness(0) invert(1)', marginLeft: '16px' }} 
+              className={`${styles.brandLogoExpanded} ${!isCollapsed ? styles.visible : ''}`} 
             />
-          )}
+          </div>
           <button className={styles.collapseToggle} onClick={() => setIsCollapsed(!isCollapsed)}>
             <ChevronRight size={18} className={isCollapsed ? '' : styles.arrowLeft} />
           </button>
