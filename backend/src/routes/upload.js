@@ -40,7 +40,10 @@ router.post('/', authMiddleware, upload.single('image'), (req, res) => {
       return res.status(400).json({ error: 'Lütfen bir görsel seçin.' });
     }
 
-    const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+    let protocol = req.headers['x-forwarded-proto'] || req.protocol;
+    if (protocol && protocol.includes(',')) {
+      protocol = protocol.split(',')[0].trim();
+    }
     const host = req.get('host');
     const url = `${protocol}://${host}/uploads/${req.file.filename}`;
 
