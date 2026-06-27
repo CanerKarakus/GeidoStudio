@@ -31,7 +31,13 @@ const AdminLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const navRef = useRef(null);
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    return localStorage.getItem('adminSidebarCollapsed') === 'true';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('adminSidebarCollapsed', isCollapsed);
+  }, [isCollapsed]);
 
   useEffect(() => {
     if (navRef.current) {
