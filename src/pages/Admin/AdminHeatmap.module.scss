@@ -9,10 +9,13 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: white;
+  background: rgba(15, 15, 20, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
   padding: 1rem 1.5rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 
   .controls {
     display: flex;
@@ -24,18 +27,24 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    background: #f3f4f6;
+    background: rgba(0, 0, 0, 0.3);
     padding: 0.5rem 1rem;
     border-radius: 8px;
-    color: #4b5563;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
 
     select {
       background: transparent;
       border: none;
       outline: none;
       font-weight: 500;
-      color: #111827;
+      color: #fff;
       cursor: pointer;
+      
+      option {
+        background: #111;
+        color: #fff;
+      }
     }
   }
 
@@ -50,16 +59,16 @@
     align-items: center;
     gap: 0.5rem;
     padding: 0.5rem 1rem;
-    background: #e0e7ff;
-    color: #4f46e5;
-    border: none;
+    background: rgba(255, 255, 255, 0.05);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 8px;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
 
     &:hover {
-      background: #c7d2fe;
+      background: rgba(255, 255, 255, 0.1);
     }
 
     &:disabled {
@@ -77,16 +86,16 @@
     align-items: center;
     gap: 0.5rem;
     padding: 0.5rem 1rem;
-    background: #fee2e2;
-    color: #dc2626;
-    border: none;
+    background: rgba(239, 68, 68, 0.1);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.2);
     border-radius: 8px;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
 
     &:hover {
-      background: #fecaca;
+      background: rgba(239, 68, 68, 0.2);
     }
 
     &:disabled {
@@ -107,14 +116,16 @@
 .viewer {
   position: relative;
   flex: 1;
-  background: #fff;
-  border-radius: 12px;
-  overflow: auto; /* X ve Y scroll'a izin ver */
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e5e7eb;
+  background: rgba(15, 15, 20, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  overflow: hidden; /* Scroll belongs to iframe */
 
   .iframeWrapper {
-    width: 100vw; /* Kullanıcının ekranıyla birebir aynı genişlik */
+    width: 100%; /* Fix overflow */
     height: 100%;
     min-height: 100vh;
   }
@@ -129,7 +140,7 @@
   .loadingOverlay {
     position: absolute;
     inset: 0;
-    background: rgba(255, 255, 255, 0.7);
+    background: rgba(15, 15, 20, 0.8);
     display: flex;
     align-items: center;
     justify-content: center;
