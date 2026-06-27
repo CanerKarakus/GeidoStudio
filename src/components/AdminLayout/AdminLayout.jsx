@@ -71,12 +71,6 @@ const AdminLayout = () => {
       <aside className={`${styles.sidebar} ${isCollapsed ? styles.sidebarCollapsed : ''}`}>
         <div className={styles.sidebarBrand}>
           <img src="/logo.svg" alt="Geido Logo" className={styles.brandLogo} />
-          {!isCollapsed && (
-            <div>
-              <div className={styles.brandName}>Geido</div>
-              <div className={styles.brandSub}>Studio</div>
-            </div>
-          )}
           <button className={styles.collapseToggle} onClick={() => setIsCollapsed(!isCollapsed)}>
             <ChevronRight size={18} className={isCollapsed ? '' : styles.arrowLeft} />
           </button>
@@ -110,10 +104,7 @@ const AdminLayout = () => {
           {!isCollapsed && (
             <div className={styles.adminInfo}>
               <div className={styles.adminAvatar}>A</div>
-              <div>
-                <div className={styles.adminName}>Admin</div>
-                <div className={styles.adminEmail}>admin@geidostudio.com</div>
-              </div>
+              <div className={styles.adminName}>Admin</div>
             </div>
           )}
           <button className={styles.logoutBtn} onClick={() => { logout(); navigate('/admin/login'); }} title="Çıkış Yap">

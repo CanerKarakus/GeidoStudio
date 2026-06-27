@@ -86,7 +86,7 @@ $accentHl: #ff1a1a;
   width: 40px;
   height: 40px;
   object-fit: contain;
-  filter: drop-shadow(0 2px 8px rgba(255, 255, 255, 0.1));
+  filter: brightness(0) invert(1);
 }
 
 .collapseToggle {
@@ -139,41 +139,44 @@ $accentHl: #ff1a1a;
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.75rem 1rem;
-  border-radius: 10px;
+  padding: 0.8rem 1rem;
+  border-radius: 12px;
   background: transparent;
-  border: none;
+  border: 1px solid transparent;
   color: $muted;
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   text-align: left;
   width: 100%;
 
   &:hover {
-    background: rgba(255,255,255,0.06);
-    color: $text;
+    background: rgba(255,255,255,0.04);
+    border-color: rgba(255,255,255,0.06);
+    color: #ffffff;
+    transform: translateX(4px);
   }
 
   span { flex: 1; }
 }
 
 .navActive {
-  background: rgba(204,0,0,0.12) !important;
+  background: linear-gradient(90deg, rgba(204,0,0,0.15) 0%, transparent 100%) !important;
+  border-color: rgba(204,0,0,0.2) !important;
   color: #ff4d4d !important;
 
   &::before {
     content: '';
     position: absolute;
-    left: 0;
+    left: -1px;
     top: 50%;
     transform: translateY(-50%);
-    width: 3px;
-    height: 60%;
+    width: 4px;
+    height: 70%;
     background: $accent;
-    border-radius: 0 2px 2px 0;
+    border-radius: 0 4px 4px 0;
   }
 }
 
@@ -291,7 +294,7 @@ $accentHl: #ff1a1a;
   justify-content: space-between;
   padding: 1.5rem 2.5rem;
   border-bottom: 1px solid $border;
-  background: rgba($bg2, 0.8);
+  background: rgba(0, 0, 0, 0.8);
   backdrop-filter: blur(12px);
   position: sticky;
   top: 0;
