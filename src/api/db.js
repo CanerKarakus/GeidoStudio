@@ -113,7 +113,7 @@ export const api = {
       body: formData,
     };
 
-    const res = await fetch(`${BASE_URL}/api/upload`, options);
+    const res = await fetch(`${API_URL}/api/upload`, options);
     const data = await res.json().catch(() => ({}));
 
     if (!res.ok) {
