@@ -23,7 +23,13 @@
     align-items: center;
   }
 
-  .selectGroup {
+  .customSelectContainer {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .customSelectTrigger {
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -32,18 +38,70 @@
     border-radius: 8px;
     border: 1px solid rgba(255, 255, 255, 0.1);
     color: #fff;
+    font-weight: 500;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
 
-    select {
-      background: transparent;
-      border: none;
-      outline: none;
-      font-weight: 500;
-      color: #fff;
+    &:hover {
+      background: rgba(0, 0, 0, 0.5);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .chevron {
+      margin-left: 0.5rem;
+      color: #888;
+      transition: transform 0.2s;
+      &.open {
+        transform: rotate(180deg);
+      }
+    }
+  }
+
+  .selectBackdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+  }
+
+  .customSelectDropdown {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    left: 0;
+    width: 260px;
+    background: #111;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+    z-index: 50;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+
+    .customOption {
+      padding: 0.75rem 1rem;
       cursor: pointer;
-      
-      option {
-        background: #111;
+      color: #ddd;
+      font-size: 0.875rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.2s;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.05);
         color: #fff;
+      }
+
+      &.selected {
+        background: rgba(204, 0, 0, 0.15);
+        color: #ff4d4d;
+        border-left: 2px solid #cc0000;
+      }
+
+      .pathHint {
+        font-size: 0.75rem;
+        opacity: 0.5;
       }
     }
   }

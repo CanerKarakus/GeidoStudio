@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { api } from '../../api/db';
 import styles from './AdminHeatmap.module.scss';
-import { RefreshCw, Monitor, Search, Trash2 } from 'lucide-react';
+import { RefreshCw, Monitor, Search, Trash2, ChevronDown } from 'lucide-react';
 import simpleheat from '../../utils/simpleheat';
 
 const PAGES_TO_TRACK = [
@@ -18,6 +18,22 @@ const AdminHeatmap = () => {
   const canvasRef = useRef(null);
   const heatRef = useRef(null);
   const iframeRef = useRef(null);
+  const viewerRef = useRef(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [scale, setScale] = useState(1);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (viewerRef.current) {
+        const parentWidth = viewerRef.current.clientWidth;
+        setScale(Math.min(parentWidth / 1440, 1)); // Max 1 ölçek, küçük ekranlarda küçült
+      }
+    };
+    // Bekleyip resize hesapla ki layout otursun
+    setTimeout(handleResize, 100);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const fetchHeatmap = async (path) => {
     setLoading(true);
@@ -130,17 +146,35 @@ const AdminHeatmap = () => {
     <div className={styles.container}>
       <header className={styles.header}>
         <div className={styles.controls}>
-          <div className={styles.selectGroup}>
-            <Search size={16} />
-            <select 
-              value={selectedPath} 
-              onChange={(e) => setSelectedPath(e.target.value)}
-              className={styles.select}
+          <div className={styles.customSelectContainer}>
+            <div 
+              className={styles.customSelectTrigger} 
+              onClick={() => setMenuOpen(!menuOpen)}
             >
-              {PAGES_TO_TRACK.map(p => (
-                <option key={p.path} value={p.path}>{p.label} ({p.path})</option>
-              ))}
-            </select>
+              <Search size={16} />
+              <span>{PAGES_TO_TRACK.find(p => p.path === selectedPath)?.label} ({selectedPath})</span>
+              <ChevronDown size={14} className={`${styles.chevron} ${menuOpen ? styles.open : ''}`} />
+            </div>
+            
+            {menuOpen && (
+              <>
+                <div className={styles.selectBackdrop} onClick={() => setMenuOpen(false)} />
+                <div className={styles.customSelectDropdown}>
+                  {PAGES_TO_TRACK.map(p => (
+                    <div 
+                      key={p.path}
+                      className={`${styles.customOption} ${p.path === selectedPath ? styles.selected : ''}`}
+                      onClick={() => {
+                        setSelectedPath(p.path);
+                        setMenuOpen(false);
+                      }}
+                    >
+                      {p.label} <span className={styles.pathHint}>({p.path})</span>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
           
           <div className={styles.actions}>
@@ -160,15 +194,24 @@ const AdminHeatmap = () => {
         </div>
       </header>
 
-      <div className={styles.viewer}>
-        <div className={styles.iframeWrapper}>
-          <iframe 
-            ref={iframeRef}
-            src={`${window.location.origin}${selectedPath}${selectedPath.includes('?') ? '&' : '?'}adminPreview=true`} 
-            className={styles.iframe}
-            title="Heatmap Preview"
-            onLoad={handleIframeLoad}
-          />
+      <div className={styles.viewer} ref={viewerRef}>
+        <div className={styles.iframeWrapper} style={{ height: scale < 1 ? `${100 / scale}%` : '100%' }}>
+          <div 
+            style={{ 
+              width: '1440px', 
+              height: '100%', 
+              transform: `scale(${scale})`, 
+              transformOrigin: 'top left' 
+            }}
+          >
+            <iframe 
+              ref={iframeRef}
+              src={`${window.location.origin}${selectedPath}${selectedPath.includes('?') ? '&' : '?'}adminPreview=true`} 
+              className={styles.iframe}
+              title="Heatmap Preview"
+              onLoad={handleIframeLoad}
+            />
+          </div>
         </div>
         
         {loading && (
