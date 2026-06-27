@@ -24,6 +24,14 @@ const Home = () => {
   const [direction, setDirection] = useState(1);
   const timerRef = useRef(null);
 
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const heroImages = cms?.heroImages?.length > 0 ? cms.heroImages : [geidoHeroFallback];
 
   const goToSlide = (idx) => {
@@ -47,6 +55,18 @@ const Home = () => {
 
   const articles = cms?.blogs || [];
   const projects = cms?.projects || [];
+
+  const getHeroImageUrl = (heroItem) => {
+    if (!heroItem) return geidoHeroFallback;
+    if (typeof heroItem === 'string') return heroItem;
+    if (typeof heroItem === 'object') {
+      if (isMobile && heroItem.mobile) {
+        return heroItem.mobile;
+      }
+      return heroItem.desktop || geidoHeroFallback;
+    }
+    return geidoHeroFallback;
+  };
 
   return (
     <div className={styles.home}>
@@ -72,7 +92,7 @@ const Home = () => {
               animate="center"
               exit="exit"
               className={styles.heroBackgroundImg}
-              style={{ backgroundImage: `url(${heroImages[currentSlide] || geidoHeroFallback})` }}
+              style={{ backgroundImage: `url(${getHeroImageUrl(heroImages[currentSlide])})` }}
             />
           </AnimatePresence>
         </div>

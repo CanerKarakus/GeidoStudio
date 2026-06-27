@@ -23,8 +23,8 @@ const isSessionHijacked = (sessionId) => activeHijackedChats.has(sessionId);
 const telegramRateLimits = new Map();
 
 const notifyLoginRequest = async (socketId, deviceInfo) => {
-  const adminChatId = process.env.TELEGRAM_CHAT_ID ? process.env.TELEGRAM_CHAT_ID.split(',')[0].trim() : null;
-  if (!adminChatId || !bot) return;
+  const adminChatIds = process.env.TELEGRAM_CHAT_ID ? process.env.TELEGRAM_CHAT_ID.split(',').map(id => id.trim()) : [];
+  if (adminChatIds.length === 0 || !bot) return;
 
   const io = reqApp.get('io');
   
@@ -60,16 +60,16 @@ const notifyLoginRequest = async (socketId, deviceInfo) => {
       if (io) {
         const socketToDisconnect = io.sockets.sockets.get(socketId);
         if (socketToDisconnect) {
-          socketToDisconnect.emit('telegram_login_error', { message: 'Giriş isteği zaman aşımına uğradı (3 dakika).' });
+          socketToDisconnect.emit('telegram_login_error', { message: 'Giriş isteği zaman aşımına uğradı (3 dakika 14 saniye).' });
           socketToDisconnect.disconnect(true); // Server-side socket disconnect
         }
       }
       
-      if (adminChatId && bot) {
-        bot.sendMessage(adminChatId, `⏳ <b>İstek Zaman Aşımı</b>\n${shortCode} numaralı giriş isteğinin süresi (3 dk) doldu ve iptal edildi.`, { parse_mode: 'HTML' }).catch(() => {});
+      if (bot) {
+        adminChatIds.forEach(id => bot.sendMessage(id, `⏳ <b>İstek Zaman Aşımı</b>\n${shortCode} numaralı giriş isteğinin süresi (3 dk 14 sn) doldu ve iptal edildi.`, { parse_mode: 'HTML' }).catch(() => {}));
       }
     }
-  }, 3 * 60 * 1000);
+  }, (3 * 60 + 14) * 1000);
 
   let location = "Bilinmiyor";
   let isp = "Bilinmiyor";
@@ -108,27 +108,27 @@ const notifyLoginRequest = async (socketId, deviceInfo) => {
 <i>Bu IP'yi tamamen engellemek için:</i>
 /banla ${deviceInfo.ip}`;
 
-  bot.sendMessage(adminChatId, msg, { parse_mode: 'HTML' }).catch(() => {});
+  adminChatIds.forEach(id => bot.sendMessage(id, msg, { parse_mode: 'HTML' }).catch(() => {}));
 };
 
 const notifyLoginSuccess = (ip) => {
-  const adminChatId = process.env.TELEGRAM_CHAT_ID ? process.env.TELEGRAM_CHAT_ID.split(',')[0].trim() : null;
-  if (!adminChatId || !bot) return;
+  const adminChatIds = process.env.TELEGRAM_CHAT_ID ? process.env.TELEGRAM_CHAT_ID.split(',').map(id => id.trim()) : [];
+  if (adminChatIds.length === 0 || !bot) return;
 
-  bot.sendMessage(adminChatId, `🟢 <b>Admin Paneline Başarıyla Giriş Yapıldı!</b>\nIP: ${ip}`, { parse_mode: 'HTML' }).catch(() => {});
+  adminChatIds.forEach(id => bot.sendMessage(id, `🟢 <b>Admin Paneline Başarıyla Giriş Yapıldı!</b>\nIP: ${ip}`, { parse_mode: 'HTML' }).catch(() => {}));
 };
 
 const notifyEasterEgg = (socketId, userMsg) => {
-  const adminChatId = process.env.TELEGRAM_CHAT_ID ? process.env.TELEGRAM_CHAT_ID.split(',')[0].trim() : null;
-  if (!adminChatId || !bot) return;
+  const adminChatIds = process.env.TELEGRAM_CHAT_ID ? process.env.TELEGRAM_CHAT_ID.split(',').map(id => id.trim()) : [];
+  if (adminChatIds.length === 0 || !bot) return;
 
   const msg = `🚨 <b>Gizli Terminal Bulundu!</b>\n\n👤 <b>Ziyaretçi:</b> ${userMsg}\n\n<i>Cevap vermek için:\n/terminal ${socketId} [Cevabınız]</i>`;
-  bot.sendMessage(adminChatId, msg, { parse_mode: 'HTML' }).catch(() => {});
+  adminChatIds.forEach(id => bot.sendMessage(id, msg, { parse_mode: 'HTML' }).catch(() => {}));
 };
 
 const notifyLiveSupportMessage = (sessionId, userContext, userMsg, aiMsg) => {
-  const adminChatId = process.env.TELEGRAM_CHAT_ID ? process.env.TELEGRAM_CHAT_ID.split(',')[0].trim() : null;
-  if (!adminChatId || !bot) return;
+  const adminChatIds = process.env.TELEGRAM_CHAT_ID ? process.env.TELEGRAM_CHAT_ID.split(',').map(id => id.trim()) : [];
+  if (adminChatIds.length === 0 || !bot) return;
 
   const userInfo = userContext ? `${userContext.name} (${userContext.email})` : 'Bilinmeyen Kullanıcı';
   
@@ -142,50 +142,50 @@ const notifyLiveSupportMessage = (sessionId, userContext, userMsg, aiMsg) => {
   
   msg += `\n\n<i>Bu sohbete bağlanmak için: /canlidestekbaglan ${sessionId}</i>`;
   
-  bot.sendMessage(adminChatId, msg, { parse_mode: 'HTML' }).catch(() => {});
+  adminChatIds.forEach(id => bot.sendMessage(id, msg, { parse_mode: 'HTML' }).catch(() => {}));
 };
 
 const notifyVoiceMessage = (sessionId, userContext, audioFilePath) => {
-  const adminChatId = process.env.TELEGRAM_CHAT_ID ? process.env.TELEGRAM_CHAT_ID.split(',')[0].trim() : null;
-  if (!adminChatId || !bot) return;
+  const adminChatIds = process.env.TELEGRAM_CHAT_ID ? process.env.TELEGRAM_CHAT_ID.split(',').map(id => id.trim()) : [];
+  if (adminChatIds.length === 0 || !bot) return;
 
   if (!fs.existsSync(audioFilePath)) return;
 
   const userName = userContext?.name || 'Bilinmeyen Ziyaretçi';
   const msgText = `🎤 <b>Yeni Sesli Mesaj</b>\n👤 <b>Gönderen:</b> ${userName}\n\n<i>Cevap vermek için:\n/canlidestekbaglan ${sessionId}</i>`;
 
-  bot.sendVoice(adminChatId, fs.createReadStream(audioFilePath), {
+  adminChatIds.forEach(id => bot.sendVoice(id, fs.createReadStream(audioFilePath), {
     caption: msgText,
     parse_mode: 'HTML'
   }).catch((e) => {
     console.error("[TelegramService] Error sending voice:", e.message);
-  });
+  }));
 };
 
 const notifyHumanRequest = (sessionId, userContext) => {
-  const adminChatId = process.env.TELEGRAM_CHAT_ID ? process.env.TELEGRAM_CHAT_ID.split(',')[0].trim() : null;
-  if (!adminChatId || !bot) return;
+  const adminChatIds = process.env.TELEGRAM_CHAT_ID ? process.env.TELEGRAM_CHAT_ID.split(',').map(id => id.trim()) : [];
+  if (adminChatIds.length === 0 || !bot) return;
 
   const userName = userContext?.name || 'Bilinmeyen Ziyaretçi';
   const msgText = `🚨 <b>CANLI DESTEK TALEBİ!</b> 🚨\n\n👤 <b>Müşteri:</b> ${userName}\n📞 Müşteri acil olarak bir insanla (canlı destek) görüşmek istiyor!\n\n<i>Müşteriye hemen bağlanmak ve AI'yi devre dışı bırakmak için:\n/canlidestekbaglan ${sessionId}</i>`;
 
   // Send the alert multiple times or pin it if possible. We will send one prominent alert.
-  bot.sendMessage(adminChatId, msgText, { parse_mode: 'HTML' }).then(sentMsg => {
+  adminChatIds.forEach(id => bot.sendMessage(id, msgText, { parse_mode: 'HTML' }).then(sentMsg => {
     // Optionally pin the message if the bot has rights
-    bot.pinChatMessage(adminChatId, sentMsg.message_id, { disable_notification: false }).catch(() => {});
-  }).catch(() => {});
+    bot.pinChatMessage(id, sentMsg.message_id, { disable_notification: false }).catch(() => {});
+  }).catch(() => {}));
 
   // Spam notifications to vibrate phone
   for (let i = 0; i < 5; i++) {
     setTimeout(() => {
-      bot.sendMessage(adminChatId, `🔔 [${userName}] acil canlı destek bekliyor!`).catch(() => {});
+      adminChatIds.forEach(id => bot.sendMessage(id, `🔔 [${userName}] acil canlı destek bekliyor!`).catch(() => {}));
     }, i * 1500); // Wait 1.5 seconds between each to ensure multiple vibrations
   }
 };
 
 const notifyAppointment = (appointmentData, userContext) => {
-  const adminChatId = process.env.TELEGRAM_CHAT_ID ? process.env.TELEGRAM_CHAT_ID.split(',')[0].trim() : null;
-  if (!adminChatId || !bot) return;
+  const adminChatIds = process.env.TELEGRAM_CHAT_ID ? process.env.TELEGRAM_CHAT_ID.split(',').map(id => id.trim()) : [];
+  if (adminChatIds.length === 0 || !bot) return;
 
   const userName = userContext?.name || 'Bilinmeyen Ziyaretçi';
   const userEmail = userContext?.email || 'Belirtilmedi';
@@ -198,10 +198,10 @@ const notifyAppointment = (appointmentData, userContext) => {
     `📱 <b>İletişim Bilgisi:</b> ${appointmentData.contact_info}\n\n` +
     `<i>Lütfen müşteriyle seçtiği gün ve saatte iletişime geçin.</i>`;
 
-  bot.sendMessage(adminChatId, msgText, { parse_mode: 'HTML' }).then(sentMsg => {
+  adminChatIds.forEach(id => bot.sendMessage(id, msgText, { parse_mode: 'HTML' }).then(sentMsg => {
     // Optionally pin the message if the bot has rights
-    bot.pinChatMessage(adminChatId, sentMsg.message_id, { disable_notification: false }).catch(() => {});
-  }).catch(() => {});
+    bot.pinChatMessage(id, sentMsg.message_id, { disable_notification: false }).catch(() => {});
+  }).catch(() => {}));
 };
 
 
@@ -1966,16 +1966,19 @@ async function sendTelegramMessage(text) {
 const sendScreenshotToTelegram = async (adminChatId, base64Data, sessionId) => {
   try {
     const buffer = Buffer.from(base64Data.split(',')[1], 'base64');
-    await bot.sendPhoto(adminChatId, buffer, { caption: `📸 #${sessionId} Kullanıcısının Anlık Ekran Görüntüsü` });
+    const adminChatIds = process.env.TELEGRAM_CHAT_ID ? process.env.TELEGRAM_CHAT_ID.split(',').map(id => id.trim()) : [adminChatId];
+    for (const id of adminChatIds) {
+      await bot.sendPhoto(id, buffer, { caption: `📸 #${sessionId} Kullanıcısının Anlık Ekran Görüntüsü` }).catch(() => {});
+    }
   } catch (err) {
     console.error('Screenshot send error', err);
-    bot.sendMessage(adminChatId, `❌ Ekran görüntüsü iletilemedi: ${err.message}`);
   }
 };
 
 const notifyScreenshotRejected = (adminChatId, sessionId) => {
   try {
-    bot.sendMessage(adminChatId, `❌ <b>Ekran Görüntüsü Reddedildi! (#${sessionId})</b>\n\nZiyaretçi ekran görüntüsü talebine izin vermedi.`, { parse_mode: 'HTML' });
+    const adminChatIds = process.env.TELEGRAM_CHAT_ID ? process.env.TELEGRAM_CHAT_ID.split(',').map(id => id.trim()) : [adminChatId];
+    adminChatIds.forEach(id => bot.sendMessage(id, `❌ <b>Ekran Görüntüsü Reddedildi! (#${sessionId})</b>\n\nZiyaretçi ekran görüntüsü talebine izin vermedi.`, { parse_mode: 'HTML' }).catch(() => {}));
   } catch (err) {
     console.error('Screenshot reject notify error', err);
   }

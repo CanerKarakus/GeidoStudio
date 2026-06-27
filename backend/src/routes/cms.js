@@ -99,8 +99,16 @@ router.put('/', authMiddleware, (req, res) => {
 
     if (updated.heroImages) {
       updated.heroImages = updated.heroImages
-        .filter(url => typeof url === 'string')
-        .map(url => url.trim())
+        .filter(url => typeof url === 'string' || (typeof url === 'object' && url !== null))
+        .map(url => {
+          if (typeof url === 'string') {
+            return { desktop: url.trim(), mobile: '' };
+          }
+          return {
+            desktop: (url.desktop || '').trim(),
+            mobile: (url.mobile || '').trim()
+          };
+        })
         .slice(0, 10); // Max 10 images
     }
 
