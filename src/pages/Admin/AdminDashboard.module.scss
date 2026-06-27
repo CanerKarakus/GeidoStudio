@@ -25,7 +25,7 @@ $accentHl: #ff1a1a;
   width: 260px;
   flex-shrink: 0;
   background: #000000;
-  border-right: 1px solid rgba(255, 255, 255, 0.15); // daha belirgin
+  border-right: 1px solid rgba(255, 255, 255, 0.15);
   display: flex;
   flex-direction: column;
   position: sticky;
@@ -39,14 +39,14 @@ $accentHl: #ff1a1a;
   width: 80px;
 
   .sidebarBrand {
-    justify-content: center;
-    padding: 1.75rem 0;
+    flex-direction: column;
+    padding: 1.5rem 0;
   }
   
   .collapseToggle {
     position: static;
-    transform: none;
     margin-top: 1rem;
+    margin-left: 0;
   }
 
   .navItem {
@@ -65,10 +65,10 @@ $accentHl: #ff1a1a;
 .sidebarBrand {
   display: flex;
   align-items: center;
-  justify-content: center; // Logoyu ortala
-  padding: 2rem 1.5rem; // Biraz daha bosluk
+  justify-content: center;
+  padding: 1.75rem 1.5rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-  position: relative; // toggle butonu absolute icin
+  position: relative;
 }
 
 .brandIcon {
@@ -86,13 +86,15 @@ $accentHl: #ff1a1a;
 }
 
 .brandLogo {
-  width: 65px;
-  height: 65px;
+  width: 56px;
+  height: 56px;
   object-fit: contain;
   filter: brightness(0) invert(1);
 }
 
 .collapseToggle {
+  position: absolute;
+  right: 1.5rem;
   background: transparent;
   border: none;
   color: $muted;
@@ -103,10 +105,6 @@ $accentHl: #ff1a1a;
   padding: 0.4rem;
   border-radius: 8px;
   transition: all 0.2s;
-  position: absolute;
-  right: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
 
   &:hover {
     background: rgba(255,255,255,0.05);
