@@ -165,7 +165,7 @@ const AdminHero = () => {
                     <button onClick={() => { setEditingUrl(null); handleSave(); }}>Tamam</button>
                   </div>
                 )}
-                <div className={styles.heroColumnPreview} style={{ backgroundImage: desktopUrl ? \`url(\${desktopUrl})\` : 'none' }}>
+                <div className={styles.heroColumnPreview} style={{ backgroundImage: desktopUrl ? `url(${desktopUrl})` : 'none' }}>
                   {!desktopUrl && <div className={styles.heroBannerEmpty}><ImageIcon size={32} /><span>Masaüstü Seçin</span></div>}
                 </div>
               </div>
@@ -199,7 +199,7 @@ const AdminHero = () => {
                     <button onClick={() => { setEditingUrl(null); handleSave(); }}>Tamam</button>
                   </div>
                 )}
-                <div className={styles.heroColumnPreview} style={{ backgroundImage: mobileUrl ? \`url(\${mobileUrl})\` : 'none', opacity: mobileUrl ? 1 : 0.6 }}>
+                <div className={styles.heroColumnPreview} style={{ backgroundImage: mobileUrl ? `url(${mobileUrl})` : 'none', opacity: mobileUrl ? 1 : 0.6 }}>
                   {!mobileUrl && <div className={styles.heroBannerEmpty}><ImageIcon size={32} /><span>Mobil İçin Seçin</span></div>}
                 </div>
               </div>
