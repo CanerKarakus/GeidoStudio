@@ -13,6 +13,12 @@ const AdminMessages = () => {
   const selectedMsg = messages.find(m => m.id === selectedMsgId);
 
   useEffect(() => {
+    if (selectedMsg && !selectedMsg.read) {
+      useCmsStore.getState().markMessageAsRead(selectedMsg.id).catch(console.error);
+    }
+  }, [selectedMsg]);
+
+  useEffect(() => {
     if (selectedMsgId) {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }

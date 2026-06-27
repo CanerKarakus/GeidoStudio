@@ -24,7 +24,7 @@ $accentHl: #ff1a1a;
 .sidebar {
   width: 260px;
   flex-shrink: 0;
-  background: $bg2;
+  background: #000000;
   border-right: 1px solid $border;
   display: flex;
   flex-direction: column;
@@ -32,6 +32,32 @@ $accentHl: #ff1a1a;
   top: 0;
   height: 100vh;
   z-index: 10;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebarCollapsed {
+  width: 80px;
+
+  .sidebarBrand {
+    justify-content: center;
+    padding: 1.75rem 0;
+  }
+  
+  .collapseToggle {
+    margin-left: 0;
+  }
+
+  .navItem {
+    justify-content: center;
+    padding: 0.75rem;
+    span { display: none; }
+  }
+
+  .sidebarFooter {
+    justify-content: center;
+    padding: 1rem 0;
+    flex-direction: column;
+  }
 }
 
 .sidebarBrand {
@@ -54,6 +80,36 @@ $accentHl: #ff1a1a;
   font-size: 1.1rem;
   color: #fff;
   box-shadow: 0 4px 16px rgba(204,0,0,0.4);
+}
+
+.brandLogo {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 8px rgba(255, 255, 255, 0.1));
+}
+
+.collapseToggle {
+  background: transparent;
+  border: none;
+  color: $muted;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.4rem;
+  border-radius: 8px;
+  transition: all 0.2s;
+  margin-left: auto;
+
+  &:hover {
+    background: rgba(255,255,255,0.05);
+    color: $text;
+  }
+}
+
+.arrowLeft {
+  transform: rotate(180deg);
 }
 
 .brandName {
@@ -135,6 +191,19 @@ $accentHl: #ff1a1a;
   border-radius: 999px;
   min-width: 18px;
   text-align: center;
+  transition: all 0.2s;
+}
+
+.badgeCollapsed {
+  position: absolute;
+  top: 0.35rem;
+  right: 0.35rem;
+  width: 10px;
+  height: 10px;
+  min-width: 0;
+  padding: 0;
+  border-radius: 50%;
+  color: transparent;
 }
 
 .sidebarFooter {
@@ -151,20 +220,24 @@ $accentHl: #ff1a1a;
   gap: 0.65rem;
   flex: 1;
   overflow: hidden;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 0.5rem 0.75rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .adminAvatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
   background: linear-gradient(135deg, $accent, #660000);
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  font-size: 0.85rem;
+  font-size: 0.95rem;
   flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(204,0,0,0.3);
+  box-shadow: 0 4px 12px rgba(204,0,0,0.3);
 }
 
 .adminName {

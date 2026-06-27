@@ -72,6 +72,8 @@ export const api = {
 
   replyToMessage: (id, text) =>
     request('POST', `/api/messages/${id}/reply`, { text }),
+  markMessageAsRead: (id) =>
+    request('PATCH', `/api/messages/${id}/read`),
 
   deleteMessage: (id) =>
     request('DELETE', `/api/messages/${id}`),

@@ -1,5 +1,5 @@
 import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import useCmsStore from '../../store/cmsStore';
 import styles from '../../pages/Admin/AdminDashboard.module.scss';
 import {
@@ -31,6 +31,7 @@ const AdminLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const navRef = useRef(null);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   useEffect(() => {
     if (navRef.current) {
@@ -58,25 +59,27 @@ const AdminLayout = () => {
   const hour = now.getHours();
   const greeting = hour < 12 ? 'Günaydın' : hour < 18 ? 'İyi günler' : 'İyi akşamlar';
 
-  const currentNav = NAV_ITEMS.find(n =>
+  const activeItem = NAV_ITEMS.slice().reverse().find(n =>
     n.exact ? location.pathname === n.path : location.pathname.startsWith(n.path)
   ) || NAV_ITEMS[0];
 
-  // For non-exact matches, we need to check more carefully
-  const activeItem = NAV_ITEMS.slice().reverse().find(n =>
-    n.exact ? location.pathname === n.path : location.pathname === n.path
-  ) || NAV_ITEMS[0];
+  const unreadCount = messages.filter(m => !m.read).length;
 
   return (
-    <div className={styles.dashboard}>
+    <div className={`${styles.dashboard} ${isCollapsed ? styles.collapsed : ''}`}>
       {/* SIDEBAR */}
-      <aside className={styles.sidebar}>
+      <aside className={`${styles.sidebar} ${isCollapsed ? styles.sidebarCollapsed : ''}`}>
         <div className={styles.sidebarBrand}>
-          <div className={styles.brandIcon}>G</div>
-          <div>
-            <div className={styles.brandName}>Geido</div>
-            <div className={styles.brandSub}>Admin Panel</div>
-          </div>
+          <img src="/logo.svg" alt="Geido Logo" className={styles.brandLogo} />
+          {!isCollapsed && (
+            <div>
+              <div className={styles.brandName}>Geido</div>
+              <div className={styles.brandSub}>Studio</div>
+            </div>
+          )}
+          <button className={styles.collapseToggle} onClick={() => setIsCollapsed(!isCollapsed)}>
+            <ChevronRight size={18} className={isCollapsed ? '' : styles.arrowLeft} />
+          </button>
         </div>
 
         <nav ref={navRef} className={styles.sidebarNav}>
@@ -88,26 +91,31 @@ const AdminLayout = () => {
                 key={item.path}
                 className={`${styles.navItem} ${isActive ? styles.navActive : ''}`}
                 onClick={() => navigate(item.path)}
+                title={isCollapsed ? item.label : undefined}
               >
-                <Icon size={18} />
-                <span>{item.label}</span>
-                {item.path === '/admin/messages' && messages.length > 0 && (
-                  <span className={styles.navBadge}>{messages.length}</span>
+                <Icon size={18} className={styles.navIcon} />
+                {!isCollapsed && <span>{item.label}</span>}
+                {item.path === '/admin/messages' && unreadCount > 0 && (
+                  <span className={`${styles.navBadge} ${isCollapsed ? styles.badgeCollapsed : ''}`}>
+                    {isCollapsed ? '' : unreadCount}
+                  </span>
                 )}
-                {isActive && <ChevronRight size={14} className={styles.navArrow} />}
+                {!isCollapsed && isActive && <ChevronRight size={14} className={styles.navArrow} />}
               </button>
             );
           })}
         </nav>
 
         <div className={styles.sidebarFooter}>
-          <div className={styles.adminInfo}>
-            <div className={styles.adminAvatar}>A</div>
-            <div>
-              <div className={styles.adminName}>Admin</div>
-              <div className={styles.adminEmail}>admin@geidostudio.com</div>
+          {!isCollapsed && (
+            <div className={styles.adminInfo}>
+              <div className={styles.adminAvatar}>A</div>
+              <div>
+                <div className={styles.adminName}>Admin</div>
+                <div className={styles.adminEmail}>admin@geidostudio.com</div>
+              </div>
             </div>
-          </div>
+          )}
           <button className={styles.logoutBtn} onClick={() => { logout(); navigate('/admin/login'); }} title="Çıkış Yap">
             <LogOut size={16} />
           </button>

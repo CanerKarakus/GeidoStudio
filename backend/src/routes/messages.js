@@ -61,6 +61,7 @@ router.post('/', submitLimiter, async (req, res) => {
       subject: subject ? subject.trim().slice(0, 200) : '',
       message: message.trim().slice(0, 2000),
       date: new Date().toISOString(),
+      read: false,
       replies: [],
       // Deterministic Message-ID stored so IMAP can match In-Reply-To on user replies
       threadMessageId: `<geido-thread-${uuidv4()}@geidostudio.com>`
@@ -167,6 +168,37 @@ router.delete('/:id', authMiddleware, (req, res) => {
   } catch (err) {
     console.error('[Messages] Delete error:', err.message);
     return res.status(500).json({ error: 'Mesaj silinemedi.' });
+  }
+});
+
+// ── PATCH /api/messages/:id/read ─────────────────────────────────────────────
+// Admin only
+router.patch('/:id/read', authMiddleware, (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id || typeof id !== 'string') {
+      return res.status(400).json({ error: 'Geçersiz mesaj ID.' });
+    }
+
+    const messages = readMessages();
+    const targetIndex = messages.findIndex(m => m.id === id);
+    
+    if (targetIndex === -1) {
+      return res.status(404).json({ error: 'Mesaj bulunamadı.' });
+    }
+
+    messages[targetIndex].read = true;
+    writeMessages(messages);
+    
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('messages_updated', messages);
+    }
+    
+    return res.json({ success: true });
+  } catch (err) {
+    console.error('[Messages] Mark as read error:', err.message);
+    return res.status(500).json({ error: 'Mesaj okundu olarak işaretlenemedi.' });
   }
 });
 

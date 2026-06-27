@@ -87,6 +87,21 @@ const useCmsStore = create((set) => ({
     await api.addMessage(msg);
   },
 
+  markMessageAsRead: async (id) => {
+    try {
+      await api.markMessageAsRead(id);
+      // Optimistic update
+      set((state) => ({
+        messages: state.messages.map((m) =>
+          m.id === id ? { ...m, read: true } : m
+        ),
+      }));
+    } catch (error) {
+      console.error('Failed to mark message as read:', error);
+      throw error;
+    }
+  },
+
   deleteMessage: async (id) => {
     await api.deleteMessage(id);
     set((state) => ({
