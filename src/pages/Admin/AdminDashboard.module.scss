@@ -1,15 +1,15 @@
 // AdminDashboard.module.scss
 @use '../../styles/mixins' as *;
 
-$bg:       #060608;
-$bg2:      #0d0d12;
-$bg3:      #13131a;
-$border:   rgba(255,255,255,0.06);
-$border2:  rgba(255,255,255,0.1);
-$text:     #ffffff;
-$muted:    #6b7280;
-$accent:   #b30000;
-$accentHl: #cc1a1a;
+$bg:       #000000;
+$bg2:      #0a0a0a;
+$bg3:      #111111;
+$border:   rgba(255,255,255,0.08);
+$border2:  rgba(255,255,255,0.12);
+$text:     #f5f5f5;
+$muted:    #8a8a8a;
+$accent:   #cc0000;
+$accentHl: #ff1a1a;
 
 // ─── LAYOUT ───────────────────────────────────────────────────
 .dashboard {
@@ -53,7 +53,7 @@ $accentHl: #cc1a1a;
   font-weight: 800;
   font-size: 1.1rem;
   color: #fff;
-  box-shadow: 0 4px 16px rgba(179,0,0,0.35);
+  box-shadow: 0 4px 16px rgba(204,0,0,0.4);
 }
 
 .brandName {
@@ -97,7 +97,7 @@ $accentHl: #cc1a1a;
   width: 100%;
 
   &:hover {
-    background: rgba(255,255,255,0.04);
+    background: rgba(255,255,255,0.06);
     color: $text;
   }
 
@@ -105,8 +105,8 @@ $accentHl: #cc1a1a;
 }
 
 .navActive {
-  background: rgba(179,0,0,0.12) !important;
-  color: #f87171 !important;
+  background: rgba(204,0,0,0.12) !important;
+  color: #ff4d4d !important;
 
   &::before {
     content: '';
@@ -157,13 +157,14 @@ $accentHl: #cc1a1a;
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  background: linear-gradient(135deg, $accent, #7c0000);
+  background: linear-gradient(135deg, $accent, #660000);
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
   font-size: 0.85rem;
   flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(204,0,0,0.3);
 }
 
 .adminName {
@@ -195,9 +196,9 @@ $accentHl: #cc1a1a;
   flex-shrink: 0;
 
   &:hover {
-    background: rgba(179,0,0,0.15);
-    border-color: rgba(179,0,0,0.3);
-    color: #f87171;
+    background: rgba(204,0,0,0.15);
+    border-color: rgba(204,0,0,0.3);
+    color: #ff4d4d;
   }
 }
 
@@ -280,7 +281,7 @@ $accentHl: #cc1a1a;
   &:hover:not(:disabled) {
     background: $accentHl;
     transform: translateY(-1px);
-    box-shadow: 0 4px 16px rgba(179,0,0,0.35);
+    box-shadow: 0 4px 16px rgba(204,0,0,0.4);
   }
 
   &:disabled { opacity: 0.6; cursor: not-allowed; }
@@ -293,8 +294,8 @@ $accentHl: #cc1a1a;
   justify-content: space-between;
   padding: 1rem 1.5rem;
   margin: 1rem 1.5rem;
-  background: rgba(179,0,0,0.08);
-  border: 1px solid rgba(179,0,0,0.2);
+  background: rgba(204,0,0,0.08);
+  border: 1px solid rgba(204,0,0,0.2);
   border-radius: 8px;
   gap: 1rem;
 }
@@ -304,7 +305,7 @@ $accentHl: #cc1a1a;
   align-items: center;
   gap: 0.5rem;
   font-size: 0.8rem;
-  color: #f87171;
+  color: #ff4d4d;
 }
 
 .saveBarBtn {
@@ -350,10 +351,12 @@ $accentHl: #cc1a1a;
   align-items: center;
   gap: 1rem;
   transition: all 0.25s;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
 
   &:hover {
-    border-color: rgba(255,255,255,0.12);
+    border-color: rgba(255,255,255,0.15);
     transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.6);
   }
 }
 
@@ -398,6 +401,7 @@ $accentHl: #cc1a1a;
   border: 1px solid $border;
   border-radius: 16px;
   padding: 1.5rem;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.5);
 }
 
 .cardTitle {
@@ -474,6 +478,12 @@ $accentHl: #cc1a1a;
   background: rgba(255,255,255,0.025);
   border-radius: 10px;
   border: 1px solid $border;
+  transition: all 0.2s;
+
+  &:hover {
+    background: rgba(255,255,255,0.05);
+    border-color: $border2;
+  }
 }
 
 .recentMsgAvatar {
@@ -520,10 +530,10 @@ $accentHl: #cc1a1a;
   align-items: center;
   gap: 0.6rem;
   padding: 0.75rem 1.1rem;
-  background: rgba(99,102,241,0.07);
-  border: 1px solid rgba(99,102,241,0.15);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
   border-radius: 10px;
-  color: #a5b4fc;
+  color: #cccccc;
   font-size: 0.82rem;
   margin-bottom: 1.5rem;
 }
@@ -540,6 +550,7 @@ $accentHl: #cc1a1a;
   border: 1px solid $border;
   border-radius: 16px;
   padding: 1.5rem;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.5);
 }
 
 .formCardHeader {
@@ -562,18 +573,19 @@ $accentHl: #cc1a1a;
   align-items: center;
   gap: 0.4rem;
   padding: 0.45rem 0.9rem;
-  background: rgba(179,0,0,0.12);
-  border: 1px solid rgba(179,0,0,0.25);
+  background: rgba(204,0,0,0.12);
+  border: 1px solid rgba(204,0,0,0.25);
   border-radius: 8px;
-  color: #f87171;
+  color: #ff4d4d;
   font-size: 0.78rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
 
   &:hover {
-    background: rgba(179,0,0,0.2);
-    border-color: rgba(179,0,0,0.5);
+    background: rgba(204,0,0,0.2);
+    border-color: rgba(204,0,0,0.5);
+    box-shadow: 0 4px 12px rgba(204,0,0,0.2);
   }
 }
 
@@ -701,20 +713,21 @@ $accentHl: #cc1a1a;
 
 .input {
   width: 100%;
-  background: rgba(0,0,0,0.3);
+  background: rgba(255,255,255,0.03);
   border: 1px solid $border2;
   border-radius: 8px;
   padding: 0.7rem 1rem;
   color: $text;
   font-size: 0.875rem;
   font-family: inherit;
-  transition: all 0.2s;
+  transition: all 0.3s ease;
   box-sizing: border-box;
 
   &:focus {
     outline: none;
     border-color: $accent;
-    background: rgba(179,0,0,0.05);
+    background: rgba(204,0,0,0.04);
+    box-shadow: 0 0 0 3px rgba(204,0,0,0.15);
   }
 
   &::placeholder { color: rgba(255,255,255,0.15); }
@@ -771,16 +784,21 @@ $accentHl: #cc1a1a;
   border: 1px solid $border;
   border-radius: 14px;
   padding: 1.25rem;
-  transition: border-color 0.2s;
+  transition: all 0.25s;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
 
-  &:hover { border-color: $border2; }
+  &:hover {
+    border-color: $border2;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(0,0,0,0.6);
+  }
 }
 
 .msgAvatar {
   width: 40px;
   height: 40px;
   border-radius: 10px;
-  background: linear-gradient(135deg, #374151, #111827);
+  background: linear-gradient(135deg, #222222, #0a0a0a);
   display: flex;
   align-items: center;
   justify-content: center;
