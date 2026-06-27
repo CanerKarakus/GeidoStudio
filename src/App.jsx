@@ -44,7 +44,7 @@ const AdminLayout = lazy(() => import('./components/AdminLayout/AdminLayout'));
 const AdminLogin = lazy(() => import('./pages/Admin/AdminLogin'));
 const AdminDashboard = lazy(() => import('./pages/Admin/AdminDashboard'));
 const AdminHero = lazy(() => import('./pages/Admin/AdminHero'));
-const AdminTexts = lazy(() => import('./pages/Admin/AdminTexts'));
+
 const AdminImages = lazy(() => import('./pages/Admin/AdminImages'));
 const AdminContact = lazy(() => import('./pages/Admin/AdminContact'));
 const AdminMessages = lazy(() => import('./pages/Admin/AdminMessages'));
@@ -117,7 +117,7 @@ function AnimatedRoutes() {
         <Route path="/admin" element={<Suspense fallback={<LoadingScreen />}><AdminLayout /></Suspense>}>
           <Route index element={<AdminDashboard />} />
           <Route path="hero" element={<AdminHero />} />
-          <Route path="texts" element={<AdminTexts />} />
+
           <Route path="images" element={<AdminImages />} />
           <Route path="blog" element={<AdminBlog />} />
           <Route path="projects" element={<AdminProjects />} />

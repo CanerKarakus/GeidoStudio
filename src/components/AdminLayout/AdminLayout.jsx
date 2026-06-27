@@ -12,7 +12,6 @@ import {
 const NAV_ITEMS = [
   { path: '/admin',             label: 'Dashboard',         icon: LayoutDashboard },
   { path: '/admin/hero',        label: 'Hero / Vitrin',     icon: Layers },
-  { path: '/admin/texts',       label: 'İçerik & Metinler', icon: Edit3 },
   { path: '/admin/about',       label: 'Hakkımızda',        icon: Globe },
   { path: '/admin/images',      label: 'Görseller',         icon: ImageIcon },
   { path: '/admin/blog',        label: 'Blog Yazıları',     icon: FileText },

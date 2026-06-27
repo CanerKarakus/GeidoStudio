@@ -141,13 +141,13 @@ const AdminHero = () => {
                 <div className={styles.heroColumnHeader}>
                   <span>Masaüstü Görseli</span>
                   <div style={{ position: 'relative' }}>
-                    <button className={`${styles.heroMoreBtn} ${menuOpen === \`desktop-\${index}\` ? styles.active : ''}`} onClick={() => setMenuOpen(menuOpen === \`desktop-\${index}\` ? null : \`desktop-\${index}\`)}>
+                    <button className={`${styles.heroMoreBtn} ${menuOpen === `desktop-${index}` ? styles.active : ''}`} onClick={() => setMenuOpen(menuOpen === `desktop-${index}` ? null : `desktop-${index}`)}>
                       <MoreVertical size={16} />
                     </button>
                     <AnimatePresence>
-                      {menuOpen === \`desktop-\${index}\` && (
+                      {menuOpen === `desktop-${index}` && (
                         <motion.div className={styles.heroMenu} initial={{ opacity: 0, y: -5, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -5, scale: 0.95 }}>
-                          <button className={styles.heroMenuOption} onClick={() => { setEditingUrl(\`desktop-\${index}\`); setMenuOpen(null); }}>
+                          <button className={styles.heroMenuOption} onClick={() => { setEditingUrl(`desktop-${index}`); setMenuOpen(null); }}>
                             <Link size={14} /> URL ile Yükle
                           </button>
                           <label className={styles.heroMenuOption}>
@@ -159,7 +159,7 @@ const AdminHero = () => {
                     </AnimatePresence>
                   </div>
                 </div>
-                {editingUrl === \`desktop-\${index}\` && (
+                {editingUrl === `desktop-${index}` && (
                   <div className={styles.heroUrlInputContainer}>
                     <input type="text" autoFocus placeholder="https://example.com/hero-desktop.jpg" value={desktopUrl} onChange={e => handleImgChange(index, e.target.value, 'desktop')} onKeyDown={e => { if (e.key === 'Enter') { setEditingUrl(null); handleSave(); } }} />
                     <button onClick={() => { setEditingUrl(null); handleSave(); }}>Tamam</button>
@@ -175,13 +175,13 @@ const AdminHero = () => {
                 <div className={styles.heroColumnHeader}>
                   <span>Mobil Görseli (Opsiyonel)</span>
                   <div style={{ position: 'relative' }}>
-                    <button className={`${styles.heroMoreBtn} ${menuOpen === \`mobile-\${index}\` ? styles.active : ''}`} onClick={() => setMenuOpen(menuOpen === \`mobile-\${index}\` ? null : \`mobile-\${index}\`)}>
+                    <button className={`${styles.heroMoreBtn} ${menuOpen === `mobile-${index}` ? styles.active : ''}`} onClick={() => setMenuOpen(menuOpen === `mobile-${index}` ? null : `mobile-${index}`)}>
                       <MoreVertical size={16} />
                     </button>
                     <AnimatePresence>
-                      {menuOpen === \`mobile-\${index}\` && (
+                      {menuOpen === `mobile-${index}` && (
                         <motion.div className={styles.heroMenu} initial={{ opacity: 0, y: -5, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -5, scale: 0.95 }}>
-                          <button className={styles.heroMenuOption} onClick={() => { setEditingUrl(\`mobile-\${index}\`); setMenuOpen(null); }}>
+                          <button className={styles.heroMenuOption} onClick={() => { setEditingUrl(`mobile-${index}`); setMenuOpen(null); }}>
                             <Link size={14} /> URL ile Yükle
                           </button>
                           <label className={styles.heroMenuOption}>
@@ -193,7 +193,7 @@ const AdminHero = () => {
                     </AnimatePresence>
                   </div>
                 </div>
-                {editingUrl === \`mobile-\${index}\` && (
+                {editingUrl === `mobile-${index}` && (
                   <div className={styles.heroUrlInputContainer}>
                     <input type="text" autoFocus placeholder="https://example.com/hero-mobile.jpg" value={mobileUrl} onChange={e => handleImgChange(index, e.target.value, 'mobile')} onKeyDown={e => { if (e.key === 'Enter') { setEditingUrl(null); handleSave(); } }} />
                     <button onClick={() => { setEditingUrl(null); handleSave(); }}>Tamam</button>
@@ -207,7 +207,7 @@ const AdminHero = () => {
             </div>
 
             {/* Click outside overlay to close menu */}
-            {menuOpen?.includes(\`-\${index}\`) && (
+            {menuOpen?.includes(`-${index}`) && (
               <div style={{ position: 'fixed', inset: 0, zIndex: 5 }} onClick={() => setMenuOpen(null)} />
             )}
           </motion.div>
