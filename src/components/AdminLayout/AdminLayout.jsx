@@ -70,7 +70,15 @@ const AdminLayout = () => {
       {/* SIDEBAR */}
       <aside className={`${styles.sidebar} ${isCollapsed ? styles.sidebarCollapsed : ''}`}>
         <div className={styles.sidebarBrand}>
-          <img src="/logo.svg" alt="Geido Logo" className={styles.brandLogo} />
+          {isCollapsed ? (
+            <img src="/logo.svg" alt="Geido Logo" className={styles.brandLogo} />
+          ) : (
+            <img 
+              src="/assets/geido_logo-BvfYgb4D.png" 
+              alt="Geido Studio" 
+              style={{ height: '36px', filter: 'brightness(0) invert(1)', marginLeft: '16px' }} 
+            />
+          )}
           <button className={styles.collapseToggle} onClick={() => setIsCollapsed(!isCollapsed)}>
             <ChevronRight size={18} className={isCollapsed ? '' : styles.arrowLeft} />
           </button>

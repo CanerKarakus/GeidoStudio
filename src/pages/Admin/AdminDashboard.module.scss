@@ -47,6 +47,16 @@ $accentHl: #ff1a1a;
     position: static;
     margin-top: 1rem;
     margin-left: 0;
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #fff;
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.25);
+    }
   }
 
   .navItem {
