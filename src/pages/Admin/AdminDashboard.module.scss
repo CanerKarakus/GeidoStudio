@@ -1397,3 +1397,151 @@ $accentHl: #ff1a1a;
   height: 100%;
   object-fit: cover;
 }
+
+// ─── HERO SIDE-BY-SIDE GRID ──────────────────────────────────
+.heroGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  width: 100%;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.heroColumn {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background: rgba(255,255,255,0.015);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 12px;
+}
+
+.heroColumnHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  background: rgba(0,0,0,0.2);
+
+  span {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #cccccc;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+}
+
+.heroMoreBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: #8a8a8a;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover, &.active {
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+  }
+}
+
+.heroMenu {
+  position: absolute;
+  top: 45px;
+  right: 10px;
+  width: 160px;
+  background: rgba(15, 15, 20, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  backdrop-filter: blur(20px);
+  z-index: 10;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+}
+
+.heroMenuOption {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.8rem 1rem;
+  color: #cccccc;
+  background: transparent;
+  border: none;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+  }
+  
+  input[type="file"] {
+    display: none;
+  }
+}
+
+.heroUrlInputContainer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: rgba(0,0,0,0.3);
+  border-top: 1px solid rgba(255,255,255,0.05);
+
+  input {
+    flex: 1;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+    color: #fff;
+    font-size: 0.8rem;
+    min-width: 0;
+    
+    &:focus {
+      outline: none;
+      border-color: #cc0000;
+    }
+  }
+
+  button {
+    background: #cc0000;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    flex-shrink: 0;
+
+    &:hover {
+      background: #ff1a1a;
+    }
+  }
+}
+
+.heroColumnPreview {
+  width: 100%;
+  height: 160px;
+  background-size: cover;
+  background-position: center;
+  background-color: rgba(0,0,0,0.4);
+  position: relative;
+  border-radius: 0 0 12px 12px;
+}

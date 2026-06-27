@@ -4,7 +4,7 @@ import styles from './AdminDashboard.module.scss';
 import { useCmsForm } from './useCmsForm';
 import {
   Image as ImageIcon, Plus, Trash2, GripVertical, Pencil,
-  Layers, Save, Check, AlertCircle, Upload
+  Layers, Save, Check, AlertCircle, Upload, MoreVertical, Link
 } from 'lucide-react';
 import { api } from '../../api/db';
 
@@ -12,6 +12,7 @@ const AdminHero = () => {
   const { formData, handleChange, handleSave, updateAndSave, isDirty, isSaving, toast } = useCmsForm();
   const [dragIndex, setDragIndex] = useState(null);
   const [editingUrl, setEditingUrl] = useState(null);
+  const [menuOpen, setMenuOpen] = useState(null);
   const listEndRef = useRef(null);
 
   const handleAdd = () => {
@@ -126,68 +127,88 @@ const AdminHero = () => {
             onDragOver={(e) => onDragOver(e, index)} onDragEnd={onDragEnd}
             style={{ flexDirection: 'column' }}
           >
-            <div style={{ display: 'flex', width: '100%', alignItems: 'center' }}>
-              <div className={styles.heroDragHandle} title="Sıralamak için sürükleyin"><GripVertical size={18} /></div>
-              <div className={styles.heroBannerOrder}>
-                <span>{index + 1}</span>
-                {index === 0 && <div className={styles.heroPrimaryTag}>Birincil</div>}
-              </div>
-              <div className={styles.heroBannerPreview} style={{ backgroundImage: desktopUrl ? `url(${desktopUrl})` : 'none' }}>
-                {!desktopUrl && <div className={styles.heroBannerEmpty}><ImageIcon size={32} /><span>Masaüstü Seçin</span></div>}
-              </div>
-              <div className={styles.heroBannerFooter}>
-                <div className={styles.heroBannerUrlWrap}>
-                  {editingUrl === `desktop-${index}` ? (
-                    <input className={styles.heroBannerUrlInput} type="text" autoFocus
-                      placeholder="https://example.com/hero-desktop.jpg" value={desktopUrl}
-                      onChange={e => handleImgChange(index, e.target.value, 'desktop')}
-                      onBlur={() => { setEditingUrl(null); handleSave(); }}
-                      onKeyDown={e => { if (e.key === 'Enter') { setEditingUrl(null); handleSave(); } }} />
-                  ) : (
-                    <>
-                      <div className={styles.heroBannerUrl} onClick={() => setEditingUrl(`desktop-${index}`)} style={{ flex: 1 }}>
-                        <span className={styles.urlText}>{desktopUrl || 'Masaüstü Görseli (Gerekli) — URL Girin'}</span>
-                        <Pencil size={13} />
-                      </div>
-                      <label style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '0.4rem', color: '#a0a0a0', background: 'rgba(255,255,255,0.05)', borderRadius: '4px', marginLeft: '0.5rem' }} title="Masaüstü Yükle">
-                        <Upload size={14} />
-                        <input type="file" style={{ display: 'none' }} accept="image/*" onChange={e => handleUpload(index, e.target.files[0], 'desktop')} />
-                      </label>
-                    </>
-                  )}
-                </div>
-                <button className={styles.heroBannerDeleteBtn} onClick={() => handleRemove(index)} title="Görseli Sil"><Trash2 size={15} /></button>
-              </div>
+            <div className={styles.heroDragHandle} title="Sıralamak için sürükleyin"><GripVertical size={18} /></div>
+            <div className={styles.heroBannerOrder}>
+              <span>{index + 1}</span>
+              {index === 0 && <div className={styles.heroPrimaryTag}>Birincil</div>}
+              <button className={styles.heroBannerDeleteBtn} onClick={() => handleRemove(index)} title="Görseli Sil" style={{ marginLeft: '0.5rem', background: 'rgba(239,68,68,0.2)', borderColor: 'rgba(239,68,68,0.4)', color: '#fff' }}><Trash2 size={14} /></button>
             </div>
-
-            {desktopUrl && (
-              <div style={{ display: 'flex', width: '100%', alignItems: 'center', marginTop: '10px', paddingLeft: '40px' }}>
-                <div className={styles.heroBannerPreview} style={{ width: '60px', height: '40px', backgroundImage: mobileUrl ? `url(${mobileUrl})` : 'none', opacity: mobileUrl ? 1 : 0.5 }}>
-                  {!mobileUrl && <div className={styles.heroBannerEmpty} style={{ padding: 0 }}><ImageIcon size={20} /></div>}
-                </div>
-                <div className={styles.heroBannerFooter} style={{ flex: 1, paddingLeft: '10px', background: 'none' }}>
-                  <div className={styles.heroBannerUrlWrap} style={{ background: 'rgba(0,0,0,0.2)' }}>
-                    {editingUrl === `mobile-${index}` ? (
-                      <input className={styles.heroBannerUrlInput} type="text" autoFocus
-                        placeholder="https://example.com/hero-mobile.jpg" value={mobileUrl}
-                        onChange={e => handleImgChange(index, e.target.value, 'mobile')}
-                        onBlur={() => { setEditingUrl(null); handleSave(); }}
-                        onKeyDown={e => { if (e.key === 'Enter') { setEditingUrl(null); handleSave(); } }} />
-                    ) : (
-                      <>
-                        <div className={styles.heroBannerUrl} onClick={() => setEditingUrl(`mobile-${index}`)} style={{ flex: 1 }}>
-                          <span className={styles.urlText}>{mobileUrl || 'Mobil Görseli (Opsiyonel) — URL Girin'}</span>
-                          <Pencil size={13} />
-                        </div>
-                        <label style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '0.4rem', color: '#a0a0a0', background: 'rgba(255,255,255,0.05)', borderRadius: '4px', marginLeft: '0.5rem' }} title="Mobil Yükle">
-                          <Upload size={14} />
-                          <input type="file" style={{ display: 'none' }} accept="image/*" onChange={e => handleUpload(index, e.target.files[0], 'mobile')} />
-                        </label>
-                      </>
-                    )}
+            
+            <div className={styles.heroGrid} style={{ marginTop: '0', padding: '1rem', paddingRight: '1rem', paddingTop: '3rem' }}>
+              
+              {/* DESKTOP COLUMN */}
+              <div className={styles.heroColumn}>
+                <div className={styles.heroColumnHeader}>
+                  <span>Masaüstü Görseli</span>
+                  <div style={{ position: 'relative' }}>
+                    <button className={`${styles.heroMoreBtn} ${menuOpen === \`desktop-\${index}\` ? styles.active : ''}`} onClick={() => setMenuOpen(menuOpen === \`desktop-\${index}\` ? null : \`desktop-\${index}\`)}>
+                      <MoreVertical size={16} />
+                    </button>
+                    <AnimatePresence>
+                      {menuOpen === \`desktop-\${index}\` && (
+                        <motion.div className={styles.heroMenu} initial={{ opacity: 0, y: -5, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -5, scale: 0.95 }}>
+                          <button className={styles.heroMenuOption} onClick={() => { setEditingUrl(\`desktop-\${index}\`); setMenuOpen(null); }}>
+                            <Link size={14} /> URL ile Yükle
+                          </button>
+                          <label className={styles.heroMenuOption}>
+                            <Upload size={14} /> Cihazdan Seç
+                            <input type="file" accept="image/*" onChange={e => { handleUpload(index, e.target.files[0], 'desktop'); setMenuOpen(null); }} />
+                          </label>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
                 </div>
+                {editingUrl === \`desktop-\${index}\` && (
+                  <div className={styles.heroUrlInputContainer}>
+                    <input type="text" autoFocus placeholder="https://example.com/hero-desktop.jpg" value={desktopUrl} onChange={e => handleImgChange(index, e.target.value, 'desktop')} onKeyDown={e => { if (e.key === 'Enter') { setEditingUrl(null); handleSave(); } }} />
+                    <button onClick={() => { setEditingUrl(null); handleSave(); }}>Tamam</button>
+                  </div>
+                )}
+                <div className={styles.heroColumnPreview} style={{ backgroundImage: desktopUrl ? \`url(\${desktopUrl})\` : 'none' }}>
+                  {!desktopUrl && <div className={styles.heroBannerEmpty}><ImageIcon size={32} /><span>Masaüstü Seçin</span></div>}
+                </div>
               </div>
+
+              {/* MOBILE COLUMN */}
+              <div className={styles.heroColumn}>
+                <div className={styles.heroColumnHeader}>
+                  <span>Mobil Görseli (Opsiyonel)</span>
+                  <div style={{ position: 'relative' }}>
+                    <button className={`${styles.heroMoreBtn} ${menuOpen === \`mobile-\${index}\` ? styles.active : ''}`} onClick={() => setMenuOpen(menuOpen === \`mobile-\${index}\` ? null : \`mobile-\${index}\`)}>
+                      <MoreVertical size={16} />
+                    </button>
+                    <AnimatePresence>
+                      {menuOpen === \`mobile-\${index}\` && (
+                        <motion.div className={styles.heroMenu} initial={{ opacity: 0, y: -5, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -5, scale: 0.95 }}>
+                          <button className={styles.heroMenuOption} onClick={() => { setEditingUrl(\`mobile-\${index}\`); setMenuOpen(null); }}>
+                            <Link size={14} /> URL ile Yükle
+                          </button>
+                          <label className={styles.heroMenuOption}>
+                            <Upload size={14} /> Cihazdan Seç
+                            <input type="file" accept="image/*" onChange={e => { handleUpload(index, e.target.files[0], 'mobile'); setMenuOpen(null); }} />
+                          </label>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </div>
+                {editingUrl === \`mobile-\${index}\` && (
+                  <div className={styles.heroUrlInputContainer}>
+                    <input type="text" autoFocus placeholder="https://example.com/hero-mobile.jpg" value={mobileUrl} onChange={e => handleImgChange(index, e.target.value, 'mobile')} onKeyDown={e => { if (e.key === 'Enter') { setEditingUrl(null); handleSave(); } }} />
+                    <button onClick={() => { setEditingUrl(null); handleSave(); }}>Tamam</button>
+                  </div>
+                )}
+                <div className={styles.heroColumnPreview} style={{ backgroundImage: mobileUrl ? \`url(\${mobileUrl})\` : 'none', opacity: mobileUrl ? 1 : 0.6 }}>
+                  {!mobileUrl && <div className={styles.heroBannerEmpty}><ImageIcon size={32} /><span>Mobil İçin Seçin</span></div>}
+                </div>
+              </div>
+              
+            </div>
+
+            {/* Click outside overlay to close menu */}
+            {menuOpen?.includes(\`-\${index}\`) && (
+              <div style={{ position: 'fixed', inset: 0, zIndex: 5 }} onClick={() => setMenuOpen(null)} />
             )}
           </motion.div>
         )})}
