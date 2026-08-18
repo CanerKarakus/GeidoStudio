@@ -63,8 +63,8 @@
     "sm_2": "Visual & Community Management",
     "sm_3": "Analysis & Reporting",
     "sm_4": "Ad Creatives",
-    "caner_role": "Software & Technology",
-    "caner_desc": "We produce performant, secure, and scalable digital solutions using modern technologies.",
+    "caner_role": "Software, Video Editing & Social Media",
+    "caner_desc": "We produce end-to-end creative and digital solutions for brands through modern web & mobile software, video editing/post-production, graphic design, and social media management.",
     "development": "Development",
     "dev_1": "Web & Mobile Design",
     "dev_2": "Web & Mobile Development",
@@ -73,6 +73,11 @@
     "sys_1": "Scripting",
     "sys_2": "Automation",
     "sys_3": "API Integration",
+    "video_editing": "Video & Editing",
+    "video_1": "Video Editing & Montage",
+    "video_2": "Post Production & Effects",
+    "video_3": "Reels & Social Media Videos",
+    "video_4": "Audio & Color Grading",
     "expertise": "Areas of Expertise"
   },
   "projects": {

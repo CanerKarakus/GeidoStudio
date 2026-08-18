@@ -7,6 +7,14 @@ import { Palette, Code2, X, Mail } from 'lucide-react';
 import SEO from '../../components/SEO/SEO';
 
 const memberDetails = {
+  caner: {
+    name: 'Caner Karakuş',
+    roleKey: 'caner_role',
+    email: 'ckarakus@geidostudio.com',
+    icon: <Code2 size={48} />,
+    bioKey: 'caner_desc',
+    focusKeys: ['dev_2', 'video_1', 'video_2', 'gd_1', 'sm_1', 'sys_2']
+  },
   yasarhan: {
     name: 'Yaşarhan Pekergin',
     roleKey: 'yasarhan_role',
@@ -14,14 +22,6 @@ const memberDetails = {
     icon: <Palette size={48} />,
     bioKey: 'yasarhan_desc',
     focusKeys: ['gd_1', 'sm_1', 'sm_2']
-  },
-  caner: {
-    name: 'Caner Karakuş',
-    roleKey: 'caner_role',
-    email: 'ckarakus@geidostudio.com',
-    icon: <Code2 size={48} />,
-    bioKey: 'caner_desc',
-    focusKeys: ['dev_2', 'sys_3', 'sys_2']
   }
 };
 
@@ -59,13 +59,82 @@ const About = () => {
         </m.div>
 
         <div className={styles.teamSection}>
-          {/* Team Member 1 */}
+          {/* Team Member 1 - Caner */}
+          <m.div
+            id="caner"
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className={styles.memberCard}
+          >
+            <div className={styles.memberVisual}>
+              <div
+                className={`${styles.avatarPlaceholder} ${styles.caner}`}
+                style={cms?.aboutTeamCanerImage ? { backgroundImage: `url(${cms.aboutTeamCanerImage})` } : {}}
+              ></div>
+              <div
+                className={styles.floatingIcon}
+                onClick={() => setSelectedMember('caner')}
+                role="button"
+                tabIndex={0}
+              >
+                <Code2 size={32} />
+              </div>
+            </div>
+            <div className={styles.memberInfo}>
+              <h2>Caner Karakuş</h2>
+              <h3 className={styles.role}>{t('about.caner_role')}</h3>
+              <a href="mailto:ckarakus@geidostudio.com" className={styles.memberEmail}>
+                <Mail size={16} /> ckarakus@geidostudio.com
+              </a>
+              <p>{t('about.caner_desc')}</p>
+
+              <div className={styles.skills}>
+                <div className={styles.skillGroup}>
+                  <h4>{t('about.development')}</h4>
+                  <ul>
+                    <li>{t('about.dev_1')}</li>
+                    <li>{t('about.dev_2')}</li>
+                    <li>{t('about.dev_3')}</li>
+                    <li>{t('about.sys_2')}</li>
+                  </ul>
+                </div>
+                <div className={styles.skillGroup}>
+                  <h4>{t('about.video_editing')}</h4>
+                  <ul>
+                    <li>{t('about.video_1')}</li>
+                    <li>{t('about.video_2')}</li>
+                    <li>{t('about.video_3')}</li>
+                    <li>{t('about.video_4')}</li>
+                  </ul>
+                </div>
+                <div className={styles.skillGroup}>
+                  <h4>{t('about.graphic_design')}</h4>
+                  <ul>
+                    <li>{t('about.gd_1')}</li>
+                    <li>{t('about.gd_3')}</li>
+                    <li>{t('about.sm_4')}</li>
+                  </ul>
+                </div>
+                <div className={styles.skillGroup}>
+                  <h4>{t('about.social_media')}</h4>
+                  <ul>
+                    <li>{t('about.sm_1')}</li>
+                    <li>{t('about.sm_2')}</li>
+                    <li>{t('about.sm_3')}</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </m.div>
+
+          {/* Team Member 2 - Yasarhan */}
           <m.div
             id="yasarhan"
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className={styles.memberCard}
+            className={`${styles.memberCard} ${styles.reverse}`}
           >
             <div className={styles.memberVisual}>
               <div
@@ -106,57 +175,6 @@ const About = () => {
                     <li>{t('about.sm_2')}</li>
                     <li>{t('about.sm_3')}</li>
                     <li>{t('about.sm_4')}</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </m.div>
-
-          {/* Team Member 2 */}
-          <m.div
-            id="caner"
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className={`${styles.memberCard} ${styles.reverse}`}
-          >
-            <div className={styles.memberVisual}>
-              <div
-                className={`${styles.avatarPlaceholder} ${styles.caner}`}
-                style={cms?.aboutTeamCanerImage ? { backgroundImage: `url(${cms.aboutTeamCanerImage})` } : {}}
-              ></div>
-              <div
-                className={styles.floatingIcon}
-                onClick={() => setSelectedMember('caner')}
-                role="button"
-                tabIndex={0}
-              >
-                <Code2 size={32} />
-              </div>
-            </div>
-            <div className={styles.memberInfo}>
-              <h2>Caner Karakuş</h2>
-              <h3 className={styles.role}>{t('about.caner_role')}</h3>
-              <a href="mailto:ckarakus@geidostudio.com" className={styles.memberEmail}>
-                <Mail size={16} /> ckarakus@geidostudio.com
-              </a>
-              <p>{t('about.caner_desc')}</p>
-
-              <div className={styles.skills}>
-                <div className={styles.skillGroup}>
-                  <h4>{t('about.development')}</h4>
-                  <ul>
-                    <li>{t('about.dev_1')}</li>
-                    <li>{t('about.dev_2')}</li>
-                    <li>{t('about.dev_3')}</li>
-                  </ul>
-                </div>
-                <div className={styles.skillGroup}>
-                  <h4>{t('about.system')}</h4>
-                  <ul>
-                    <li>{t('about.sys_1')}</li>
-                    <li>{t('about.sys_2')}</li>
-                    <li>{t('about.sys_3')}</li>
                   </ul>
                 </div>
               </div>

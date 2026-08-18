@@ -63,8 +63,8 @@
     "sm_2": "Görsel & Topluluk Yönetimi",
     "sm_3": "Analiz & Raporlama",
     "sm_4": "Reklam Görselleri",
-    "caner_role": "Yazılım & Teknoloji",
-    "caner_desc": "Modern teknolojileri kullanarak performanslı, güvenli ve ölçeklenebilir dijital çözümler üretiyoruz.",
+    "caner_role": "Yazılım, Video Kurgu & Sosyal Medya",
+    "caner_desc": "Modern web & mobil yazılımlar, video kurgu/montaj, grafik tasarım ve sosyal medya yönetimi ile markalara uçtan uca kreatif ve dijital çözümler üretiyoruz.",
     "development": "Geliştirme",
     "dev_1": "Web & Mobil Tasarım",
     "dev_2": "Web & Mobil Geliştirme",
@@ -73,6 +73,11 @@
     "sys_1": "Script Hazırlama",
     "sys_2": "Otomasyon",
     "sys_3": "API Entegrasyonu",
+    "video_editing": "Video & Kurgu",
+    "video_1": "Video Editörlüğü & Kurgu",
+    "video_2": "Post Prodüksiyon & Montaj",
+    "video_3": "Reels & Sosyal Medya Videoları",
+    "video_4": "Ses & Renk Düzenleme",
     "expertise": "Uzmanlık Alanları"
   },
   "projects": {

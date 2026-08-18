@@ -19,22 +19,7 @@ const AdminAbout = () => {
       )}
 
       <div className={styles.formGrid}>
-        {/* Team Member 1: Yasarhan */}
-        <div className={styles.formCard}>
-          <div className={styles.formCardHeader}>
-            <User size={18} />
-            <h3>Yaşarhan Pekergin — Görsel Alan</h3>
-          </div>
-          <div className={styles.field} style={{ padding: '0 1.5rem 1.5rem' }}>
-            <ImageUploader 
-              value={formData.aboutTeamYasarhanImage} 
-              onChange={url => handleChange('aboutTeamYasarhanImage', url)} 
-              label="Profil Görseli" 
-            />
-          </div>
-        </div>
-
-        {/* Team Member 2: Caner */}
+        {/* Team Member 1: Caner */}
         <div className={styles.formCard}>
           <div className={styles.formCardHeader}>
             <User size={18} />
@@ -44,6 +29,21 @@ const AdminAbout = () => {
             <ImageUploader 
               value={formData.aboutTeamCanerImage} 
               onChange={url => handleChange('aboutTeamCanerImage', url)} 
+              label="Profil Görseli" 
+            />
+          </div>
+        </div>
+
+        {/* Team Member 2: Yasarhan */}
+        <div className={styles.formCard}>
+          <div className={styles.formCardHeader}>
+            <User size={18} />
+            <h3>Yaşarhan Pekergin — Görsel Alan</h3>
+          </div>
+          <div className={styles.field} style={{ padding: '0 1.5rem 1.5rem' }}>
+            <ImageUploader 
+              value={formData.aboutTeamYasarhanImage} 
+              onChange={url => handleChange('aboutTeamYasarhanImage', url)} 
               label="Profil Görseli" 
             />
           </div>
