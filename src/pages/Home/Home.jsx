@@ -54,7 +54,6 @@ const Home = () => {
   }, [heroImages, currentSlide, cms?.heroSliderDuration]);
 
   const articles = cms?.blogs || [];
-  const projects = cms?.projects || [];
 
   const getHeroImageUrl = (heroItem) => {
     if (!heroItem) return geidoHeroFallback;
@@ -165,44 +164,7 @@ const Home = () => {
       </section>
 
 
-      {/* PROJECTS SECTION */}
-      <section className={styles.projects}>
-        <div className={styles.container}>
-          <div className={styles.sectionHeader}>
-            <div>
-              <span className={styles.subtitle}>{t('home.projects_subtitle')}</span>
-              <h2 className={styles.title} dangerouslySetInnerHTML={{ __html: t('home.projects_title') }}></h2>
-            </div>
-            <Button to="/projeler" variant="primary">{t('home.more_projects')}</Button>
-          </div>
 
-          <div className={styles.projectsGrid}>
-            {projects.length > 0 ? (
-              projects.slice(0, 4).map((p, i) => (
-                <div 
-                  key={p.id || p.slug} 
-                  className={styles.projectCard}
-                  onClick={() => p.externalLink && window.open(p.externalLink, '_blank')}
-                  style={{ cursor: p.externalLink ? 'pointer' : 'default' }}
-                >
-                  <div className={styles.projectImageWrapper}>
-                    <div className={styles.projectImage} style={{ backgroundImage: `url(${p.image})` }}></div>
-                  </div>
-                  <div className={`${styles.projectInfo} ${i === 1 ? styles.highlightInfo : ''}`}>
-                    <div>
-                      <h3>{p.title}</h3>
-                      <span>{p.category}</span>
-                    </div>
-                    <div className={styles.arrowIcon}><ArrowUpRight size={24} strokeWidth={1.5} /></div>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <p className={styles.emptyText} style={{ gridColumn: '1 / -1' }}>{t('home.no_content')}</p>
-            )}
-          </div>
-        </div>
-      </section>
 
       {/* ARTICLES SECTION */}
       <section className={styles.articles}>
