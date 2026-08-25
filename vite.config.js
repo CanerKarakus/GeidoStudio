@@ -29,6 +29,7 @@ export default defineConfig({
         '/projeler',
         '/blog',
         '/iletisim',
+        '/futbolmeydani-privacy',
         ...blogRoutes
       ]
     })

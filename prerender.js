@@ -22,6 +22,7 @@ const routesToPrerender = [
   '/projeler',
   '/blog',
   '/iletisim',
+  '/futbolmeydani-privacy',
   ...getBlogRoutes()
 ];
 

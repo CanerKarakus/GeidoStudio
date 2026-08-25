@@ -38,6 +38,7 @@ const Ticket = lazy(() => import('./pages/Ticket/Ticket'));
 const Unsubscribe = lazy(() => import('./pages/Unsubscribe/Unsubscribe'));
 const Tracking = lazy(() => import('./pages/Tracking/Tracking'));
 const Honeypot = lazy(() => import('./pages/Honeypot/Honeypot'));
+const FutbolMeydaniPrivacy = lazy(() => import('./pages/FutbolMeydaniPrivacy/FutbolMeydaniPrivacy'));
 
 // Admin pages
 const AdminLayout = lazy(() => import('./components/AdminLayout/AdminLayout'));
@@ -111,6 +112,7 @@ function AnimatedRoutes() {
         <Route path="/unsubscribe" element={<PageTransition><Unsubscribe /></PageTransition>} />
         <Route path="/takip" element={<PageTransition><Tracking /></PageTransition>} />
         <Route path="/takip/:slug" element={<PageTransition><Tracking /></PageTransition>} />
+        <Route path="/futbolmeydani-privacy" element={<PageTransition><FutbolMeydaniPrivacy /></PageTransition>} />
         
         {/* Admin Routes */}
         <Route path="/admin/login" element={<Suspense fallback={<LoadingScreen />}><AdminLogin /></Suspense>} />
