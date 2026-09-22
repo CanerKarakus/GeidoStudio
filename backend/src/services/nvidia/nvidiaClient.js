@@ -13,14 +13,14 @@ class NvidiaClient {
   constructor() {
     this.apiKey = process.env.NVIDIA_API_KEY || '';
     this.baseUrl = (process.env.NVIDIA_BASE_URL || 'https://integrate.api.nvidia.com/v1').replace(/\/+$/, '');
-    this.model = process.env.NVIDIA_MODEL || 'nvidia/cosmos3-nano-reasoner';
+    this.model = process.env.NVIDIA_MODEL || 'nvidia/cosmos-reason2-8b';
     this.timeoutMs = parseInt(process.env.NVIDIA_REQUEST_TIMEOUT_MS, 10) || 300000; // 5 min default
     this.maxTokens = parseInt(process.env.NVIDIA_MAX_OUTPUT_TOKENS, 10) || 8192;
     this.provider = process.env.ANALYSIS_PROVIDER || (process.env.NODE_ENV === 'production' ? 'nvidia' : 'nvidia');
   }
 
   /**
-   * Analyze an optimized video file with NVIDIA Cosmos3-Nano-Reasoner
+   * Analyze an optimized video file with NVIDIA Cosmos
    * @param {string} videoFilePath - Absolute path to the optimized MP4 video file
    * @param {object} options - Optional configuration overrides
    * @returns {Promise<object>} Structured analysis JSON object
@@ -50,21 +50,17 @@ class NvidiaClient {
       model: this.model,
       messages: [
         {
-          role: 'system',
-          content: SYSTEM_INSTRUCTION,
-        },
-        {
           role: 'user',
           content: [
+            {
+              type: 'text',
+              text: `${SYSTEM_INSTRUCTION}\n\n${USER_PROMPT_TEMPLATE}`,
+            },
             {
               type: 'video_url',
               video_url: {
                 url: dataUri,
               },
-            },
-            {
-              type: 'text',
-              text: USER_PROMPT_TEMPLATE,
             },
           ],
         },
@@ -118,7 +114,8 @@ class NvidiaClient {
       } else if (res.status >= 500) {
         throw new Error(`NVIDIA sunucu hatası (HTTP ${res.status}): ${errorBody?.error?.message || 'Geçici model sunucusu arızası.'}`);
       } else {
-        throw new Error(`NVIDIA API hatası (HTTP ${res.status}): ${errorBody?.error?.message || 'Bilinmeyen API hatası.'}`);
+        const detail = errorBody?.error?.message || errorBody?.message || JSON.stringify(errorBody);
+        throw new Error(`NVIDIA API hatası (HTTP ${res.status}): ${detail}`);
       }
     }
 

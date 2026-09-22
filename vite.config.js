@@ -52,7 +52,7 @@ export default defineConfig({
     allowedHosts: ['jaquelyn-vitreum-collene.ngrok-free.dev', 'all'],
     proxy: {
       '/api': {
-        target: 'http://localhost:3005',
+        target: process.env.VITE_LOCAL_BACKEND ? 'http://localhost:3005' : 'https://api.geidostudio.com',
         changeOrigin: true,
         secure: false,
       },

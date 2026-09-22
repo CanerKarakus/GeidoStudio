@@ -58,19 +58,50 @@ const upload = multer({
   fileFilter,
 });
 
-// In-Memory Job State Store
-// Note: In case of Node.js restart, active jobs are reset.
-const jobs = new Map();
+// Disk-backed Job Store (Ensures multi-process Passenger workers share state)
+const jobsDir = path.join(tempDir, 'jobs');
+if (!fs.existsSync(jobsDir)) {
+  fs.mkdirSync(jobsDir, { recursive: true });
+}
 
-// Periodic cleanup of jobs older than 1 hour
-setInterval(() => {
-  const oneHourAgo = Date.now() - (60 * 60 * 1000);
-  for (const [id, job] of jobs.entries()) {
-    if (job.createdAt < oneHourAgo) {
-      jobs.delete(id);
-    }
+function saveJob(job) {
+  try {
+    fs.writeFileSync(path.join(jobsDir, `${job.id}.json`), JSON.stringify(job), 'utf8');
+  } catch (e) {
+    console.error('[Jobs] Error saving job:', e.message);
   }
-}, 15 * 60 * 1000);
+}
+
+function getJob(jobId) {
+  try {
+    const jobPath = path.join(jobsDir, `${jobId}.json`);
+    if (fs.existsSync(jobPath)) {
+      return JSON.parse(fs.readFileSync(jobPath, 'utf8'));
+    }
+  } catch (e) {
+    console.error('[Jobs] Error reading job:', e.message);
+  }
+  return null;
+}
+
+// Periodic cleanup of jobs older than 2 hours
+setInterval(() => {
+  try {
+    const twoHoursAgo = Date.now() - (2 * 60 * 60 * 1000);
+    const files = fs.readdirSync(jobsDir);
+    for (const f of files) {
+      if (f.endsWith('.json')) {
+        const fp = path.join(jobsDir, f);
+        const stats = fs.statSync(fp);
+        if (stats.mtimeMs < twoHoursAgo) {
+          fs.unlinkSync(fp);
+        }
+      }
+    }
+  } catch (e) {
+    // ignore cleanup errors
+  }
+}, 30 * 60 * 1000);
 
 function calculateAspectRatio(width, height) {
   if (!width || !height) return '16:9';
@@ -125,7 +156,7 @@ router.post('/', (req, res) => {
       analysis: null,
       error: null,
     };
-    jobs.set(jobId, job);
+    saveJob(job);
 
     // Respond immediately with Job ID so client can begin polling
     res.status(202).json({
@@ -140,16 +171,19 @@ router.post('/', (req, res) => {
       let finalPath = rawPath;
       try {
         job.status = 'optimizing_video';
+        saveJob(job);
         const prepared = await videoProcessor.prepareForAnalysis(rawPath, optPath);
         finalPath = prepared.finalAnalysisPath;
         job.comparison_metadata = prepared.comparison;
 
         job.status = 'analyzing_video';
+        saveJob(job);
         const analysisResult = await nvidiaClient.analyzeVideo(finalPath, {
           duration: prepared.originalMeta.duration,
         });
 
         job.status = 'processing_result';
+        saveJob(job);
 
         // Combine top-level video metadata with strict separation of original_fps vs analysis_fps
         const completeAnalysis = {
@@ -157,8 +191,8 @@ router.post('/', (req, res) => {
             duration_seconds: prepared.originalMeta.duration,
             resolution: prepared.comparison.original.resolution,
             aspect_ratio: calculateAspectRatio(prepared.originalMeta.width, prepared.originalMeta.height),
-            original_fps: prepared.comparison.original.fps,
-            analysis_fps: prepared.comparison.analysis.fps,
+            original_fps: prepared.comparison.original.original_fps,
+            analysis_fps: prepared.comparison.analysis_version.analysis_fps,
             orientation: prepared.originalMeta.width >= prepared.originalMeta.height ? 'landscape' : 'portrait',
           },
           ...analysisResult,
@@ -166,6 +200,7 @@ router.post('/', (req, res) => {
 
         job.analysis = completeAnalysis;
         job.status = 'completed';
+        saveJob(job);
         console.log(`[Analyze Route] Job ${jobId} completed successfully!`);
       } catch (pipelineErr) {
         console.error(`[Analyze Route] Job ${jobId} failed:`, pipelineErr.message);
@@ -173,6 +208,7 @@ router.post('/', (req, res) => {
         job.error = {
           message: pipelineErr.message || 'Video analizi sırasında beklenmeyen bir hata oluştu.',
         };
+        saveJob(job);
       } finally {
         // Guaranteed cleanup of temporary files
         videoProcessor.cleanup([rawPath, optPath]);
@@ -199,7 +235,7 @@ router.get('/limits', (req, res) => {
  */
 router.get('/:jobId', (req, res) => {
   const { jobId } = req.params;
-  const job = jobs.get(jobId);
+  const job = getJob(jobId);
 
   if (!job) {
     return res.status(404).json({

@@ -8,6 +8,7 @@ import {
   Scissors, ShieldAlert, ChevronDown, Clock, Cpu, FileText,
   AlertTriangle, CheckCircle2, Video
 } from 'lucide-react';
+import SEO from '../../components/SEO/SEO';
 import { api } from '../../api/db';
 import styles from './Prompt.module.scss';
 
@@ -290,8 +291,13 @@ const Prompt = () => {
   };
 
   return (
-    <div className={styles.container}>
-      {/* Page Header */}
+    <div className={styles.promptPage}>
+      <SEO
+        title="AI Video Teknik Analiz — Geido Studio"
+        description="Referans videonuzun kamera hareketi, optik, kadraj, ışık ve kompozisyonunu NVIDIA Cosmos multimodal yapay zeka ile teknik olarak çözümleyin."
+      />
+      <div className={styles.container}>
+        {/* Page Header */}
       <header className={styles.header}>
         <div className={styles.badge}>
           <Sparkles size={14} />
@@ -952,6 +958,7 @@ const Prompt = () => {
           </div>
         )}
       </AnimatePresence>
+      </div>
     </div>
   );
 };

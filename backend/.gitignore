@@ -3,4 +3,5 @@ node_modules/
 data/*.json
 *.log
 uploads/temp/
-
+bin/
+test_assets/
