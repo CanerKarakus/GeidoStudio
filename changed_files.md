@@ -29,9 +29,20 @@ Bu dosya, yapılan geliştirmeler sonrasında hangi dosyaların değiştiğini v
 - `[Yeni]` src/components/MaintenanceScreen/MaintenanceScreen.module.scss
 - `[Değişti]` src/pages/Ticket/Ticket.jsx
 - `[Değişti]` src/pages/Ticket/Ticket.module.scss
+- `[Yeni]` src/pages/Prompt/Prompt.jsx
+- `[Yeni]` src/pages/Prompt/Prompt.module.scss
 
 **Backend (cPanel):**
 - `[Değişti]` backend/src/server.js
+- `[Değişti]` backend/.env.example
+- `[Değişti]` backend/.gitignore
+- `[Yeni]` backend/src/routes/analyze.js
+- `[Yeni]` backend/src/services/nvidia/nvidiaClient.js
+- `[Yeni]` backend/src/services/nvidia/parser.js
+- `[Yeni]` backend/src/services/nvidia/prompts/technicalVideoAnalysis.js
+- `[Yeni]` backend/src/services/video/videoProcessor.js
+- `[Yeni]` backend/src/services/video/frameExtractor.js
+- `[Yeni]` backend/test-video-analysis.js
 - `[Değişti]` backend/src/routes/cms.js
 - `[Değişti]` backend/src/routes/messages.js
 - `[Değişti]` backend/src/routes/newsletter.js

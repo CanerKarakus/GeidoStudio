@@ -154,6 +154,7 @@ app.use('/api/newsletter', require('./routes/newsletter'));
 app.use('/api/upload',     require('./routes/upload'));
 app.use('/api/tracking',   require('./routes/tracking'));
 app.use('/api/ai-chat',    require('./routes/ai-chat'));
+app.use('/api/analyze',    require('./routes/analyze'));
 app.use('/api/webhooks',   require('./routes/webhooks'));
 
 // ── Health Check ─────────────────────────────────────────────────────────────

@@ -163,4 +163,51 @@ export const api = {
 
   deleteTracking: (id) =>
     request('DELETE', `/api/tracking/${id}`),
+
+  // ── AI Video Technical Analyzer (/prompt) ──────────────────────────────────
+  analyzeVideo: async (file, onUploadProgress) => {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      const formData = new FormData();
+      formData.append('video', file);
+
+      if (onUploadProgress && xhr.upload) {
+        xhr.upload.onprogress = (event) => {
+          if (event.lengthComputable) {
+            const percent = Math.round((event.loaded / event.total) * 100);
+            onUploadProgress(percent);
+          }
+        };
+      }
+
+      xhr.onload = () => {
+        let data = {};
+        try {
+          data = JSON.parse(xhr.responseText);
+        } catch (e) {
+          data = {};
+        }
+
+        if (xhr.status >= 200 && xhr.status < 300) {
+          resolve(data);
+        } else {
+          reject(new Error(data.error || `Yükleme hatası (HTTP ${xhr.status})`));
+        }
+      };
+
+      xhr.onerror = () => {
+        reject(new Error('Ağ bağlantısı hatası nedeniyle video yüklenemedi.'));
+      };
+
+      xhr.open('POST', `${API_URL}/api/analyze`);
+      xhr.withCredentials = true;
+      xhr.send(formData);
+    });
+  },
+
+  getAnalysisStatus: (jobId) =>
+    request('GET', `/api/analyze/${jobId}`),
+
+  getAnalysisLimits: () =>
+    request('GET', '/api/analyze/limits'),
 };
