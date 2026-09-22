@@ -146,6 +146,22 @@ router.post('/', (req, res) => {
     const rawPath = req.file.path;
     const optPath = path.join(tempDir, `opt_${jobId}.mp4`);
 
+    let keyframePath = null;
+    const keyframeData = req.body?.keyframe;
+    if (keyframeData && typeof keyframeData === 'string' && keyframeData.startsWith('data:image/')) {
+      try {
+        const matches = keyframeData.match(/^data:image\/([a-zA-Z0-9]+);base64,(.+)$/);
+        if (matches) {
+          const ext = matches[1] === 'jpeg' ? 'jpg' : matches[1];
+          keyframePath = path.join(tempDir, `keyframe_${jobId}.${ext}`);
+          fs.writeFileSync(keyframePath, Buffer.from(matches[2], 'base64'));
+          console.log(`[Analyze Route] Captured client keyframe saved to ${keyframePath}`);
+        }
+      } catch (kfErr) {
+        console.warn('[Analyze Route] Failed to save client keyframe:', kfErr.message);
+      }
+    }
+
     // Create initial job entry
     const job = {
       id: jobId,
@@ -180,6 +196,7 @@ router.post('/', (req, res) => {
         saveJob(job);
         const analysisResult = await nvidiaClient.analyzeVideo(finalPath, {
           duration: prepared.originalMeta.duration,
+          keyframePath,
         });
 
         job.status = 'processing_result';
@@ -211,7 +228,7 @@ router.post('/', (req, res) => {
         saveJob(job);
       } finally {
         // Guaranteed cleanup of temporary files
-        videoProcessor.cleanup([rawPath, optPath]);
+        videoProcessor.cleanup([rawPath, optPath, keyframePath]);
       }
     })();
   });

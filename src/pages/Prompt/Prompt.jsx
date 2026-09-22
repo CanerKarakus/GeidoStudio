@@ -55,6 +55,7 @@ const Prompt = () => {
   const [showJsonModal, setShowJsonModal] = useState(false);
 
   const fileInputRef = useRef(null);
+  const videoRef = useRef(null);
   const pollTimerRef = useRef(null);
 
   // Cleanup object URL on unmount
@@ -169,6 +170,67 @@ const Prompt = () => {
     setComparisonMetadata(null);
   };
 
+  // Helper to extract a high-quality keyframe (from active player or offscreen video)
+  const extractKeyframe = async (vElem, file) => {
+    try {
+      if (vElem && vElem.videoWidth > 0) {
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.min(vElem.videoWidth, 1280);
+        canvas.height = Math.min(vElem.videoHeight, 720);
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(vElem, 0, 0, canvas.width, canvas.height);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+        if (dataUrl && dataUrl.length > 1000) return dataUrl;
+      }
+    } catch (e) {
+      console.warn('Direct keyframe extraction error:', e.message);
+    }
+
+    return new Promise((resolve) => {
+      try {
+        const offscreenVideo = document.createElement('video');
+        offscreenVideo.preload = 'auto';
+        offscreenVideo.muted = true;
+        offscreenVideo.playsInline = true;
+        const blobUrl = URL.createObjectURL(file);
+        offscreenVideo.src = blobUrl;
+
+        let finished = false;
+        const finish = (res) => {
+          if (!finished) {
+            finished = true;
+            URL.revokeObjectURL(blobUrl);
+            resolve(res);
+          }
+        };
+
+        offscreenVideo.onloadeddata = () => {
+          const seekSec = Math.min(1.0, (offscreenVideo.duration || 5) * 0.15);
+          offscreenVideo.currentTime = seekSec;
+        };
+
+        offscreenVideo.onseeked = () => {
+          try {
+            const canvas = document.createElement('canvas');
+            canvas.width = Math.min(offscreenVideo.videoWidth || 1280, 1280);
+            canvas.height = Math.min(offscreenVideo.videoHeight || 720, 720);
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(offscreenVideo, 0, 0, canvas.width, canvas.height);
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+            finish(dataUrl);
+          } catch (err) {
+            finish(null);
+          }
+        };
+
+        offscreenVideo.onerror = () => finish(null);
+        setTimeout(() => finish(null), 3500);
+      } catch (err) {
+        resolve(null);
+      }
+    });
+  };
+
   // Start analysis upload
   const handleStartAnalysis = async () => {
     if (!selectedFile) return;
@@ -177,13 +239,15 @@ const Prompt = () => {
     setAnalysisState('UPLOADING');
     setUploadPercent(0);
 
+    const keyframeDataUrl = await extractKeyframe(videoRef.current, selectedFile);
+
     try {
       const response = await api.analyzeVideo(selectedFile, (percent) => {
         setUploadPercent(percent);
         if (percent >= 100) {
           setAnalysisState('VALIDATING');
         }
-      });
+      }, keyframeDataUrl);
 
       if (response.success && response.jobId) {
         setActiveJobId(response.jobId);
@@ -341,7 +405,7 @@ const Prompt = () => {
         {analysisState !== 'IDLE' && previewUrl && (
           <div className={styles.previewGrid}>
             <div className={styles.videoPlayerWrap}>
-              <video src={previewUrl} controls playsInline />
+              <video ref={videoRef} src={previewUrl} controls playsInline crossOrigin="anonymous" />
             </div>
 
             <div className={styles.previewMeta}>

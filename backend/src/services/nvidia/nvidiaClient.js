@@ -13,14 +13,14 @@ class NvidiaClient {
   constructor() {
     this.apiKey = process.env.NVIDIA_API_KEY || '';
     this.baseUrl = (process.env.NVIDIA_BASE_URL || 'https://integrate.api.nvidia.com/v1').replace(/\/+$/, '');
-    this.model = process.env.NVIDIA_MODEL || 'nvidia/cosmos-reason2-8b';
+    this.model = process.env.NVIDIA_MODEL || 'meta/llama-3.2-11b-vision-instruct';
     this.timeoutMs = parseInt(process.env.NVIDIA_REQUEST_TIMEOUT_MS, 10) || 300000; // 5 min default
     this.maxTokens = parseInt(process.env.NVIDIA_MAX_OUTPUT_TOKENS, 10) || 8192;
     this.provider = process.env.ANALYSIS_PROVIDER || (process.env.NODE_ENV === 'production' ? 'nvidia' : 'nvidia');
   }
 
   /**
-   * Analyze an optimized video file with NVIDIA Cosmos
+   * Analyze an optimized video file with NVIDIA Multimodal Model
    * @param {string} videoFilePath - Absolute path to the optimized MP4 video file
    * @param {object} options - Optional configuration overrides
    * @returns {Promise<object>} Structured analysis JSON object
@@ -46,27 +46,49 @@ class NvidiaClient {
 
     const endpoint = `${this.baseUrl}/chat/completions`;
 
+    const userContent = [
+      {
+        type: 'text',
+        text: USER_PROMPT_TEMPLATE,
+      },
+    ];
+
+    if (options.keyframePath && fs.existsSync(options.keyframePath)) {
+      const kfBuffer = fs.readFileSync(options.keyframePath);
+      const kfBase64 = kfBuffer.toString('base64');
+      userContent.push({
+        type: 'image_url',
+        image_url: {
+          url: `data:image/jpeg;base64,${kfBase64}`,
+        },
+      });
+      console.log(`[NvidiaClient] Included video keyframe (${(kfBuffer.length / 1024).toFixed(1)} KB) in payload.`);
+    } else {
+      userContent.push({
+        type: 'video_url',
+        video_url: {
+          url: dataUri,
+        },
+      });
+    }
+
+    const messages = [
+      {
+        role: 'system',
+        content: `${SYSTEM_INSTRUCTION}\n\nCRITICAL CONSTRAINTS:\n1. Your response MUST be a single, valid, parsable JSON object conforming strictly to the requested schema.\n2. Do NOT output any markdown wrappers, no introductory or concluding text.`,
+      },
+      {
+        role: 'user',
+        content: userContent,
+      },
+    ];
+
     const payload = {
       model: this.model,
-      messages: [
-        {
-          role: 'user',
-          content: [
-            {
-              type: 'text',
-              text: `${SYSTEM_INSTRUCTION}\n\n${USER_PROMPT_TEMPLATE}`,
-            },
-            {
-              type: 'video_url',
-              video_url: {
-                url: dataUri,
-              },
-            },
-          ],
-        },
-      ],
+      messages,
+      response_format: { type: 'json_object' },
       max_tokens: this.maxTokens,
-      temperature: 0.2,
+      temperature: 0.1,
       stream: false,
     };
 

@@ -165,11 +165,14 @@ export const api = {
     request('DELETE', `/api/tracking/${id}`),
 
   // ── AI Video Technical Analyzer (/prompt) ──────────────────────────────────
-  analyzeVideo: async (file, onUploadProgress) => {
+  analyzeVideo: async (file, onUploadProgress, keyframeDataUrl = null) => {
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
       const formData = new FormData();
       formData.append('video', file);
+      if (keyframeDataUrl) {
+        formData.append('keyframe', keyframeDataUrl);
+      }
 
       if (onUploadProgress && xhr.upload) {
         xhr.upload.onprogress = (event) => {

@@ -17,12 +17,12 @@ const fs = require('fs');
 
 class VideoProcessor {
   constructor() {
-    // Check if local linux-x64 binary exists
+    const isLinuxX64 = process.platform === 'linux' && process.arch === 'x64';
     const localFfmpeg = path.join(__dirname, '../../../bin/linux-x64/ffmpeg');
     const localFfprobe = path.join(__dirname, '../../../bin/linux-x64/ffprobe');
 
-    this.ffmpegPath = fs.existsSync(localFfmpeg) ? localFfmpeg : (process.env.FFMPEG_PATH || 'ffmpeg');
-    this.ffprobePath = fs.existsSync(localFfprobe) ? localFfprobe : (process.env.FFPROBE_PATH || 'ffprobe');
+    this.ffmpegPath = (isLinuxX64 && fs.existsSync(localFfmpeg)) ? localFfmpeg : (process.env.FFMPEG_PATH || 'ffmpeg');
+    this.ffprobePath = (isLinuxX64 && fs.existsSync(localFfprobe)) ? localFfprobe : (process.env.FFPROBE_PATH || 'ffprobe');
     this.maxUploadMb = parseInt(process.env.MAX_VIDEO_UPLOAD_SIZE_MB, 10) || 50;
     this.maxPayloadMb = parseInt(process.env.MAX_NVIDIA_PAYLOAD_SIZE_MB, 10) || 20;
     this.maxDurationSeconds = parseInt(process.env.MAX_VIDEO_DURATION_SECONDS, 10) || 180;
@@ -148,47 +148,54 @@ class VideoProcessor {
         filePath,
       ];
 
-      execFile(this.ffprobePath, args, { timeout: 15000 }, (error, stdout, stderr) => {
-        if (error || !stdout) {
-          console.warn('[VideoProcessor] ffprobe unavailable, using pure JS metadata parser:', error ? error.message : 'no output');
-          return resolve(this.parseMp4Fallback(filePath));
-        }
-
-        try {
-          const data = JSON.parse(stdout);
-          const videoStream = (data.streams || []).find(s => s.codec_name && s.width && s.height) || data.streams?.[0];
-          
-          if (!videoStream || !videoStream.width || !videoStream.height) {
+      try {
+        const cp = execFile(this.ffprobePath, args, { timeout: 15000 }, (error, stdout, stderr) => {
+          if (error || !stdout) {
             return resolve(this.parseMp4Fallback(filePath));
           }
 
-          let originalFps = 24;
-          const fpsParts = (videoStream.r_frame_rate || videoStream.avg_frame_rate || '').split('/');
-          if (fpsParts.length === 2 && parseFloat(fpsParts[1]) > 0) {
-            originalFps = Math.round((parseFloat(fpsParts[0]) / parseFloat(fpsParts[1])) * 10) / 10;
-          } else if (parseFloat(fpsParts[0]) > 0) {
-            originalFps = parseFloat(fpsParts[0]);
+          try {
+            const data = JSON.parse(stdout);
+            const videoStream = (data.streams || []).find(s => s.codec_name && s.width && s.height) || data.streams?.[0];
+            
+            if (!videoStream || !videoStream.width || !videoStream.height) {
+              return resolve(this.parseMp4Fallback(filePath));
+            }
+
+            let originalFps = 24;
+            const fpsParts = (videoStream.r_frame_rate || videoStream.avg_frame_rate || '').split('/');
+            if (fpsParts.length === 2 && parseFloat(fpsParts[1]) > 0) {
+              originalFps = Math.round((parseFloat(fpsParts[0]) / parseFloat(fpsParts[1])) * 10) / 10;
+            } else if (parseFloat(fpsParts[0]) > 0) {
+              originalFps = parseFloat(fpsParts[0]);
+            }
+
+            const duration = parseFloat(videoStream.duration || data.format?.duration || 0);
+            const sizeBytes = parseInt(data.format?.size || fs.statSync(filePath).size, 10);
+            const bitrate = parseInt(videoStream.bit_rate || data.format?.bit_rate || 0, 10);
+
+            resolve({
+              width: videoStream.width,
+              height: videoStream.height,
+              codec: (videoStream.codec_name || '').toLowerCase(),
+              formatName: (data.format?.format_name || '').toLowerCase(),
+              pixelFormat: videoStream.pix_fmt || 'yuv420p',
+              duration: Math.round(duration * 100) / 100,
+              originalFps,
+              bitrate,
+              sizeBytes,
+            });
+          } catch (parseErr) {
+            resolve(this.parseMp4Fallback(filePath));
           }
+        });
 
-          const duration = parseFloat(videoStream.duration || data.format?.duration || 0);
-          const sizeBytes = parseInt(data.format?.size || fs.statSync(filePath).size, 10);
-          const bitrate = parseInt(videoStream.bit_rate || data.format?.bit_rate || 0, 10);
-
-          resolve({
-            width: videoStream.width,
-            height: videoStream.height,
-            codec: (videoStream.codec_name || '').toLowerCase(),
-            formatName: (data.format?.format_name || '').toLowerCase(),
-            pixelFormat: videoStream.pix_fmt || 'yuv420p',
-            duration: Math.round(duration * 100) / 100,
-            originalFps,
-            bitrate,
-            sizeBytes,
-          });
-        } catch (parseErr) {
+        cp.on('error', () => {
           resolve(this.parseMp4Fallback(filePath));
-        }
-      });
+        });
+      } catch (e) {
+        resolve(this.parseMp4Fallback(filePath));
+      }
     });
   }
 

@@ -88,9 +88,9 @@ async function runTests() {
     console.log('Comparison Metrics (Real Measured):', JSON.stringify(prepared.comparison, null, 2));
 
     // Verify separation of original_fps vs analysis_fps
-    console.log(`original_fps: ${prepared.comparison.original.fps} | analysis_fps: ${prepared.comparison.analysis.fps}`);
-    if (prepared.comparison.analysis.fps !== 4) {
-      console.warn(`[Notice] analysis_fps is ${prepared.comparison.analysis.fps} (adaptive decision)`);
+    console.log(`original_fps: ${prepared.comparison.original.original_fps} | analysis_fps: ${prepared.comparison.analysis_version.analysis_fps}`);
+    if (prepared.comparison.analysis_version.analysis_fps !== 4) {
+      console.warn(`[Notice] analysis_fps is ${prepared.comparison.analysis_version.analysis_fps} (adaptive decision)`);
     }
 
     // 4. Temporal & Visual Benchmark Frame Extraction
