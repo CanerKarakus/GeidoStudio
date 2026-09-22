@@ -114,7 +114,11 @@ class NvidiaClient {
       } else if (res.status >= 500) {
         throw new Error(`NVIDIA sunucu hatası (HTTP ${res.status}): ${errorBody?.error?.message || 'Geçici model sunucusu arızası.'}`);
       } else {
-        const detail = errorBody?.error?.message || errorBody?.message || JSON.stringify(errorBody);
+        const rawErr = JSON.stringify(errorBody);
+        if (res.status === 404 && (rawErr.includes('Not found for account') || rawErr.includes('Function'))) {
+          throw new Error('NVIDIA Cosmos modeli hesabınız için henüz aktifleştirilmemiş. Lütfen https://build.nvidia.com/nvidia/cosmos-reason2-8b sayfasına gidip "Get API Key" butonuna basarak model lisans şartlarını onaylayın.');
+        }
+        const detail = errorBody?.error?.message || errorBody?.message || rawErr;
         throw new Error(`NVIDIA API hatası (HTTP ${res.status}): ${detail}`);
       }
     }
