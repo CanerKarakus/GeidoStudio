@@ -205,7 +205,9 @@ const Prompt = () => {
         };
 
         offscreenVideo.onloadeddata = () => {
-          const seekSec = Math.min(1.0, (offscreenVideo.duration || 5) * 0.15);
+          // Capture a frame exactly in the middle of the video (50%)
+          // This avoids capturing intro titles or black frames at the beginning.
+          const seekSec = (offscreenVideo.duration || 5) * 0.5;
           offscreenVideo.currentTime = seekSec;
         };
 
