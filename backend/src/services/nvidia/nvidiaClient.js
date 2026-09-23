@@ -64,12 +64,7 @@ class NvidiaClient {
       });
       console.log(`[NvidiaClient] Included video keyframe (${(kfBuffer.length / 1024).toFixed(1)} KB) in payload.`);
     } else {
-      userContent.push({
-        type: 'video_url',
-        video_url: {
-          url: dataUri,
-        },
-      });
+      throw new Error("Bu model (LLaMA 3.2 11B Vision) doğrudan video işleyemez. Lütfen bir anahtar kare (keyframe) sağlayın.");
     }
 
     const messages = [

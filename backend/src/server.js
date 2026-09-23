@@ -41,7 +41,10 @@ const FRONTEND_URLS = process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(
 
 const ALLOWED_ORIGINS = [
   ...FRONTEND_URLS,
-  'http://localhost:5173',  // Local dev
+  'https://geidostudio.com',
+  'https://www.geidostudio.com',
+  'http://localhost:5173',  // Local dev (default Vite)
+  'http://localhost:5175',  // Local dev (custom Vite port)
   'http://localhost:4173',  // Vite preview
 ].filter(Boolean);
 

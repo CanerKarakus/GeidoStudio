@@ -242,7 +242,38 @@ class VideoProcessor {
   }
 
   /**
-   * Perform adaptive quality-preserving compression to produce an analysis copy
+   * Extract a single keyframe from the video
+   * @param {string} videoPath 
+   * @param {string} outPath 
+   * @param {number} durationSeconds 
+   */
+  async extractKeyframe(videoPath, outPath, durationSeconds = 5) {
+    return new Promise((resolve) => {
+      // Capture a frame exactly in the middle of the video (50%)
+      const seekSec = durationSeconds * 0.5;
+      const args = [
+        '-y',
+        '-i', videoPath,
+        '-ss', seekSec.toString(),
+        '-vframes', '1',
+        '-q:v', '2',
+        outPath
+      ];
+      const ffmpeg = spawn(this.ffmpegPath, args);
+      ffmpeg.on('close', (code) => {
+        if (code === 0 && fs.existsSync(outPath)) resolve(outPath);
+        else resolve(null);
+      });
+      ffmpeg.on('error', () => resolve(null));
+    });
+  }
+
+  /**
+   * Compresses and scales video to meet NVIDIA API constraints
+   * @param {string} rawFilePath 
+   * @param {string} optFilePath 
+   * @param {object} decision 
+   * @returns {Promise<void>}
    */
   async optimizeVideo(rawFilePath, optFilePath, decision) {
     return new Promise((resolve, reject) => {

@@ -12,6 +12,88 @@ import SEO from '../../components/SEO/SEO';
 import { api } from '../../api/db';
 import styles from './Prompt.module.scss';
 
+// Safe renderer helper that guarantees no nested objects crash React
+export const formatVal = (val, fallback = 'Belirtilmedi') => {
+  if (val === null || val === undefined) return fallback;
+  if (typeof val === 'string') {
+    const trimmed = val.trim();
+    if (!trimmed || trimmed === 'none_detected') return fallback;
+    return trimmed;
+  }
+  if (typeof val === 'number' || typeof val === 'boolean') return String(val);
+  if (Array.isArray(val)) {
+    if (val.length === 0) return fallback;
+    const formatted = val.map(item => formatVal(item, '')).filter(Boolean);
+    return formatted.length > 0 ? formatted.join(', ') : fallback;
+  }
+  if (typeof val === 'object') {
+    if (val.value !== undefined) {
+      return formatVal(val.value, fallback);
+    }
+    if (val.type || val.direction || val.relative_speed) {
+      const parts = [val.type, val.direction, val.relative_speed, val.smoothness].filter(Boolean);
+      return parts.length > 0 ? parts.join(' — ') : fallback;
+    }
+    if (val.primary_action || val.secondary_motion) {
+      const parts = [];
+      if (val.primary_action) parts.push(val.primary_action);
+      if (val.secondary_motion && val.secondary_motion !== 'none_detected') {
+        parts.push(`İkincil: ${val.secondary_motion}`);
+      }
+      return parts.length > 0 ? parts.join(' | ') : fallback;
+    }
+    const entries = Object.entries(val)
+      .filter(([k, v]) => k !== 'status' && v !== null && v !== undefined && v !== '')
+      .map(([k, v]) => `${k}: ${typeof v === 'object' ? formatVal(v, '') : v}`);
+    return entries.length > 0 ? entries.join(', ') : fallback;
+  }
+  return String(val);
+};
+
+class PromptErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error, errorInfo) {
+    console.error('[Prompt Render Error]', error, errorInfo);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ padding: '60px 20px', textAlign: 'center', color: '#f87171', maxWidth: '600px', margin: '0 auto' }}>
+          <h3 style={{ fontSize: '1.25rem', marginBottom: '12px' }}>Arayüz Görüntüleme Hatası</h3>
+          <p style={{ color: '#94a3b8', fontSize: '0.9rem', lineHeight: '1.5', wordBreak: 'break-word' }}>
+            {this.state.error?.message || 'Beklenmeyen bir arayüz hatası oluştu.'}
+          </p>
+          <button
+            style={{
+              marginTop: '20px',
+              padding: '10px 20px',
+              borderRadius: '8px',
+              background: '#2563eb',
+              color: '#fff',
+              border: 'none',
+              cursor: 'pointer',
+              fontWeight: '500'
+            }}
+            onClick={() => {
+              this.setState({ hasError: false });
+              window.location.reload();
+            }}
+          >
+            Sayfayı Yenile
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 const Prompt = () => {
   const { t } = useTranslation();
 
@@ -92,6 +174,10 @@ const Prompt = () => {
         }
       } catch (err) {
         console.warn('[Polling Error]', err.message);
+        // If the server restarted or job was lost, we must fail gracefully
+        clearInterval(pollTimerRef.current);
+        setAnalysisState('ERROR');
+        setErrorMessage('Sunucu bağlantısı kesildi veya analiz süresi doldu. Lütfen tekrar deneyin.');
       }
     }, 2000);
 
@@ -278,12 +364,12 @@ const Prompt = () => {
   const getTimelineText = () => {
     if (!analysisResult?.timeline) return '';
     return analysisResult.timeline.map((item, idx) => {
-      return `[${item.start_timestamp} — ${item.end_timestamp}] ${item.event}\n` +
-             `Sahne: ${item.scene_description}\n` +
-             `Kamera: ${item.camera_behavior}\n` +
-             `Özne: ${item.subject_actions}\n` +
-             `Işık: ${item.lighting_state}\n` +
-             `Kompozisyon: ${item.composition}\n`;
+      return `[${item.start_timestamp} — ${item.end_timestamp}] ${formatVal(item.event)}\n` +
+             `Sahne: ${formatVal(item.scene_description)}\n` +
+             `Kamera: ${formatVal(item.camera_behavior)}\n` +
+             `Özne: ${formatVal(item.subject_actions)}\n` +
+             `Işık: ${formatVal(item.lighting_state)}\n` +
+             `Kompozisyon: ${formatVal(item.composition)}\n`;
     }).join('\n--------------------\n');
   };
 
@@ -296,24 +382,24 @@ const Prompt = () => {
     const m = analysisResult.motion || {};
 
     return `=== KAMERA & HAREKET ===\n` +
-           `Plan Türleri: ${(c.shot_types || []).join(', ')}\n` +
-           `Açılar: ${(c.angles || []).join(', ')}\n` +
-           `Konum / Yükseklik: ${c.position_and_height || ''}\n` +
-           `Stabilizasyon: ${c.stabilization || ''}\n\n` +
+           `Plan Türleri: ${formatVal(c.shot_types)}\n` +
+           `Açılar: ${formatVal(c.angles)}\n` +
+           `Konum / Yükseklik: ${formatVal(c.position_and_height)}\n` +
+           `Stabilizasyon: ${formatVal(c.stabilization)}\n\n` +
            `=== OPTİK & ODAK ===\n` +
-           `Perspektif: ${o.perspective || ''}\n` +
-           `Derinlik: ${o.depth_of_field || ''}\n` +
-           `Bokeh: ${o.bokeh_characteristics || ''}\n\n` +
+           `Perspektif: ${formatVal(o.perspective)}\n` +
+           `Derinlik: ${formatVal(o.depth_of_field)}\n` +
+           `Bokeh: ${formatVal(o.bokeh_characteristics)}\n\n` +
            `=== IŞIK & RENK ===\n` +
-           `Ana Işık: ${l.key_light || ''}\n` +
-           `Dolgu Işığı: ${l.fill_light || ''}\n` +
-           `Kontrast: ${l.contrast_ratio || ''}\n` +
-           `Renk Sıcaklığı: ${l.color_temperature || ''}\n\n` +
+           `Ana Işık: ${formatVal(l.key_light)}\n` +
+           `Dolgu Işığı: ${formatVal(l.fill_light)}\n` +
+           `Kontrast: ${formatVal(l.contrast_ratio)}\n` +
+           `Renk Sıcaklığı: ${formatVal(l.color_temperature)}\n\n` +
            `=== KOMPOZİSYON & HAREKET ===\n` +
-           `Kadraj: ${comp.framing_approach || ''}\n` +
-           `Görsel Denge: ${comp.visual_balance || ''}\n` +
-           `Özne Hareketi: ${m.subject_motion || ''}\n` +
-           `Kamera Hareketi: ${m.camera_motion || ''}\n`;
+           `Kadraj: ${formatVal(comp.framing_approach || comp.spatial_arrangement)}\n` +
+           `Görsel Denge: ${formatVal(comp.visual_balance)}\n` +
+           `Özne Hareketi: ${formatVal(m.subject_motion || m.subject_movement)}\n` +
+           `Kamera Hareketi: ${formatVal(m.camera_motion || m.camera_movement)}\n`;
   };
 
   const getAllAnalysisText = () => {
@@ -342,15 +428,15 @@ const Prompt = () => {
   const renderStateText = () => {
     switch (analysisState) {
       case 'UPLOADING':
-        return { label: 'Video Yükleniyor...', desc: `Dosya sunucuya aktarılıyor (%${uploadPercent})` };
+        return { label: 'Yükleniyor...', desc: `%${uploadPercent} tamamlandı.` };
       case 'VALIDATING':
-        return { label: 'Doğrulanıyor...', desc: 'Video başlıkları, codec ve güvenlik kontrolleri yapılıyor.' };
+        return { label: 'Kontrol Ediliyor...', desc: 'Video dosyası inceleniyor.' };
       case 'OPTIMIZING_VIDEO':
-        return { label: 'Akıllı Optimizasyon Yapılıyor...', desc: 'Görsel kalite azami oranda korunarak analiz için 4 FPS adaptif kopya hazırlanıyor.' };
+        return { label: 'Video Hazırlanıyor...', desc: '4 FPS analiz kopyası oluşturuluyor.' };
       case 'ANALYZING_VIDEO':
-        return { label: 'NVIDIA Cosmos3 İnceliyor...', desc: 'Yapay zeka modeli videoyu baştan sona kare kare teknik analize tabi tutuyor.' };
+        return { label: 'Analiz Ediliyor...', desc: 'Kamera, ışık ve hareket çıkarılıyor.' };
       case 'PROCESSING_RESULT':
-        return { label: 'Sonuçlar İşleniyor...', desc: 'Teknik analiz şeması doğrulanıyor ve zaman çizelgesi yapılandırılıyor.' };
+        return { label: 'Rapor Çıkarılıyor...', desc: 'Teknik detaylar derleniyor.' };
       default:
         return { label: 'İşleniyor...', desc: 'Lütfen bekleyin.' };
     }
@@ -359,22 +445,21 @@ const Prompt = () => {
   return (
     <div className={styles.promptPage}>
       <SEO
-        title="AI Video Teknik Analiz — Geido Studio"
-        description="Referans videonuzun kamera hareketi, optik, kadraj, ışık ve kompozisyonunu NVIDIA Cosmos multimodal yapay zeka ile teknik olarak çözümleyin."
+        title="Video Teknik Analiz — Geido Studio"
+        description="Kamera hareketi, kadraj, ışık, optik ve kompozisyon analizi."
       />
       <div className={styles.container}>
         {/* Page Header */}
       <header className={styles.header}>
         <div className={styles.badge}>
-          <Sparkles size={14} />
-          AI Video Technical Analyzer
+          <Film size={14} />
+          Video Teknik Analiz
         </div>
         <h1 className={styles.title}>
-          <span>Referans Videonuzu</span> Teknik Olarak Çözümleyin
+          Video Teknik Analizi
         </h1>
         <p className={styles.subtitle}>
-          Kameranın nasıl hareket ettiğini, kadrajı, ışığı, optik özellikleri, özneleri ve kompozisyonu
-          NVIDIA Cosmos multimodal modeliyle baştan sona objektif ve yapılandırılmış biçimde ortaya çıkarın.
+          Kamera hareketi, kadraj, ışık, optik ve kompozisyon dökümü.
         </p>
       </header>
 
@@ -399,8 +484,8 @@ const Prompt = () => {
             <div className={styles.iconWrap}>
               <Upload size={28} />
             </div>
-            <h3 className={styles.dropTitle}>Referans videonuzu buraya sürükleyin</h3>
-            <p className={styles.dropHint}>veya bilgisayarınızdan seçin (MP4, MOV, WebM — Maks 50 MB)</p>
+            <h3 className={styles.dropTitle}>Video yükle veya sürükle</h3>
+            <p className={styles.dropHint}>MP4, MOV veya WebM (Maks 50 MB)</p>
           </div>
         )}
 
@@ -427,15 +512,6 @@ const Prompt = () => {
                     <div className={styles.metaLabel}>Dosya Boyutu</div>
                     <div className={styles.metaValue}>{videoMeta.sizeMb} MB</div>
                   </div>
-                  <div className={styles.metaItem}>
-                    <div className={styles.metaLabel}>Hedef Model</div>
-                    <div className={styles.metaValue}>Cosmos3-Nano</div>
-                  </div>
-                </div>
-
-                <div className={styles.fixedModeTag}>
-                  <span>Analiz Modu:</span>
-                  <strong>Detailed Technical Analysis</strong>
                 </div>
               </div>
 
@@ -495,11 +571,11 @@ const Prompt = () => {
               <div className={styles.compHeader}>
                 <div className={styles.compTitle}>
                   <Cpu size={18} />
-                  Video Optimizasyon Metrikleri (Gerçek Ölçümler)
+                  Video Metrikleri
                 </div>
-                {comparisonMetadata.was_optimized && comparisonMetadata.reduction_percent > 0 && (
+                {(comparisonMetadata.was_optimized || (comparisonMetadata.reduction?.percent_reduced > 0)) && (
                   <span className={styles.savingPill}>
-                    %{comparisonMetadata.reduction_percent} Boyut Azalımı
+                    %{comparisonMetadata.reduction?.percent_reduced ?? comparisonMetadata.reduction_percent ?? 0} Boyut Azalımı
                   </span>
                 )}
               </div>
@@ -509,35 +585,35 @@ const Prompt = () => {
                   <thead>
                     <tr>
                       <th>Parametre</th>
-                      <th>Orijinal Kaynak Video</th>
-                      <th>NVIDIA Analiz Kopyası</th>
+                      <th>Orijinal Video</th>
+                      <th>Analiz Kopyası</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr>
                       <td>Çözünürlük</td>
-                      <td>{comparisonMetadata.original?.resolution}</td>
-                      <td className={styles.highlight}>{comparisonMetadata.analysis?.resolution}</td>
+                      <td>{comparisonMetadata.original?.resolution || '—'}</td>
+                      <td className={styles.highlight}>{comparisonMetadata.analysis_version?.resolution || comparisonMetadata.analysis?.resolution || '—'}</td>
                     </tr>
                     <tr>
                       <td>Kare Hızı (FPS)</td>
-                      <td>{comparisonMetadata.original?.fps} FPS (original_fps)</td>
-                      <td className={styles.highlight}>{comparisonMetadata.analysis?.fps} FPS (analysis_fps)</td>
+                      <td>{comparisonMetadata.original?.original_fps || comparisonMetadata.original?.fps || '—'} FPS</td>
+                      <td className={styles.highlight}>{comparisonMetadata.analysis_version?.analysis_fps || comparisonMetadata.analysis?.fps || '4'} FPS</td>
                     </tr>
                     <tr>
                       <td>Dosya Boyutu</td>
-                      <td>{comparisonMetadata.original?.size_formatted}</td>
-                      <td className={styles.highlight}>{comparisonMetadata.analysis?.size_formatted}</td>
+                      <td>{comparisonMetadata.original?.file_size_formatted || comparisonMetadata.original?.size_formatted || '—'}</td>
+                      <td className={styles.highlight}>{comparisonMetadata.analysis_version?.file_size_formatted || comparisonMetadata.analysis?.size_formatted || '—'}</td>
                     </tr>
                     <tr>
                       <td>Bitrate</td>
-                      <td>{comparisonMetadata.original?.bitrate_formatted}</td>
-                      <td>{comparisonMetadata.analysis?.bitrate_formatted}</td>
+                      <td>{comparisonMetadata.original?.bitrate_formatted || '—'}</td>
+                      <td>{comparisonMetadata.analysis_version?.bitrate_formatted || comparisonMetadata.analysis?.bitrate_formatted || '—'}</td>
                     </tr>
                     <tr>
                       <td>Codec / Format</td>
-                      <td>{comparisonMetadata.original?.codec?.toUpperCase()}</td>
-                      <td>{comparisonMetadata.analysis?.codec?.toUpperCase()}</td>
+                      <td>{comparisonMetadata.original?.codec?.toUpperCase() || 'H264'}</td>
+                      <td>{(comparisonMetadata.analysis_version?.codec || comparisonMetadata.analysis?.codec || 'H264').toUpperCase()}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -592,7 +668,7 @@ const Prompt = () => {
               <button className={styles.cardHeader} onClick={() => toggleSection('overview')}>
                 <div className={styles.headerLeft}>
                   <Film className={styles.catIcon} size={18} />
-                  <span className={styles.catName}>1. Video Genel Bakış</span>
+                  <span className={styles.catName}>1. Genel Bakış</span>
                   <span className={styles.catCount}>{analysisResult.overview?.scene_count || 1} Sahne</span>
                 </div>
                 <ChevronDown className={`${styles.chevron} ${openSections.overview ? styles.open : ''}`} size={18} />
@@ -609,7 +685,7 @@ const Prompt = () => {
               <button className={styles.cardHeader} onClick={() => toggleSection('timeline')}>
                 <div className={styles.headerLeft}>
                   <Clock className={styles.catIcon} size={18} />
-                  <span className={styles.catName}>2. Zaman Çizelgesi (Timeline)</span>
+                  <span className={styles.catName}>2. Zaman Çizelgesi</span>
                   <span className={styles.catCount}>{(analysisResult.timeline || []).length} Aralık</span>
                 </div>
                 <ChevronDown className={`${styles.chevron} ${openSections.timeline ? styles.open : ''}`} size={18} />
@@ -622,31 +698,31 @@ const Prompt = () => {
                         <div className={styles.timeRange}>
                           {tItem.start_timestamp} — {tItem.end_timestamp}
                         </div>
-                        <div className={styles.eventTitle}>{tItem.event}</div>
-                        <div className={styles.eventDesc}>{tItem.scene_description}</div>
+                        <div className={styles.eventTitle}>{formatVal(tItem.event)}</div>
+                        <div className={styles.eventDesc}>{formatVal(tItem.scene_description)}</div>
                         <div className={styles.eventDetailsGrid}>
                           {tItem.camera_behavior && (
                             <div>
                               <span className={styles.detailLabel}>Kamera: </span>
-                              <span className={styles.detailVal}>{tItem.camera_behavior}</span>
+                              <span className={styles.detailVal}>{formatVal(tItem.camera_behavior)}</span>
                             </div>
                           )}
                           {tItem.subject_actions && (
                             <div>
                               <span className={styles.detailLabel}>Özne: </span>
-                              <span className={styles.detailVal}>{tItem.subject_actions}</span>
+                              <span className={styles.detailVal}>{formatVal(tItem.subject_actions)}</span>
                             </div>
                           )}
                           {tItem.lighting_state && (
                             <div>
                               <span className={styles.detailLabel}>Işık: </span>
-                              <span className={styles.detailVal}>{tItem.lighting_state}</span>
+                              <span className={styles.detailVal}>{formatVal(tItem.lighting_state)}</span>
                             </div>
                           )}
                           {tItem.composition && (
                             <div>
                               <span className={styles.detailLabel}>Kompozisyon: </span>
-                              <span className={styles.detailVal}>{tItem.composition}</span>
+                              <span className={styles.detailVal}>{formatVal(tItem.composition)}</span>
                             </div>
                           )}
                         </div>
@@ -662,7 +738,7 @@ const Prompt = () => {
               <button className={styles.cardHeader} onClick={() => toggleSection('camera')}>
                 <div className={styles.headerLeft}>
                   <Camera className={styles.catIcon} size={18} />
-                  <span className={styles.catName}>3. Kamera & Çekim Açıları</span>
+                  <span className={styles.catName}>3. Kamera & Açı</span>
                 </div>
                 <ChevronDown className={`${styles.chevron} ${openSections.camera ? styles.open : ''}`} size={18} />
               </button>
@@ -671,19 +747,19 @@ const Prompt = () => {
                   <div className={styles.kvGrid}>
                     <div className={styles.kvCard}>
                       <div className={styles.kvKey}>Plan Ölçekleri</div>
-                      <div className={styles.kvValue}>{(analysisResult.camera?.shot_types || []).join(', ') || 'Belirtilmedi'}</div>
+                      <div className={styles.kvValue}>{formatVal(analysisResult.camera?.shot_types)}</div>
                     </div>
                     <div className={styles.kvCard}>
                       <div className={styles.kvKey}>Açılar</div>
-                      <div className={styles.kvValue}>{(analysisResult.camera?.angles || []).join(', ') || 'Belirtilmedi'}</div>
+                      <div className={styles.kvValue}>{formatVal(analysisResult.camera?.angles)}</div>
                     </div>
                     <div className={styles.kvCard}>
                       <div className={styles.kvKey}>Konum & Yükseklik</div>
-                      <div className={styles.kvValue}>{analysisResult.camera?.position_and_height || 'Belirtilmedi'}</div>
+                      <div className={styles.kvValue}>{formatVal(analysisResult.camera?.position_and_height)}</div>
                     </div>
                     <div className={styles.kvCard}>
                       <div className={styles.kvKey}>Stabilizasyon</div>
-                      <div className={styles.kvValue}>{analysisResult.camera?.stabilization || 'Belirtilmedi'}</div>
+                      <div className={styles.kvValue}>{formatVal(analysisResult.camera?.stabilization)}</div>
                     </div>
                   </div>
 
@@ -708,7 +784,7 @@ const Prompt = () => {
               <button className={styles.cardHeader} onClick={() => toggleSection('optics')}>
                 <div className={styles.headerLeft}>
                   <Eye className={styles.catIcon} size={18} />
-                  <span className={styles.catName}>4. Optik & Lens Özellikleri</span>
+                  <span className={styles.catName}>4. Optik & Lens</span>
                 </div>
                 <ChevronDown className={`${styles.chevron} ${openSections.optics ? styles.open : ''}`} size={18} />
               </button>
@@ -717,19 +793,19 @@ const Prompt = () => {
                   <div className={styles.kvGrid}>
                     <div className={styles.kvCard}>
                       <div className={styles.kvKey}>Perspektif Hissi</div>
-                      <div className={styles.kvValue}>{analysisResult.optics?.perspective || 'Belirtilmedi'}</div>
+                      <div className={styles.kvValue}>{formatVal(analysisResult.optics?.perspective)}</div>
                     </div>
                     <div className={styles.kvCard}>
                       <div className={styles.kvKey}>Perspektif Sıkışması</div>
-                      <div className={styles.kvValue}>{analysisResult.optics?.perspective_compression || 'Belirtilmedi'}</div>
+                      <div className={styles.kvValue}>{formatVal(analysisResult.optics?.perspective_compression)}</div>
                     </div>
                     <div className={styles.kvCard}>
                       <div className={styles.kvKey}>Alan Derinliği (DOF)</div>
-                      <div className={styles.kvValue}>{analysisResult.optics?.depth_of_field || 'Belirtilmedi'}</div>
+                      <div className={styles.kvValue}>{formatVal(analysisResult.optics?.depth_of_field)}</div>
                     </div>
                     <div className={styles.kvCard}>
                       <div className={styles.kvKey}>Bokeh Karakteri</div>
-                      <div className={styles.kvValue}>{analysisResult.optics?.bokeh_characteristics || 'Belirtilmedi'}</div>
+                      <div className={styles.kvValue}>{formatVal(analysisResult.optics?.bokeh_characteristics)}</div>
                     </div>
                   </div>
                 </div>
@@ -741,7 +817,7 @@ const Prompt = () => {
               <button className={styles.cardHeader} onClick={() => toggleSection('subjects')}>
                 <div className={styles.headerLeft}>
                   <Film className={styles.catIcon} size={18} />
-                  <span className={styles.catName}>5. Özneler & Karakterler</span>
+                  <span className={styles.catName}>5. Özneler</span>
                   <span className={styles.catCount}>{(analysisResult.subjects || []).length} Özne</span>
                 </div>
                 <ChevronDown className={`${styles.chevron} ${openSections.subjects ? styles.open : ''}`} size={18} />
@@ -751,14 +827,14 @@ const Prompt = () => {
                   <div className={styles.kvGrid}>
                     {(analysisResult.subjects || []).map((sub, i) => (
                       <div key={i} className={styles.kvCard}>
-                        <div className={styles.kvKey}>{sub.identifier || `Özne ${i + 1}`}</div>
+                        <div className={styles.kvKey}>{formatVal(sub.identifier) || `Özne ${i + 1}`}</div>
                         <div className={styles.kvValue} style={{ marginBottom: '8px' }}>
-                          {sub.apparent_presentation || 'Belirtilmedi'}
+                          {formatVal(sub.apparent_presentation)}
                         </div>
                         <div style={{ fontSize: '0.82rem', color: '#94a3b8' }}>
-                          <strong>Kıyafet:</strong> {sub.clothing || '—'}<br />
-                          <strong>Poz / Yön:</strong> {sub.pose_and_orientation || '—'}<br />
-                          <strong>Eylem:</strong> {sub.actions || '—'}
+                          <strong>Kıyafet:</strong> {formatVal(sub.clothing, '—')}<br />
+                          <strong>Poz / Yön:</strong> {formatVal(sub.pose_and_orientation, '—')}<br />
+                          <strong>Eylem:</strong> {formatVal(sub.actions, '—')}
                         </div>
                       </div>
                     ))}
@@ -772,7 +848,7 @@ const Prompt = () => {
               <button className={styles.cardHeader} onClick={() => toggleSection('lighting')}>
                 <div className={styles.headerLeft}>
                   <Sun className={styles.catIcon} size={18} />
-                  <span className={styles.catName}>6. Işık & Aydınlatma</span>
+                  <span className={styles.catName}>6. Işık</span>
                 </div>
                 <ChevronDown className={`${styles.chevron} ${openSections.lighting ? styles.open : ''}`} size={18} />
               </button>
@@ -781,19 +857,19 @@ const Prompt = () => {
                   <div className={styles.kvGrid}>
                     <div className={styles.kvCard}>
                       <div className={styles.kvKey}>Ana Işık (Key Light)</div>
-                      <div className={styles.kvValue}>{analysisResult.lighting?.key_light || 'Belirtilmedi'}</div>
+                      <div className={styles.kvValue}>{formatVal(analysisResult.lighting?.key_light)}</div>
                     </div>
                     <div className={styles.kvCard}>
                       <div className={styles.kvKey}>Dolgu Işığı (Fill Light)</div>
-                      <div className={styles.kvValue}>{analysisResult.lighting?.fill_light || 'Belirtilmedi'}</div>
+                      <div className={styles.kvValue}>{formatVal(analysisResult.lighting?.fill_light)}</div>
                     </div>
                     <div className={styles.kvCard}>
                       <div className={styles.kvKey}>Doğal vs Yapay</div>
-                      <div className={styles.kvValue}>{analysisResult.lighting?.natural_vs_artificial || 'Belirtilmedi'}</div>
+                      <div className={styles.kvValue}>{formatVal(analysisResult.lighting?.natural_vs_artificial)}</div>
                     </div>
                     <div className={styles.kvCard}>
                       <div className={styles.kvKey}>Renk Sıcaklığı</div>
-                      <div className={styles.kvValue}>{analysisResult.lighting?.color_temperature || 'Belirtilmedi'}</div>
+                      <div className={styles.kvValue}>{formatVal(analysisResult.lighting?.color_temperature)}</div>
                     </div>
                   </div>
                 </div>
@@ -805,7 +881,7 @@ const Prompt = () => {
               <button className={styles.cardHeader} onClick={() => toggleSection('color')}>
                 <div className={styles.headerLeft}>
                   <Palette className={styles.catIcon} size={18} />
-                  <span className={styles.catName}>7. Renk & Derecelendirme</span>
+                  <span className={styles.catName}>7. Renk</span>
                 </div>
                 <ChevronDown className={`${styles.chevron} ${openSections.color ? styles.open : ''}`} size={18} />
               </button>
@@ -814,15 +890,15 @@ const Prompt = () => {
                   <div className={styles.kvGrid}>
                     <div className={styles.kvCard}>
                       <div className={styles.kvKey}>Sıcak/Soğuk Dengesi</div>
-                      <div className={styles.kvValue}>{analysisResult.color?.warm_cool_balance || 'Belirtilmedi'}</div>
+                      <div className={styles.kvValue}>{formatVal(analysisResult.color?.warm_cool_balance)}</div>
                     </div>
                     <div className={styles.kvCard}>
                       <div className={styles.kvKey}>Doygunluk</div>
-                      <div className={styles.kvValue}>{analysisResult.color?.saturation || 'Belirtilmedi'}</div>
+                      <div className={styles.kvValue}>{formatVal(analysisResult.color?.saturation)}</div>
                     </div>
                     <div className={styles.kvCard}>
                       <div className={styles.kvKey}>Renk Tonlama Stili</div>
-                      <div className={styles.kvValue}>{analysisResult.color?.grading_style || 'Belirtilmedi'}</div>
+                      <div className={styles.kvValue}>{formatVal(analysisResult.color?.grading_style)}</div>
                     </div>
                   </div>
                   {(analysisResult.color?.dominant_colors || []).length > 0 && (
@@ -844,7 +920,7 @@ const Prompt = () => {
               <button className={styles.cardHeader} onClick={() => toggleSection('composition')}>
                 <div className={styles.headerLeft}>
                   <Layers className={styles.catIcon} size={18} />
-                  <span className={styles.catName}>8. Kompozisyon & Kadraj</span>
+                  <span className={styles.catName}>8. Kompozisyon</span>
                 </div>
                 <ChevronDown className={`${styles.chevron} ${openSections.composition ? styles.open : ''}`} size={18} />
               </button>
@@ -853,19 +929,19 @@ const Prompt = () => {
                   <div className={styles.kvGrid}>
                     <div className={styles.kvCard}>
                       <div className={styles.kvKey}>Kadraj Yaklaşımı</div>
-                      <div className={styles.kvValue}>{analysisResult.composition?.framing_approach || 'Belirtilmedi'}</div>
+                      <div className={styles.kvValue}>{formatVal(analysisResult.composition?.framing_approach || analysisResult.composition?.spatial_arrangement)}</div>
                     </div>
                     <div className={styles.kvCard}>
                       <div className={styles.kvKey}>Görsel Denge</div>
-                      <div className={styles.kvValue}>{analysisResult.composition?.visual_balance || 'Belirtilmedi'}</div>
+                      <div className={styles.kvValue}>{formatVal(analysisResult.composition?.visual_balance)}</div>
                     </div>
                     <div className={styles.kvCard}>
                       <div className={styles.kvKey}>Negatif Alan</div>
-                      <div className={styles.kvValue}>{analysisResult.composition?.negative_space || 'Belirtilmedi'}</div>
+                      <div className={styles.kvValue}>{formatVal(analysisResult.composition?.negative_space)}</div>
                     </div>
                     <div className={styles.kvCard}>
                       <div className={styles.kvKey}>Odak Noktası</div>
-                      <div className={styles.kvValue}>{analysisResult.composition?.dominant_focal_point || 'Belirtilmedi'}</div>
+                      <div className={styles.kvValue}>{formatVal(analysisResult.composition?.dominant_focal_point)}</div>
                     </div>
                   </div>
                 </div>
@@ -877,7 +953,7 @@ const Prompt = () => {
               <button className={styles.cardHeader} onClick={() => toggleSection('motion')}>
                 <div className={styles.headerLeft}>
                   <Activity className={styles.catIcon} size={18} />
-                  <span className={styles.catName}>9. Hareket & Dinamikler</span>
+                  <span className={styles.catName}>9. Hareket</span>
                 </div>
                 <ChevronDown className={`${styles.chevron} ${openSections.motion ? styles.open : ''}`} size={18} />
               </button>
@@ -886,19 +962,19 @@ const Prompt = () => {
                   <div className={styles.kvGrid}>
                     <div className={styles.kvCard}>
                       <div className={styles.kvKey}>Özne Hareketi</div>
-                      <div className={styles.kvValue}>{analysisResult.motion?.subject_motion || 'Belirtilmedi'}</div>
+                      <div className={styles.kvValue}>{formatVal(analysisResult.motion?.subject_motion || analysisResult.motion?.subject_movement)}</div>
                     </div>
                     <div className={styles.kvCard}>
                       <div className={styles.kvKey}>Kamera Hareketi</div>
-                      <div className={styles.kvValue}>{analysisResult.motion?.camera_motion || 'Belirtilmedi'}</div>
+                      <div className={styles.kvValue}>{formatVal(analysisResult.motion?.camera_motion || analysisResult.motion?.camera_movement)}</div>
                     </div>
                     <div className={styles.kvCard}>
                       <div className={styles.kvKey}>Ortam Hareketi</div>
-                      <div className={styles.kvValue}>{analysisResult.motion?.environmental_motion || 'Belirtilmedi'}</div>
+                      <div className={styles.kvValue}>{formatVal(analysisResult.motion?.environmental_motion)}</div>
                     </div>
                     <div className={styles.kvCard}>
                       <div className={styles.kvKey}>İkincil Hareket (Saç/Kıyafet)</div>
-                      <div className={styles.kvValue}>{analysisResult.motion?.secondary_motion || 'Belirtilmedi'}</div>
+                      <div className={styles.kvValue}>{formatVal(analysisResult.motion?.secondary_motion)}</div>
                     </div>
                   </div>
                 </div>
@@ -910,7 +986,7 @@ const Prompt = () => {
               <button className={styles.cardHeader} onClick={() => toggleSection('effects')}>
                 <div className={styles.headerLeft}>
                   <Sparkles className={styles.catIcon} size={18} />
-                  <span className={styles.catName}>10. Görsel Efektler (VFX)</span>
+                  <span className={styles.catName}>10. Görsel Efektler</span>
                 </div>
                 <ChevronDown className={`${styles.chevron} ${openSections.effects ? styles.open : ''}`} size={18} />
               </button>
@@ -965,7 +1041,7 @@ const Prompt = () => {
               <button className={styles.cardHeader} onClick={() => toggleSection('uncertainties')}>
                 <div className={styles.headerLeft}>
                   <ShieldAlert className={styles.catIcon} size={18} />
-                  <span className={styles.catName}>12. Belirsizlikler (Uncertainties)</span>
+                  <span className={styles.catName}>12. Belirsizlikler</span>
                   <span className={styles.catCount}>{(analysisResult.uncertainties || []).length} Uyarı</span>
                 </div>
                 <ChevronDown className={`${styles.chevron} ${openSections.uncertainties ? styles.open : ''}`} size={18} />
@@ -973,12 +1049,12 @@ const Prompt = () => {
               {openSections.uncertainties && (
                 <div className={styles.cardBody}>
                   <p style={{ fontSize: '0.85rem', color: '#94a3b8', marginBottom: '12px' }}>
-                    Model, görüntüde kanıtla desteklenmeyen hiçbir donanım veya gizli bilgiyi uydurmaz. Aşağıdaki maddeler görsel olarak kesinliği doğrulanamayan ayrıntılardır:
+                    Görsel olarak net doğrulanamayan veya tahmini detaylar:
                   </p>
                   <div className={styles.pillContainer}>
                     {(analysisResult.uncertainties || []).map((u, i) => (
                       <div key={i} className={`${styles.pill} ${styles.uncertainty}`}>
-                        {u}
+                        {formatVal(u)}
                       </div>
                     ))}
                   </div>
@@ -1029,4 +1105,10 @@ const Prompt = () => {
   );
 };
 
-export default Prompt;
+const PromptWithBoundary = () => (
+  <PromptErrorBoundary>
+    <Prompt />
+  </PromptErrorBoundary>
+);
+
+export default PromptWithBoundary;

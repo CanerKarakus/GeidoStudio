@@ -13,7 +13,7 @@ const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 
 const videoProcessor = require('../services/video/videoProcessor');
-const nvidiaClient = require('../services/nvidia/nvidiaClient');
+const geminiClient = require('../services/gemini/geminiClient');
 
 const router = express.Router();
 
@@ -194,9 +194,10 @@ router.post('/', (req, res) => {
 
         job.status = 'analyzing_video';
         saveJob(job);
-        const analysisResult = await nvidiaClient.analyzeVideo(finalPath, {
-          duration: prepared.originalMeta.duration,
-          keyframePath,
+        
+        // Use Gemini API for full video analysis
+        const analysisResult = await geminiClient.analyzeVideo(finalPath, {
+          duration: prepared.originalMeta.duration || 0,
         });
 
         job.status = 'processing_result';
@@ -228,7 +229,7 @@ router.post('/', (req, res) => {
         saveJob(job);
       } finally {
         // Guaranteed cleanup of temporary files
-        videoProcessor.cleanup([rawPath, optPath, keyframePath]);
+        videoProcessor.cleanup(rawPath, optPath, keyframePath);
       }
     })();
   });
